@@ -6,7 +6,7 @@ namespace Sistema.Gestion.Nómina
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
-
+            
         }
     }
 }
