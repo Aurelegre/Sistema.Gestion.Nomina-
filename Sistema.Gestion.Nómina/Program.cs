@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina;
+using Sistema.Gestion.Nómina.Entitys;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<ApplicationDbContext>(op => op.UseSqlServer("name=DefaultConnection"));//configuracion de la cadena de coneccion en la clase DBContext
+builder.Services.AddDbContext<SistemaGestionNominaContext>(op => op.UseSqlServer("name=DefaultConnection"));//configuracion de la cadena de coneccion en la clase DBContext
 
 var app = builder.Build();
 
@@ -27,6 +28,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Login}/{id?}");
 
 app.Run();
