@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina;
 using Sistema.Gestion.Nómina.Entitys;
+using Sistema.Gestion.Nómina.Helpers;
+using Sistema.Gestion.Nómina.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<SistemaGestionNominaContext>(op => op.UseSqlServer("name=DefaultConnection"));//configuracion de la cadena de coneccion en la clase DBContext
-
+builder.Services.AddTransient<LoginService>();
+builder.Services.AddTransient<Hasher>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
