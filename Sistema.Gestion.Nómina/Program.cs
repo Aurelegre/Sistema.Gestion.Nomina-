@@ -1,17 +1,31 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Helpers;
 using Sistema.Gestion.Nómina.Services;
+using System.Security;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddControllers().AddJsonOptions(op => op.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(op =>
+{
+    op.LoginPath = "/Login/Login";
+    op.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+    op.AccessDeniedPath = "/Login/AccessDenied";
+});
+
 
 builder.Services.AddDbContext<SistemaGestionNominaContext>(op => op.UseSqlServer("name=DefaultConnection"));//configuracion de la cadena de coneccion en la clase DBContext
 builder.Services.AddTransient<LoginService>();
 builder.Services.AddTransient<Hasher>();
+builder.Services.AddTransient<IServiceCollection, ServiceCollection>();
+builder.Services.AddAuthorization();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +40,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

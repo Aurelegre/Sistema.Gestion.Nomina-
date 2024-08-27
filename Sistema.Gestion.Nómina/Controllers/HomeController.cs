@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sistema.Gestion.Nómina.Models;
 using System.Diagnostics;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -12,12 +14,12 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             _logger = logger;
         }
-
+        
         public IActionResult Index()
         {
             return View();
         }
-
+        //[Authorize(Policy = "test.testear2")]
         public IActionResult Privacy()
         {
             return View();
