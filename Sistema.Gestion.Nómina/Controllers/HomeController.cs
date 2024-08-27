@@ -14,12 +14,12 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             _logger = logger;
         }
-
+        
         public IActionResult Index()
         {
             return View();
         }
-
+        //[Authorize(Policy = "test.testear2")]
         public IActionResult Privacy()
         {
             return View();

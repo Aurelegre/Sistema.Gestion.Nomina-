@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina.Entitys;
@@ -14,11 +15,13 @@ namespace Sistema.Gestion.Nómina.Controllers
     {
         private readonly LoginService _loginService;
         private readonly SistemaGestionNominaContext context;
+        private readonly IServiceCollection _services;
 
-        public LoginController(LoginService loginService, SistemaGestionNominaContext context)
+        public LoginController(LoginService loginService, SistemaGestionNominaContext context, IServiceCollection services)
         {
             _loginService = loginService;
             this.context = context;
+            _services = services;
         }
 
         public IActionResult Login()
@@ -34,18 +37,25 @@ namespace Sistema.Gestion.Nómina.Controllers
             if(usuario != null)
             {
                 var rol = await context.Roles.SingleAsync(r => r.Id == usuario.IdRol);
-
-                var claims = new List<Claim>
+                var permissions = _loginService.GetsessionPermission(rol.Id);
+                _loginService.ConfigureServices(_services);
+                    var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, usuario.Usuario1),
-                    new Claim(ClaimTypes.Role, rol.Descripcion)
-                };
+                    new Claim(ClaimTypes.Role, rol.Descripcion),
+                    
+                 };
+                foreach (var permission in permissions)
+                {
+                    claims.Add(new Claim("Permission", permission));
+                }
+
 
                 var claimsIdentity = new ClaimsIdentity(claims,CookieAuthenticationDefaults.AuthenticationScheme);
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
-              return  RedirectToAction("Index", "Home");
+                return  RedirectToAction("Index", "Home");
             }
             ModelState.AddModelError("200", "Usuario o contraseña incorrectos.");
             return View();
@@ -57,6 +67,11 @@ namespace Sistema.Gestion.Nómina.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             return RedirectToAction("Login", "Login");
+        }
+
+        public async Task<IActionResult> AccessDenied ()
+        {
+            return View();
         }
     }
 }

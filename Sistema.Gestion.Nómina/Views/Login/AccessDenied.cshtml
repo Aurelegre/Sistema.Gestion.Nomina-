@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "Acceso Denegado";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Denegado</title>
+    <link rel="stylesheet" href="~/css/AccessDeniedStyles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Acceso Denegado</h1>
+        <p class="main-text">NO tienes acceso a esta pantalla</p>
+        <p class="description">
+            Tu usuario no tiene acceso a esta pantalla del sistema, regresa a la página principal o inicia sesión con un usuario que sí tenga acceso.
+        </p>
+        <div class="buttons">
+            <a  class="btn" asp-controller="Home" asp-action="Index">Menú principal</a>
+            <a  class="btn" asp-controller="Login" asp-action="Login">Login</a>
+        </div>
+    </div>
+</body>
+</html>
