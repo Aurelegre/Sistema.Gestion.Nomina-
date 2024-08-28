@@ -20,6 +20,7 @@ public partial class Ausencia
     public int? Autorizado { get; set; }
 
     public int? Deducible { get; set; }
+    public string? Detalle { get; set; }
 
     public virtual Empleado? IdEmpleadoNavigation { get; set; }
 }

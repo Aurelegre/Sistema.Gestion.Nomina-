@@ -25,6 +25,8 @@ public partial class SistemaGestionNominaContext : DbContext
 
     public virtual DbSet<Familia> Familias { get; set; }
 
+    public virtual DbSet<HistorialPago> HistorialPagos { get; set; }
+
     public virtual DbSet<HistorialSueldo> HistorialSueldos { get; set; }
 
     public virtual DbSet<LogError> LogErrors { get; set; }
@@ -48,13 +50,13 @@ public partial class SistemaGestionNominaContext : DbContext
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=AURELIUS\\SQLEXPRESS; Database=Sistema.Gestion.Nomina; Trusted_Connection=True; TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Ausencia>(entity =>
         {
+            entity.Property(e => e.Detalle).IsUnicode(false);
             entity.Property(e => e.FechaFin).HasColumnType("datetime");
             entity.Property(e => e.FechaInicio).HasColumnType("datetime");
             entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
@@ -109,6 +111,21 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Familia)
                 .HasForeignKey(d => d.IdEmpleado)
                 .HasConstraintName("FK_Familias_Empleados");
+        });
+
+        modelBuilder.Entity<HistorialPago>(entity =>
+        {
+            entity.Property(e => e.FechaPago).HasColumnType("datetime");
+            entity.Property(e => e.TotalPagado).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TotalPendiente).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.HistorialPagos)
+                .HasForeignKey(d => d.IdEmpleado)
+                .HasConstraintName("FK_HistorialPagos_Empleados");
+
+            entity.HasOne(d => d.IdPrestamoNavigation).WithMany(p => p.HistorialPagos)
+                .HasForeignKey(d => d.IdPrestamo)
+                .HasConstraintName("FK_HistorialPagos_Prestamos");
         });
 
         modelBuilder.Entity<HistorialSueldo>(entity =>

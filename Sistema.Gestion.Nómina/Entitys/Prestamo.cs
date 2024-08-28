@@ -23,6 +23,8 @@ public partial class Prestamo
 
     public int? IdTipo { get; set; }
 
+    public virtual ICollection<HistorialPago> HistorialPagos { get; set; } = new List<HistorialPago>();
+
     public virtual Empleado? IdEmpleadoNavigation { get; set; }
 
     public virtual TiposPrestamo? IdTipoNavigation { get; set; }
