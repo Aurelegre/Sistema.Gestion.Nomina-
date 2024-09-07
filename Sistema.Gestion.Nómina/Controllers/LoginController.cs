@@ -43,7 +43,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                 {
                     new Claim(ClaimTypes.Name, usuario.Usuario1),
                     new Claim(ClaimTypes.Role, rol.Descripcion),
-                    
+                    new Claim("Company", usuario.IdEmpresa.ToString() ),
+                    new Claim("IdEmployed", usuario.Id.ToString())
                  };
                 foreach (var permission in permissions)
                 {
@@ -57,7 +58,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                 return  RedirectToAction("Index", "Home");
             }
-            ModelState.AddModelError("200", "Usuario o contraseña incorrectos.");
+            ModelState.AddModelError("400", "Usuario o contraseña incorrectos.");
             return View();
         }
 
