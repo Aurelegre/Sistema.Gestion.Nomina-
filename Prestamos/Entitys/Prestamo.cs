@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sistema.Gestion.Nómina.Entitys;
+namespace Prestamos.Entitys;
 
 public partial class Prestamo
 {
