@@ -47,7 +47,7 @@ namespace Prestamos.Controllers
                     IdEmpleado = request.IdEmpleado,
                     IdEmpresa = request.IdEmpresa,
                     Metodo = "RegisterLoan",
-                    Descripcion = $"Se registró prestamo de tipo: {tipoPrestamo.Descripcion}, Por un total de: Q.{request.Total}, Empleado {empleado.Nombre},Empresa {empleado.IdEmpresaNavigation.Nombre}",
+                    Descripcion = $"Se registró prestamo de tipo: {tipoPrestamo.Descripcion}, Por un total de: Q.{request.Total}, Empleado {empleado.Id}: {empleado.Nombre}",
                     Fecha = DateTime.Now
                 };
                 _context.Add(logTrasaccion);
@@ -62,7 +62,7 @@ namespace Prestamos.Controllers
             {
                 var logerror = new LogError
                 {
-                    Descripcion = "Error al Registrar Prestamo",
+                    Descripcion = $"Error al Registrar Prestamo del usuario",
                     Error = ex.ToString(),
                     StackTrace = ex.StackTrace,
                     Fecha = DateTime.Now,
@@ -130,7 +130,7 @@ namespace Prestamos.Controllers
                     IdEmpleado = request.IdEmpleado,
                     IdEmpresa = request.IdEmpresa,
                     Metodo = "RegisterPay",
-                    Descripcion = $"Se registró pago de préstamo de tipo: {tipoPrestamo.Descripcion} por un total de: Q.{request.TotalPagado}, Empleado {empleado.Nombre},Empresa {empleado.IdEmpresaNavigation.Nombre}",
+                    Descripcion = $"Se registró pago de préstamo de tipo: {tipoPrestamo.Descripcion} por un total de: Q.{request.TotalPagado}, Empleado {empleado.Id}: {empleado.Nombre}",
                     Fecha = DateTime.Now
                 };
                 return Ok(new
