@@ -27,7 +27,7 @@ builder.Services.AddTransient<Hasher>();
 builder.Services.AddTransient<IServiceCollection, ServiceCollection>();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddAutoMapper(typeof(Program));
 
 
 var app = builder.Build();
