@@ -1,16 +1,43 @@
 ﻿using Sistema.Gestion.Nómina.Entitys;
+using Sistema.Gestion.Nómina.Models;
+using System.Security.Claims;
 
 namespace Sistema.Gestion.Nómina.Services.Logs
 {
     public class LogService : ILogServices
     {
         private readonly SistemaGestionNominaContext _dbcontext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LogService(SistemaGestionNominaContext dbcontext)
+        // Inyecta IHttpContextAccessor en el constructor
+        public LogService(SistemaGestionNominaContext dbcontext, IHttpContextAccessor httpContextAccessor)
         {
             _dbcontext = dbcontext;
+            _httpContextAccessor = httpContextAccessor;
         }
-        public async void LogTransaction(int idEmpleado, int idEmpresa, string method, string data)
+
+        public UserDataSession GetSessionData()
+        {
+            // Accede al HttpContext para obtener el usuario
+            var user = _httpContextAccessor.HttpContext.User;
+
+            // Obtener los datos de los claims
+            var usuario = user.FindFirst(ClaimTypes.Name)?.Value;        // Nombre de usuario
+            var rol = user.FindFirst(ClaimTypes.Role)?.Value;            // Rol del usuario
+            var company = user.FindFirst("Company")?.Value;            // ID de la empresa
+            var empleadoId = user.FindFirst("IdEmployed")?.Value;        // ID del empleado
+
+            // Retornar los datos como sea necesario
+            return new UserDataSession
+            {
+                nombre = usuario,
+                rol = rol,
+                idEmpleado = int.Parse(empleadoId),
+                company = int.Parse(company)
+            };
+        }
+
+        public async void LogTransaction(int idEmpleado, int idEmpresa, string method, string data, string usuario)
         {
             var log = new LogTransaccione
             {
@@ -19,6 +46,7 @@ namespace Sistema.Gestion.Nómina.Services.Logs
                 Metodo = method,
                 Descripcion = data,
                 Fecha = DateTime.Now,
+                Usuario = usuario
             };
             _dbcontext.Add(log);
             await _dbcontext.SaveChangesAsync();

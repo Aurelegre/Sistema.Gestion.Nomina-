@@ -26,6 +26,8 @@ builder.Services.AddTransient<ILogServices,LogService>();
 builder.Services.AddTransient<Hasher>();
 builder.Services.AddTransient<IServiceCollection, ServiceCollection>();
 builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+
 
 
 var app = builder.Build();
