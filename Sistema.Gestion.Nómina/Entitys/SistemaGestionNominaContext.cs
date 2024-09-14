@@ -158,6 +158,7 @@ public partial class SistemaGestionNominaContext : DbContext
         {
             entity.Property(e => e.Fecha).HasColumnType("datetime");
             entity.Property(e => e.Metodo).HasMaxLength(50);
+            entity.Property(e => e.Usuario).HasMaxLength(80);
 
             entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.LogTransacciones)
                 .HasForeignKey(d => d.IdEmpleado)

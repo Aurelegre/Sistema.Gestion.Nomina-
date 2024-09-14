@@ -16,6 +16,7 @@ public partial class LogTransaccione
     public string? Descripcion { get; set; }
 
     public DateTime? Fecha { get; set; }
+    public string? Usuario { get; set; }
 
     public virtual Empleado? IdEmpleadoNavigation { get; set; }
 
