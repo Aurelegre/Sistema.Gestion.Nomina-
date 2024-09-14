@@ -12,7 +12,7 @@ namespace Sistema.Gestion.Nómina.Services.Logs
         // Inyecta IHttpContextAccessor en el constructor
         public LogService(SistemaGestionNominaContext dbcontext, IHttpContextAccessor httpContextAccessor)
         {
-            _dbcontext = dbcontext;
+           this._dbcontext = dbcontext;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -37,7 +37,7 @@ namespace Sistema.Gestion.Nómina.Services.Logs
             };
         }
 
-        public async void LogTransaction(int idEmpleado, int idEmpresa, string method, string data, string usuario)
+        public async Task LogTransaction(int idEmpleado, int idEmpresa, string method, string data, string usuario)
         {
             var log = new LogTransaccione
             {
@@ -52,7 +52,7 @@ namespace Sistema.Gestion.Nómina.Services.Logs
             await _dbcontext.SaveChangesAsync();
         }
 
-        public async void LogError(int idEmpleado, int idEmpresa, string method, string data, string error, string stacktrace)
+        public async Task LogError(int idEmpleado, int idEmpresa, string method, string data, string error, string stacktrace)
         {
             var log = new LogError
             {

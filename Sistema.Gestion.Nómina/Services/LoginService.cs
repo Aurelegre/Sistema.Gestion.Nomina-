@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Options;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Helpers;
+using Sistema.Gestion.Nómina.Services.Logs;
 using System.Security.Policy;
 
 namespace Sistema.Gestion.Nómina.Services
@@ -13,23 +14,35 @@ namespace Sistema.Gestion.Nómina.Services
         private readonly SistemaGestionNominaContext _context;
         private readonly Hasher hasher;
         private readonly IServiceProvider _services;
-        public LoginService(SistemaGestionNominaContext dbcontext, Hasher hasher, IServiceProvider services)
+
+        public ILogServices logServices { get; }
+
+        public LoginService(SistemaGestionNominaContext dbcontext, Hasher hasher, IServiceProvider services, ILogServices logServices)
         {
             _context = dbcontext;
             this.hasher = hasher;
             _services = services;
+            this.logServices = logServices;
         }
 
         public async Task<Usuario> LoginUser(string? userName, string? password)
         {
-            var usuario = await _context.Usuarios.SingleOrDefaultAsync(u => u.Usuario1 == userName);
-
-            if (usuario == null || !hasher.VerifyPassword(password, usuario.Contraseña))
+            try
             {
+                var usuario = await _context.Usuarios.SingleOrDefaultAsync(u => u.Usuario1 == userName);
+
+                if (usuario == null || !hasher.VerifyPassword(password, usuario.Contraseña))
+                {
+                    return null;
+                }
+
+                return usuario;
+            }catch (Exception ex)
+            {
+                logServices.LogError(0, 0, "LoginUser", $"Error en el servicio inicial para inciar sessión del usuario {userName} ", ex.Message, ex.StackTrace);
                 return null;
             }
-
-            return usuario;
+           
         }
 
         public List<string> GetsessionPermission(int idRol)
@@ -51,6 +64,7 @@ namespace Sistema.Gestion.Nómina.Services
             }
             catch (Exception ex)
             {
+                logServices.LogError(0, 0, "GetsessionPermission",  $"Error al consultar permisos del rol: {idRol}", ex.Message, ex.StackTrace);
                 return null;
             }
 
@@ -73,6 +87,7 @@ namespace Sistema.Gestion.Nómina.Services
             }
             catch (Exception ex) 
             {
+                logServices.LogError(0, 0, "GetallPermissions", "Error al consultar todos los permisos del sistema", ex.Message, ex.StackTrace);
                 return new List<string> ();
             }
         }
@@ -93,7 +108,7 @@ namespace Sistema.Gestion.Nómina.Services
             }
             catch (Exception ex)
             {
-
+                logServices.LogError(0, 0, "ConfigureServices", $"Error guardar permisos del usuario", ex.Message, ex.StackTrace);
             }
         }
     }
