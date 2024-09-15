@@ -1,0 +1,59 @@
+﻿@using Sistema.Gestion.Nómina.DTOs.Empleados
+@model IEnumerable< EmpleadosDTO>
+@{
+	ViewData["Title"] = "Empleado";
+}
+
+<h1 class="my-3">Detalles Empleado</h1>
+@foreach (var item in Model){
+
+	@* Tipo Documento *@
+	<div>
+		<strong>ID</strong>
+		<div>@item.Id</div>
+	</div>
+
+	@* Numero Documento *@
+	<div>
+		<strong>Numero de DPI</strong>
+		<div>@item.DPI</div>
+	</div>
+
+	@* Nombre Completo *@
+	<div>
+		<strong>Nombre Completo</strong>
+		<div>@item.Nombre</div>
+	</div>
+
+	@* TelefonoResidencia *@
+	<div>
+		<strong>Puesto</strong>
+		<div>@item.Puesto</div>
+	</div>
+
+	@* TelefonoCelular *@
+	<div>
+		<strong>Departamento</strong>
+		<div>@item.Departamento</div>
+	</div>
+
+	@* Direccion *@
+	<div>
+		<strong>Sueldo</strong>
+		<div>@item.Sueldo</div>
+	</div>
+
+	@* CiudadResidencia *@
+	<div>
+		<strong>Fecha Contratado</strong>
+		<div>@item.FechaContratado</div>
+	</div>
+
+	@* Pais *@
+	<div>
+		<strong>Usuario</strong>
+		<div>@item.Usuario</div>
+	</div>
+
+
+}

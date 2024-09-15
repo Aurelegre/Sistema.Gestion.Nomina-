@@ -11,44 +11,46 @@
 		Registrar Cliente
 	</a>
 </div>
-
-<div class="table-responsive">
-	<table class="table table-bordered table-striped">
-		<thead class="thead-dark">
-			<tr>
-				<td>ID</td>
-				<td>DPI</td>
-				<td>Nombre Completo</td>
-				<td>Puesto</td>
-				<td>Departamendo</td>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var item in Model)
-			{
+@if (Model is not null)
+{
+	<div class="table-responsive">
+		<table class="table table-bordered table-striped">
+			<thead class="thead-dark">
 				<tr>
-					<td>@item.Id </td>
-					<td>@item.DPI</td>
-					<td>@item.Nombre</td>
-					<td>@item.Puesto</td>
-					<td>@item.Departamento</td>
-					<td>
-						<div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-
-							<a href="@Url.Action("Edit", "Cliente", new { id = item.Id })" class="btn btn-primary">
-								Editar
-							</a>
-							<a href="@Url.Action("Delete", "Cliente", new { id = item.Id })" class="btn btn-danger">
-								Eliminar
-							</a>
-							<a href="@Url.Action("Details", "Cliente", new { id = item.Id })" class="btn btn-success">
-								Detalle
-							</a>
-
-						</div>
-					</td>
+					<td>ID</td>
+					<td>DPI</td>
+					<td>Nombre Completo</td>
+					<td>Puesto</td>
+					<td>Departamendo</td>
 				</tr>
-			}
-		</tbody>
-	</table>
-</div>
+			</thead>
+			<tbody>
+				@foreach (var item in Model)
+				{
+					<tr>
+						<td>@item.Id </td>
+						<td>@item.DPI</td>
+						<td>@item.Nombre</td>
+						<td>@item.Puesto</td>
+						<td>@item.Departamento</td>
+						<td>
+							<div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+
+								<a href="@Url.Action("Edit", "Cliente", new { id = item.Id })" class="btn btn-primary">
+									Editar
+								</a>
+								<a href="@Url.Action("Delete", "Cliente", new { id = item.Id })" class="btn btn-danger">
+									Eliminar
+								</a>
+								<a href="@Url.Action("Details", "Employees", new { id = item.Id })" class="btn btn-success">
+									Detalle
+								</a>
+
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

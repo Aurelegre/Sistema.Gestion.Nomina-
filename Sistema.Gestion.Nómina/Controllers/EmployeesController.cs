@@ -10,16 +10,8 @@ namespace Sistema.Gestion.Nómina.Controllers
 {
     [Controller]
     [Authorize]
-    public class EmployeesController : Controller
+    public class EmployeesController(SistemaGestionNominaContext context, ILogServices logServices) : Controller
     {
-		private readonly SistemaGestionNominaContext context;
-		private readonly ILogServices logServices;
-
-		public EmployeesController(SistemaGestionNominaContext context,ILogServices logServices)
-        {
-			this.context = context;
-			this.logServices = logServices;
-		}
         public async Task<ActionResult <IEnumerable< EmpleadosDTO>>> Index()
         {
             var empleados =  context.Empleados.Where(u => u.Activo == 1).Select(u => new EmpleadosDTO
@@ -33,5 +25,26 @@ namespace Sistema.Gestion.Nómina.Controllers
 
             return View(empleados);
         }
-    }
+
+        [HttpGet]
+		public async Task<ActionResult<EmpleadosDTO>> Details(int id)
+		{
+			var empleados = context.Empleados.Where(u => u.Id == id).Select(u => new EmpleadosDTO
+			{
+				Id = u.Id,
+				Nombre = u.Nombre,
+				Puesto = u.IdPuestoNavigation.Descripcion,
+				Departamento = u.IdPuestoNavigation.IdDepartamentoNavigation.Descripcion,
+				DPI = u.Dpi,
+				Sueldo = u.Sueldo,
+				FechaContratado = u.FechaContratado,
+				Usuario = u.IdUsuarioNavigation.Usuario1
+			}).ToList();
+
+			return View(empleados);
+		}
+
+		//[HttpPost]
+		//public async Task<IActionResult>
+	}
 }
