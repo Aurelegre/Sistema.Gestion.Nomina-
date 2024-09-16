@@ -15,5 +15,9 @@ public partial class Departamento
 
     public virtual Empresa? IdEmpresaNavigation { get; set; }
 
+    public virtual Empleado? IdJefeNavigation { get; set; }
+
     public virtual ICollection<Puesto> Puestos { get; set; } = new List<Puesto>();
+
+    public virtual ICollection<Empleado> Empleados { get; set; } = new List<Empleado>();
 }

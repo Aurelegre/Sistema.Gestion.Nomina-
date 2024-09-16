@@ -11,7 +11,7 @@ public partial class Empleado
 
     public string? Nombre { get; set; }
 
-    public DateTime? FechaContratado { get; set; }
+    public DateTime FechaContratado { get; set; }
 
     public int? IdUsuario { get; set; }
 
@@ -22,6 +22,8 @@ public partial class Empleado
     public int? IdEmpresa { get; set; }
 
     public int? Activo { get; set; }
+
+    public int? IdDepartamento { get; set; }
 
     public virtual ICollection<Ausencia> Ausencia { get; set; } = new List<Ausencia>();
 
@@ -36,6 +38,7 @@ public partial class Empleado
     public virtual Puesto? IdPuestoNavigation { get; set; }
 
     public virtual Usuario? IdUsuarioNavigation { get; set; }
+    public virtual Departamento? IdDepartamentoNavigation { get; set; }
 
     public virtual ICollection<LogError> LogErrors { get; set; } = new List<LogError>();
 
@@ -44,4 +47,5 @@ public partial class Empleado
     public virtual ICollection<Nomina> Nominas { get; set; } = new List<Nomina>();
 
     public virtual ICollection<Prestamo> Prestamos { get; set; } = new List<Prestamo>();
+    public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
 }

@@ -1,0 +1,54 @@
+﻿
+<!-- Modal para crear un empleado -->
+<div class="modal fade" id="createEmployeeModal" tabindex="-1" aria-labelledby="createEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createEmployeeModalLabel">Crear Empleado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createEmployeeForm" asp-controller="Employees" asp-action="Create" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="Dpi" class="form-label">DPI</label>
+                        <input type="text" class="form-control" id="Dpi" name="Dpi" required maxlength="13">
+                    </div>
+                    <div class="mb-3">
+                        <label for="Nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="Nombre" name="Nombre" required maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="FechaContratado" class="form-label">Fecha de Contratación</label>
+                        <input type="date" class="form-control" id="FechaContratado" name="FechaContratado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="IdUsuario" class="form-label">Usuario</label>
+                        <select class="form-select" id="IdUsuario" name="IdUsuario">
+                            <option value="">Seleccione un Usuario</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Sueldo" class="form-label">Sueldo</label>
+                        <input type="number" class="form-control" id="Sueldo" name="Sueldo" required min="0" step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="IdDepartamento" class="form-label">Departamento</label>
+                        <select class="form-select" id="IdDepartamento" name="IdDepartamento" required onchange="onDepartamentoChange(this,'IdPuesto')">
+                            <option value="">Seleccione un Departamento</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="IdPuesto" class="form-label">Puesto</label>
+                        <select class="form-select" id="IdPuesto" name="IdPuesto" required>
+                            <option value="">Debe seleccionar un Departamento</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

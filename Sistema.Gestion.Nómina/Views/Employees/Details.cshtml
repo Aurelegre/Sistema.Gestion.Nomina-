@@ -1,59 +1,24 @@
-﻿@using Sistema.Gestion.Nómina.DTOs.Empleados
-@model IEnumerable< EmpleadosDTO>
-@{
-	ViewData["Title"] = "Empleado";
-}
-
-<h1 class="my-3">Detalles Empleado</h1>
-@foreach (var item in Model){
-
-	@* Tipo Documento *@
-	<div>
-		<strong>ID</strong>
-		<div>@item.Id</div>
-	</div>
-
-	@* Numero Documento *@
-	<div>
-		<strong>Numero de DPI</strong>
-		<div>@item.DPI</div>
-	</div>
-
-	@* Nombre Completo *@
-	<div>
-		<strong>Nombre Completo</strong>
-		<div>@item.Nombre</div>
-	</div>
-
-	@* TelefonoResidencia *@
-	<div>
-		<strong>Puesto</strong>
-		<div>@item.Puesto</div>
-	</div>
-
-	@* TelefonoCelular *@
-	<div>
-		<strong>Departamento</strong>
-		<div>@item.Departamento</div>
-	</div>
-
-	@* Direccion *@
-	<div>
-		<strong>Sueldo</strong>
-		<div>@item.Sueldo</div>
-	</div>
-
-	@* CiudadResidencia *@
-	<div>
-		<strong>Fecha Contratado</strong>
-		<div>@item.FechaContratado</div>
-	</div>
-
-	@* Pais *@
-	<div>
-		<strong>Usuario</strong>
-		<div>@item.Usuario</div>
-	</div>
-
-
-}
+﻿<!-- Modal para mostrar los detalles del empleado -->
+<div class="modal fade" id="employeeDetailModal" tabindex="-1" aria-labelledby="employeeDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="employeeDetailModalLabel">Detalle del Empleado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>ID:</strong> <span id="employeeId"></span></p>
+                <p><strong>Nombre:</strong> <span id="employeeName"></span></p>
+                <p><strong>DPI:</strong> <span id="employeeDpi"></span></p>
+                <p><strong>Puesto:</strong> <span id="employeePuesto"></span></p>
+                <p><strong>Departamento:</strong> <span id="employeeDepartamento"></span></p>
+                <p><strong>Sueldo:</strong> <span id="employeeSueldo"></span></p>
+                <p><strong>Fecha de Contratación:</strong> <span id="employeeFechaContratado"></span></p>
+                <p><strong>Usuario:</strong> <span id="employeeUsuario"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Salir</button>
+            </div>
+        </div>
+    </div>
+</div>
