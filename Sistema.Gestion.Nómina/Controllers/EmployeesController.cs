@@ -19,18 +19,38 @@ namespace Sistema.Gestion.Nómina.Controllers
     [Authorize]
     public class EmployeesController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
-        public async Task<ActionResult<IEnumerable<GETEmpleadosDTO>>> Index(int page = 1, int pageSize = 5)
+        public async Task<ActionResult<IEnumerable<GETEmpleadosResponse>>> Index(GetEmployeesDTO request)
         {
             try
             {
                 var session = logger.GetSessionData();
-                var totalItems = await context.Empleados.CountAsync(e => e.Activo == 1 && e.IdEmpresa == session.company);
-                var empleados = await context.Empleados
-                    .Where(u => u.Activo == 1 && u.IdEmpresa == session.company)
+                var query = context.Empleados
+                    .Where(e => e.Activo == 1 && e.IdEmpresa == session.company);
+
+                // Aplicar filtros
+                if (!string.IsNullOrEmpty(request.DPI))
+                {
+                    query = query.Where(e => e.Dpi == request.DPI);
+                }
+                if (!string.IsNullOrEmpty(request.Nombre))
+                {
+                    query = query.Where(e => e.Nombre.Contains(request.Nombre));
+                }
+                if (!string.IsNullOrEmpty(request.Departamento))
+                {
+                    query = query.Where(e => e.IdDepartamentoNavigation.Descripcion == request.Departamento);
+                }
+                if (!string.IsNullOrEmpty(request.Puesto))
+                {
+                    query = query.Where(e => e.IdPuestoNavigation.Descripcion == request.Puesto);
+                }
+
+                var totalItems = await query.CountAsync();
+                var empleados = await query
                     .AsNoTracking()
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(u => new GETEmpleadosDTO
+                    .Skip((request.page - 1) * request.pageSize)
+                    .Take(request.pageSize)
+                    .Select(u => new GETEmpleadosResponse
                     {
                         Id = u.Id,
                         Nombre = u.Nombre,
@@ -40,27 +60,35 @@ namespace Sistema.Gestion.Nómina.Controllers
                     })
                     .ToListAsync();
 
-                var paginatedResult = new PaginatedResult<GETEmpleadosDTO>
+                var paginatedResult = new PaginatedResult<GETEmpleadosResponse>
                 {
                     Items = empleados,
-                    CurrentPage = page,
-                    PageSize = pageSize,
+                    CurrentPage = request.page,
+                    PageSize = request.pageSize,
                     TotalItems = totalItems
                 };
-                //se guardan bitácoras
+
+                // Pasar filtros a la vista
+                ViewBag.DPI = request.DPI;
+                ViewBag.Nombre = request.Nombre;
+                ViewBag.Departamento = request.Departamento;
+                ViewBag.Puesto = request.Puesto;
+
+                // Registrar en bitácora
                 await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Index", $"Se consultaron todos los empleados activos de la empresa {session.company} y se envió a la vista", session.nombre);
 
                 return View(paginatedResult);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Employees.Index", "Error al realizar el Get de todos los empleados activos", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Empleados";
                 return View();
             }
-
         }
+
+
 
 
         [HttpGet]

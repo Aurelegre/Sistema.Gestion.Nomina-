@@ -1,9 +1,10 @@
 ﻿@using Sistema.Gestion.Nómina.DTOs.Empleados
-@model PaginatedResult<GETEmpleadosDTO>
+@model PaginatedResult<GETEmpleadosResponse>
 
 @{
     ViewData["Title"] = "Empleados";
 }
+
 @if (TempData["Message"] != null)
 {
     <div class="alert alert-success mt-5" role="alert" id="message">
@@ -28,6 +29,34 @@
     </button>
 </div>
 
+<!-- Filtros de Búsqueda -->
+<!-- Filtros de Búsqueda -->
+<form method="get" asp-controller="Employees" asp-action="Index" class="mb-4">
+    <div class="row">
+        <div class="col-md-3">
+            <label for="DPI">DPI</label>
+            <input type="text" class="form-control" id="DPI" name="DPI" value="@ViewBag.DPI" placeholder="Filtrar por DPI">
+        </div>
+        <div class="col-md-3">
+            <label for="Nombre">Nombre</label>
+            <input type="text" class="form-control" id="Nombre" name="Nombre" value="@ViewBag.Nombre" placeholder="Filtrar por Nombre">
+        </div>
+        <div class="col-md-3">
+            <label for="Puesto">Puesto</label>
+            <input type="text" class="form-control" id="Puesto" name="Puesto" value="@ViewBag.Puesto" placeholder="Filtrar por Puesto">
+        </div>
+        <div class="col-md-3">
+            <label for="Departamento">Departamento</label>
+            <input type="text" class="form-control" id="Departamento" name="Departamento" value="@ViewBag.Departamento" placeholder="Filtrar por Departamento">
+        </div>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <a method="get" asp-controller="Employees" asp-action="Index" class="btn btn-secondary">Limpiar</a>
+    </div>
+</form>
+
+
 @if (Model.Items.Any())
 {
     <div class="table-responsive">
@@ -43,7 +72,7 @@
                 </tr>
             </thead>
             <tbody>
-               @{
+                @{
                     int counter = 1; // Inicializa el contador
                 }
                 @foreach (var item in Model.Items)
@@ -78,11 +107,14 @@
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                    <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                    <a class="page-link" href="@Url.Action("Index", new { page = i, DPI = ViewBag.DPI, Nombre = ViewBag.Nombre, Puesto = ViewBag.Puesto, Departamento = ViewBag.Departamento })">
+                        @i
+                    </a>
                 </li>
             }
         </ul>
     </nav>
+
 }
 else
 {
@@ -91,9 +123,7 @@ else
 
 <partial name="Create" />
 <partial name="Update" />
-<partial name="Details"/>
+<partial name="Details" />
 <partial name="Delete" />
-
-
 
 <script src="/js/Employees.js" asp-append-version="true"></script>
