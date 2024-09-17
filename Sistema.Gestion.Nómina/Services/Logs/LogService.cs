@@ -37,7 +37,7 @@ namespace Sistema.Gestion.Nómina.Services.Logs
             };
         }
 
-        public async Task LogTransaction(int idEmpleado, int idEmpresa, string method, string data, string usuario)
+        public async Task LogTransaction(int idEmpleado, int? idEmpresa, string method, string data, string usuario)
         {
             var log = new LogTransaccione
             {

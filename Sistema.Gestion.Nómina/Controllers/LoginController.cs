@@ -65,14 +65,14 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-                ////registro de bítacora
-                //var session = LogServices.GetSessionData();
-                //LogServices.LogTransaction(session.idEmpleado, session.company, "Login", "Inicio de sesión", session.nombre);
+                //registro de bítacora
+                var empleado = await context.Empleados.Where(e=> e.IdUsuario == usuario.Id).FirstOrDefaultAsync();
+                await LogServices.LogTransaction(empleado.Id, usuario.IdEmpresa, "Login", "Inicio de sesión", usuario.Usuario1);
 
                 return RedirectToAction("Index", "Home");
             }catch (Exception ex)
             {
-                LogServices.LogError(0, 0, "Login", "Error al inciar sessión", ex.Message, ex.StackTrace);
+                await LogServices.LogError(1, 1, "Login", "Error al inciar sessión", ex.Message, ex.StackTrace);
                 ModelState.AddModelError("400", "ERROR al iniciar sesión.");
                 return View();
             }
