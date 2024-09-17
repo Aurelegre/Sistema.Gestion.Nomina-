@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,217 +17,394 @@ namespace Sistema.Gestion.Nómina.Controllers
 {
     [Controller]
     [Authorize]
-    public class EmployeesController(SistemaGestionNominaContext context, ILogServices logServices, IMapper _mapper) : Controller
+    public class EmployeesController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         public async Task<ActionResult<IEnumerable<GETEmpleadosDTO>>> Index(int page = 1, int pageSize = 5)
         {
-            var session = logServices.GetSessionData();
-            var totalItems = await context.Empleados.CountAsync(e => e.Activo == 1 && e.IdEmpresa == session.company);
-            var empleados = await context.Empleados
-                .Where(u => u.Activo == 1 && u.IdEmpresa == session.company)
-                .AsNoTracking()
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(u => new GETEmpleadosDTO
-                {
-                    Id = u.Id,
-                    Nombre = u.Nombre,
-                    Puesto = u.IdPuestoNavigation.Descripcion,
-                    Departamento = u.IdDepartamentoNavigation.Descripcion,
-                    DPI = u.Dpi
-                })
-                .ToListAsync();
-
-            var paginatedResult = new PaginatedResult<GETEmpleadosDTO>
+            try
             {
-                Items = empleados,
-                CurrentPage = page,
-                PageSize = pageSize,
-                TotalItems = totalItems
-            };
+                var session = logger.GetSessionData();
+                var totalItems = await context.Empleados.CountAsync(e => e.Activo == 1 && e.IdEmpresa == session.company);
+                var empleados = await context.Empleados
+                    .Where(u => u.Activo == 1 && u.IdEmpresa == session.company)
+                    .AsNoTracking()
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(u => new GETEmpleadosDTO
+                    {
+                        Id = u.Id,
+                        Nombre = u.Nombre,
+                        Puesto = u.IdPuestoNavigation.Descripcion,
+                        Departamento = u.IdDepartamentoNavigation.Descripcion,
+                        DPI = u.Dpi
+                    })
+                    .ToListAsync();
 
-            return View(paginatedResult);
+                var paginatedResult = new PaginatedResult<GETEmpleadosDTO>
+                {
+                    Items = empleados,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems
+                };
+                //se guardan bitácoras
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Index", $"Se consultaron todos los empleados activos de la empresa {session.company} y se envió a la vista", session.nombre);
+
+                return View(paginatedResult);
+            }
+            catch(Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Index", "Error al realizar el Get de todos los empleados activos", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar Empleados";
+                return View();
+            }
+
         }
 
 
         [HttpGet]
         public async Task<ActionResult> Details(int id)
         {
-            var empleado = await context.Empleados
+            try
+            {
+                var empleado = await context.Empleados
                 .Where(u => u.Id == id)
                 .AsNoTracking()
                 .Select(u => new GetEmpleadoDTO
-			{
-				Id = u.Id,
-				Nombre = u.Nombre,
-				Puesto = u.IdPuestoNavigation.Descripcion,
-				Departamento = u.IdDepartamentoNavigation.Descripcion,
-				DPI = u.Dpi,
-				Sueldo = u.Sueldo,
-				FechaContratado = DateOnly.FromDateTime(u.FechaContratado),
-				Usuario = u.IdUsuarioNavigation.Usuario1
-			}).FirstOrDefaultAsync();
+                {
+                    Id = u.Id,
+                    Nombre = u.Nombre,
+                    Puesto = u.IdPuestoNavigation.Descripcion,
+                    Departamento = u.IdDepartamentoNavigation.Descripcion,
+                    DPI = u.Dpi,
+                    Sueldo = u.Sueldo,
+                    FechaContratado = DateOnly.FromDateTime(u.FechaContratado),
+                    Usuario = u.IdUsuarioNavigation.Usuario1
+                }).FirstOrDefaultAsync();
 
-            if (empleado == null)
+                if (empleado == null)
+                {
+                    return NotFound();
+                }
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Details", $"Se consultaron detalles del empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+
+                return Json(empleado);
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Details", $"Error al consultar detalles del empleado con Id: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar detalles de Empleado";
+                return RedirectToAction("Index", "Employees");
             }
 
-            return Json(empleado);
-		}
+        }
 
 		[HttpGet]
 		public async Task<ActionResult> Update (int id)
         {
-            var empleado = await context.Empleados
-                .Where(u => u.Id == id)
-                .AsNoTracking()
-                .Select(u => new UpdateEmpleadoViewModel
-                {
-                    Id = u.Id,
-                    Nombre = u.Nombre,
-                    Sueldo = u.Sueldo,
-                    IdDepto = u.IdDepartamento,
-                    Usuario = u.IdUsuarioNavigation.Usuario1
-                }).FirstOrDefaultAsync();
-            if (empleado == null)
+            try
             {
-                return NotFound();
+                var empleado = await context.Empleados
+               .Where(u => u.Id == id)
+               .AsNoTracking()
+               .Select(u => new UpdateEmpleadoViewModel
+               {
+                   Id = u.Id,
+                   Nombre = u.Nombre,
+                   Sueldo = u.Sueldo,
+                   IdDepto = u.IdDepartamento,
+                   Usuario = u.IdUsuarioNavigation.Usuario1
+               }).FirstOrDefaultAsync();
+                if (empleado == null)
+                {
+                    return NotFound();
+                }
+                empleado.Puestos = await ObtenerPuestos(empleado.IdDepto);
+                empleado.Departamento = await ObtenerDepartamentos();
+                empleado.Usuarios = await ObtenerUsuariosSinAsignar();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Update", $"Se obtubieron datos para actualizar empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+
+                return Json(empleado);
             }
-            empleado.Puestos = await ObtenerPuestos(empleado.IdDepto);
-            empleado.Departamento = await ObtenerDepartamentos();
-            empleado.Usuarios = await ObtenerUsuariosSinAsignar();
-            return Json(empleado);
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Update", $"Error al obtener datos para actualizar empleado con Id: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al obtener datos para actualizar Empleado";
+                return RedirectToAction("Index", "Employees");
+            }
+
         }
 
         [HttpGet]
         public async Task<ActionResult> Create(int id)
         {
-            CreateEmpleadoViewModel Datos = new CreateEmpleadoViewModel
+            try
             {
-                Departamentos = await ObtenerDepartamentos(),
-                Puestos = await ObtenerPuestos(id),
-                Usuarios = await ObtenerUsuariosSinAsignar(),
-            };
-            if (Datos == null){
+                CreateEmpleadoViewModel Datos = new CreateEmpleadoViewModel
+                {
+                    Departamentos = await ObtenerDepartamentos(),
+                    Puestos = await ObtenerPuestos(id),
+                    Usuarios = await ObtenerUsuariosSinAsignar(),
+                };
+                if (Datos == null)
+                {
+                    TempData["Error"] = "Error al obtener datos para crear Empleado";
+                    return RedirectToAction("Index", "Employees");
+                }
 
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se obtubieron datos para crear empleado", session.nombre);
+
+                return Json(Datos);
             }
-            return Json(Datos);
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Create", $"Error al obtener datos para crear empleado", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al obtener datos para crear Empleado";
+                return RedirectToAction("Index", "Employees");
+            }
+
         }
 
         [HttpGet]
         public async Task<ActionResult<List<object>>> GetPuestos (int id)
         {
-            var puestos = new
+            try
             {
-                puestos = await ObtenerPuestos(id)
-            };
+                var puestos = new
+                {
+                    puestos = await ObtenerPuestos(id)
+                };
 
-            return Json(puestos);
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.GetPuestos", $"Se obtubieron todos los puestos del departamento con id: {id}", session.nombre);
+
+                return Json(puestos);
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.GetPuestos", $"Error al obtener los puestos del departamento: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al obtener puestos por departamento";
+                return RedirectToAction("Index", "Employees");
+            }
+
         }
         [HttpPost]
         public async Task<ActionResult> Update(UpdateEmpleadoDTO request, int id)
         {
-            var empleado = await context.Empleados.Where(u => u.Id == id).AsNoTracking().FirstOrDefaultAsync();
-            if (empleado == null)
+            try
             {
-                return NotFound();
+                var empleado = await context.Empleados.Where(u => u.Id == id).AsNoTracking().FirstOrDefaultAsync();
+                if (empleado == null)
+                {
+                    return NotFound();
+                }
+                empleado.Nombre = request.Nombre;
+                empleado.Sueldo = request.Sueldo;
+                empleado.IdPuesto = request.IdPuesto;
+                empleado.IdDepartamento = request.IdDepartamento;
+                empleado.IdUsuario = request.IdUsuario != 0 ? request.IdUsuario : empleado.IdUsuario;
+
+
+                context.Update(empleado);
+                await context.SaveChangesAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Update", $"Se actualizó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+
+                TempData["Message"] = "Empleado Actualizado con Exito";
+                return RedirectToAction("Index", "Employees");
             }
-            empleado.Nombre = request.Nombre;
-            empleado.Sueldo = request.Sueldo;
-            empleado.IdPuesto = request.IdPuesto;
-            empleado.IdDepartamento = request.IdDepartamento;
-            empleado.IdUsuario =  request.IdUsuario != 0 ? request.IdUsuario : empleado.IdUsuario;
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Update", $"Error al acualizar empleado con id {request.Id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo actualizar Empleado";
+                return RedirectToAction("Index", "Employees");
+            }
 
-
-            context.Update(empleado);
-            await context.SaveChangesAsync();
-
-            TempData["Message"] = "Empleado Actualizado con Exito";
-
-            return RedirectToAction("Index", "Employees");
         }
 
         [HttpPost]
         public async Task<ActionResult> Delete (int id)
         {
-            var empleado = await context.Empleados.Where(p=> p.Id == id).AsNoTracking().FirstOrDefaultAsync();
-            if (empleado == null)
+            try
             {
-                TempData["Error"] = "El Empleado no existe";
+                var empleado = await context.Empleados.Where(p => p.Id == id).AsNoTracking().FirstOrDefaultAsync();
+                if (empleado == null)
+                {
+                    TempData["Error"] = "El Empleado no existe";
+                    return RedirectToAction("Index", "Employees");
+                }
+                //verificar que no sea jefe de departamento
+                var depto = await context.Departamentos.Where(d => d.IdJefe == empleado.Id).AsNoTracking().FirstOrDefaultAsync();
+                if (depto != null)
+                {
+                    TempData["Error"] = "No se pueden eliminar Empleados jefes de Departamento";
+                    return RedirectToAction("Index", "Employees");
+                }
+                //desactivar usuario
+                empleado.Activo = 0;
+                //actualizar
+                context.Update(empleado);
+                await context.SaveChangesAsync();
+                //guardar bitácora
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Delete", $"Se eliminó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+
+                TempData["Message"] = "Empleado Eliminado con Exito";
                 return RedirectToAction("Index", "Employees");
             }
-            //verificar que no sea jefe de departamento
-            var depto = await context.Departamentos.Where(d => d.IdJefe == empleado.Id).AsNoTracking().FirstOrDefaultAsync();
-            if(depto != null)
+            catch (Exception ex)
             {
-                TempData["Error"] = "No se pueden eliminar Empleados jefes de Departamento";
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Delete", $"Error al eliminar empleado con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo eliminar Empleado";
                 return RedirectToAction("Index", "Employees");
             }
-            //desactivar usuario
-            empleado.Activo = 0;
-            TempData["Message"] = "Empleado Eliminado con Exito";
-            return RedirectToAction("Index", "Employees");
         }
 
 
         [HttpPost]
         public async Task<ActionResult> Create(CreateEmployeeDTO request)
         {
-            //verificar que no existan usuarios con el mismo DPI
-            var existe = await context.Empleados.Where(e => e.Dpi == request.Dpi).AsNoTracking().FirstOrDefaultAsync();
-            if(existe != null)
+            try
             {
-                TempData["Error"] = "El DPI ya esta registrado en otro empleado";
+                //verificar que no existan usuarios con el mismo DPI
+                var existe = await context.Empleados.Where(e => e.Dpi == request.Dpi).AsNoTracking().FirstOrDefaultAsync();
+                if (existe != null)
+                {
+                    TempData["Error"] = "El DPI ya esta registrado en otro empleado";
+                    return RedirectToAction("Index", "Employees");
+                }
+                TimeOnly timeOnly = new TimeOnly(00, 00, 00);
+                var session = logger.GetSessionData();
+                var empleado = new Empleado
+                {
+                    Activo = request.Activo,
+                    Nombre = request.Nombre,
+                    IdEmpresa = session.company,
+                    IdPuesto = request.IdPuesto,
+                    IdDepartamento = request.IdDepartamento,
+                    Sueldo = request.Sueldo,
+                    FechaContratado = request.FechaContratado.ToDateTime(timeOnly),
+                    IdUsuario = request.IdUsuario,
+                    Dpi = request.Dpi,
+                };
+                if (empleado == null)
+                {
+                    TempData["Error"] = "Error al crear usuario";
+                    return RedirectToAction("Index", "Employees");
+                }
+                //agregar a la BD
+                context.Empleados.Add(empleado);
+                await context.SaveChangesAsync();
+                //guardar bitacora
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se creó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+                TempData["Message"] = "Empleado creado con Exito";
                 return RedirectToAction("Index", "Employees");
             }
-            TimeOnly timeOnly = new TimeOnly(00, 00, 00);
-            var session = logServices.GetSessionData();
-            var empleado = new Empleado
+            catch (Exception ex)
             {
-                Activo = request.Activo,
-                Nombre = request.Nombre,
-                IdEmpresa = session.company,
-                IdPuesto = request.IdPuesto,
-                IdDepartamento = request.IdDepartamento,
-                Sueldo = request.Sueldo,
-                FechaContratado = request.FechaContratado.ToDateTime(timeOnly),
-                IdUsuario = request.IdUsuario,
-                Dpi = request.Dpi,
-            };
-            if (empleado == null)
-            {
-                TempData["Error"] = "Error al crear usuario";
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Create", $"Error al creaer empleado", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo crear Empleado";
                 return RedirectToAction("Index", "Employees");
             }
-            context.Empleados.Add(empleado);
-            await context.SaveChangesAsync();
-            return RedirectToAction("Index", "Employees");
+
 
         }
         private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
         {
-            var puestos = await context.Puestos.Where(p => p.IdDepartamento == idDepartamento).AsNoTracking().ToListAsync();
-            var listado = _mapper.Map<List<GetPuestoDTO>>(puestos);
+            try
+            {
+                var puestos = await context.Puestos.Where(p => p.IdDepartamento == idDepartamento).AsNoTracking().ToListAsync();
+                var listado = _mapper.Map<List<GetPuestoDTO>>(puestos);
 
-            return listado;
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.ObtenerPuestos", $"Se consultaron puestos del departamento {idDepartamento}", session.nombre);
+
+                return listado;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.ObtenerPuestos", $"Error al consultar puestos del departamento {idDepartamento}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
         }
         private async Task<List<GetDepartamentoDTO>> ObtenerDepartamentos()
         {
-            var departamentos = await context.Departamentos.AsNoTracking().ToListAsync();
-            var listado = _mapper.Map<List<GetDepartamentoDTO>>(departamentos);
+            try 
+            {
+                var session = logger.GetSessionData();
+                var departamentos = await context.Departamentos.Where(d => d.IdEmpresa == session.company).AsNoTracking().ToListAsync();
+                var listado = _mapper.Map<List<GetDepartamentoDTO>>(departamentos);
 
-            return listado;
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.ObtenerDepartamentos", $"Se consultaron departamentos de la empresa {session.company}", session.nombre);
+
+                return listado;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.ObtenerDepartamentos", $"Error al consultar departamentos", ex.Message, ex.StackTrace);
+                return null;
+            }
+
         }
         private async Task<List<GetUsuariosDTO>> ObtenerUsuariosSinAsignar()
         {
-            var usuariosNoAsignados = await context.Usuarios
-                                        .Where(u => !context.Empleados.Any(e => e.IdUsuario == u.Id))
-                                        .AsNoTracking()
-                                        .ToListAsync();
-            var listado = _mapper.Map<List<GetUsuariosDTO>>(usuariosNoAsignados);
+            try 
+            {
+                var session = logger.GetSessionData();
+                var usuariosNoAsignados = await context.Usuarios
+                                                        .GroupJoin(
+                                                            context.Empleados.Where(e => e.IdEmpresa == session.company), // Filtramos empleados de la empresa actual
+                                                            u => u.Id,   // Clave de la tabla Usuarios
+                                                            e => e.IdUsuario,  // Clave de la tabla Empleados
+                                                            (u, e) => new { Usuario = u, Empleados = e } // Combinamos usuarios con empleados
+                                                        )
+                                                        .SelectMany(
+                                                            ue => ue.Empleados.DefaultIfEmpty(), // Usamos DefaultIfEmpty para simular un LEFT JOIN
+                                                            (ue, empleado) => new { ue.Usuario, empleado }
+                                                        )
+                                                        .Where(joinResult => joinResult.empleado == null && joinResult.Usuario.IdEmpresa == session.company) // Usuarios sin empleado asignado y de la empresa actual
+                                                        .Select(joinResult => joinResult.Usuario) // Seleccionamos solo los usuarios
+                                                        .AsNoTracking()
+                                                        .ToListAsync();
 
-            return listado;
+                //var usuariosNoAsignados = await context.Usuarios
+                //                                        .Where(u => !context.Empleados.Any(e => e.IdUsuario == u.Id && e.IdEmpresa == session.company)
+                //                                                    && u.IdEmpresa == session.company)
+                //                                        .AsNoTracking()
+                //                                        .ToListAsync();
+
+                var listado = _mapper.Map<List<GetUsuariosDTO>>(usuariosNoAsignados);
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.ObtenerUsuariosSinAsignar", $"Se consultaron Usuarios sin asignar de la empresa {session.company}", session.nombre);
+
+                return listado;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.ObtenerUsuariosSinAsignar", $"Error al consultar Usuarios sin asignar de la emoesa {session.company}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+
         }
     }
 }
