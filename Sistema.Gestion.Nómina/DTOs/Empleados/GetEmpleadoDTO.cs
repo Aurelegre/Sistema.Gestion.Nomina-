@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Sistema.Gestion.Nómina.DTOs.Familia;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sistema.Gestion.Nómina.DTOs.Empleados
 {
@@ -12,5 +13,6 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
         public decimal? Sueldo { get; set; }
         public DateOnly FechaContratado { get; set; }
         public string Usuario { get; set; }
+        public List<GetFamilyEmployeeDTO>  Family { get; set;}
     }
 }

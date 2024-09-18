@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Sistema.Gestion.Nómina.DTOs.Familia;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sistema.Gestion.Nómina.DTOs.Empleados
 {
@@ -33,5 +34,7 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
 
         [Required(ErrorMessage = "El departamento es obligatorio")]
         public int? IdDepartamento { get; set; }
+
+        public List<GetFamilyEmployeeDTO> FamilyEmployeeDTOs { get; set; }
     }
 }

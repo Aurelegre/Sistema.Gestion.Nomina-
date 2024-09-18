@@ -7,6 +7,7 @@ using Mono.TextTemplating;
 using NuGet.Protocol;
 using Sistema.Gestion.Nómina.DTOs.Departamentos;
 using Sistema.Gestion.Nómina.DTOs.Empleados;
+using Sistema.Gestion.Nómina.DTOs.Familia;
 using Sistema.Gestion.Nómina.DTOs.Puestos;
 using Sistema.Gestion.Nómina.DTOs.Usuarios;
 using Sistema.Gestion.Nómina.Entitys;
@@ -88,9 +89,6 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-
-
-
         [HttpGet]
         public async Task<ActionResult> Details(int id)
         {
@@ -110,6 +108,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                     FechaContratado = DateOnly.FromDateTime(u.FechaContratado),
                     Usuario = u.IdUsuarioNavigation.Usuario1
                 }).FirstOrDefaultAsync();
+
+                empleado.Family = await ObtenerFamily(id);
 
                 if (empleado == null)
                 {
@@ -301,7 +301,6 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-
         [HttpPost]
         public async Task<ActionResult> Create(CreateEmployeeDTO request)
         {
@@ -336,6 +335,29 @@ namespace Sistema.Gestion.Nómina.Controllers
                 //agregar a la BD
                 context.Empleados.Add(empleado);
                 await context.SaveChangesAsync();
+
+                int? jefefam = await context.Empleados
+                                    .Where(e => e.Dpi == request.Dpi)
+                                    .AsNoTracking()
+                                    .Select(u => u.Id) // Devuelve directamente el Id
+                                    .FirstOrDefaultAsync();
+
+                foreach (var familia in request.FamilyEmployeeDTOs)
+                {
+                    if (familia != null)
+                    {
+                        Familia familiar = new Familia
+                        {
+                            Nombre = familia.Nombre,
+                            Edad = familia.Edad,
+                            Parentesco = familia.Parentesco,
+                            IdEmpleado = jefefam
+                        };
+                        context.Add(familiar);
+                    }
+                }
+                await context.SaveChangesAsync();
+
                 //guardar bitacora
                 await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se creó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
                 TempData["Message"] = "Empleado creado con Exito";
@@ -432,6 +454,26 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return null;
             }
 
+
+        }
+        private async Task<List<GetFamilyEmployeeDTO>> ObtenerFamily(int? idEmpleado)
+        {
+            try
+            {
+                var Familia = await context.Familias.Where(p => p.IdEmpleado == idEmpleado).AsNoTracking().ToListAsync();
+                var listado = _mapper.Map<List<GetFamilyEmployeeDTO>>(Familia);
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.ObtenerFamily", $"Se consultaron familiares del empleado {idEmpleado}", session.nombre);
+
+                return listado;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.ObtenerPuestos", $"Error al consultar familiares del empleado: {idEmpleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
 
         }
     }

@@ -19,13 +19,35 @@
                         document.getElementById("employeeFechaContratado").innerText = data.fechaContratado || data.FechaContratado;
                         document.getElementById("employeeUsuario").innerText = data.usuario || 'Sin asignar';
 
+                        // Limpiar los campos anteriores
+                        var contenedor = document.getElementById('camposFamilia');
+                        contenedor.innerHTML = '';
+
+                        // Mostrar los datos familiares
+                        if (data.family && data.family.length > 0) {
+                            data.family.forEach(function (familiar) {
+                                contenedor.innerHTML += `
+                                    <p>
+                                        <strong>${familiar.parentesco}: </strong><span">${familiar.nombre}</span> 
+                                        <strong>Edad: </strong><span>${familiar.edad}</span>
+                                    </p>
+                                `;
+                            });
+                        } else {
+                            contenedor.innerHTML = '<p>No hay información familiar disponible.</p>';
+                        }
+
                         // Mostrar el modal
                         var modal = new bootstrap.Modal(document.getElementById('employeeDetailModal'));
                         modal.show();
 
                         // Restablecer el valor del combobox a la opción predeterminada
                         dropdown.value = "Seleccionar";
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener los detalles del empleado:', error);
                     });
+
             } else if (action === "editar") {
                 fetch('/Employees/Update/' + id)
                     .then(response => response.json())
@@ -158,4 +180,33 @@ function fetchPuestosData(id,idpuesto) {
             }
            
         });
+}
+
+function generarCamposFamiliares() {
+    var numFamiliares = document.getElementById('numFamiliares').value;
+    var contenedor = document.getElementById('camposFamiliares');
+    contenedor.innerHTML = ''; // Limpiar los campos anteriores
+
+    for (var i = 0; i < numFamiliares; i++) {
+        contenedor.innerHTML += `
+            <div class="mb-3">
+                <h5>Familiar ${i + 1}</h5>
+                <label for="familyEmployee_${i}_Nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="familyEmployee_${i}_Nombre" name="FamilyEmployeeDTOs[${i}].Nombre" required maxlength="100">
+
+                <label for="familyEmployee_${i}_Parentesco" class="form-label">Parentesco</label>
+                <select class="form-select" id="familyEmployee_${i}_Parentesco" name="FamilyEmployeeDTOs[${i}].Parentesco" required>
+                    <option value="">Seleccione</option>
+                    <option value="Esposo">Esposo</option>
+                    <option value="Esposa">Esposa</option>
+                    <option value="Hijo">Hijo</option>
+                    <option value="Hija">Hija</option>
+                </select>
+
+                <label for="familyEmployee_${i}_Edad" class="form-label">Edad</label>
+                <input type="number" class="form-control" id="familyEmployee_${i}_Edad" name="FamilyEmployeeDTOs[${i}].Edad" required>
+            </div>
+        `;
+
+    }
 }
