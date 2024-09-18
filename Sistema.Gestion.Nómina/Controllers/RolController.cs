@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,8 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Controller]
+    [Authorize]
     public class RolController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         // GET: RolController
