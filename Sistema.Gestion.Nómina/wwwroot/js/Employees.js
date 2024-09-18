@@ -112,12 +112,7 @@
         });
     });
 
-    var errorMessage = document.getElementById('message');
-    if (errorMessage) {
-        setTimeout(function () {
-            errorMessage.style.display = 'none';
-        }, 5000); // Oculta el mensaje después de 5 segundos
-    }
+    
 });
 
 function fetchEmployeeData() {

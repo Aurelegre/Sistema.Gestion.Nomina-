@@ -113,7 +113,8 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                 if (empleado == null)
                 {
-                    return NotFound();
+                    TempData["Error"] = "Error al obtener detalle de Empleado";
+                    return RedirectToAction("Index", "Employees");
                 }
 
                 var session = logger.GetSessionData();
