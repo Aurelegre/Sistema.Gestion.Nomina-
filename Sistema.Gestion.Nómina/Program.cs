@@ -4,6 +4,7 @@ using Sistema.Gestion.Nómina;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Helpers;
 using Sistema.Gestion.Nómina.Services;
+using Sistema.Gestion.Nómina.Services.Logs;
 using System.Security;
 using System.Text.Json.Serialization;
 
@@ -18,12 +19,15 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     op.AccessDeniedPath = "/Login/AccessDenied";
 });
 
-
-builder.Services.AddDbContext<SistemaGestionNominaContext>(op => op.UseSqlServer("name=DefaultConnection"));//configuracion de la cadena de coneccion en la clase DBContext
+var conectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<SistemaGestionNominaContext>(op => op.UseSqlServer(conectionString));//configuracion de la cadena de coneccion en la clase DBContext
 builder.Services.AddTransient<LoginService>();
+builder.Services.AddTransient<ILogServices,LogService>();
 builder.Services.AddTransient<Hasher>();
 builder.Services.AddTransient<IServiceCollection, ServiceCollection>();
 builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAutoMapper(typeof(Program));
 
 
 var app = builder.Build();

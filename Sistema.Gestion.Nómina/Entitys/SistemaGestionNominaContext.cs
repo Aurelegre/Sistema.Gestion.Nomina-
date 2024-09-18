@@ -71,6 +71,9 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Departamentos)
                 .HasForeignKey(d => d.IdEmpresa)
                 .HasConstraintName("FK_Departamentos_Empresas");
+            entity.HasOne(d => d.IdJefeNavigation).WithMany(p => p.Departamentos)
+                .HasForeignKey(d => d.IdJefe)
+                .HasConstraintName("FK_Departamentos_Empleados");
         });
 
         modelBuilder.Entity<Empleado>(entity =>
@@ -93,6 +96,9 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Empleados)
                 .HasForeignKey(d => d.IdUsuario)
                 .HasConstraintName("FK_Empleados_Usuarios");
+            entity.HasOne(d => d.IdDepartamentoNavigation).WithMany(p => p.Empleados)
+                .HasForeignKey(d => d.IdDepartamento)
+                .HasConstraintName("FK_Empleados_Departamentos");
         });
 
         modelBuilder.Entity<Empresa>(entity =>
@@ -158,6 +164,7 @@ public partial class SistemaGestionNominaContext : DbContext
         {
             entity.Property(e => e.Fecha).HasColumnType("datetime");
             entity.Property(e => e.Metodo).HasMaxLength(50);
+            entity.Property(e => e.Usuario).HasMaxLength(80);
 
             entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.LogTransacciones)
                 .HasForeignKey(d => d.IdEmpleado)
