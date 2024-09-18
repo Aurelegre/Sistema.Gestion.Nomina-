@@ -32,3 +32,8 @@
         });
     });
 });
+function fetchRoleData() {
+            // Mostrar el modal
+            var modal = new bootstrap.Modal(document.getElementById('createRolModal'));
+            modal.show();
+}

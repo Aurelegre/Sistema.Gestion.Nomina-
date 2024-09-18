@@ -3,6 +3,7 @@ using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Sistema.Gestion.Nómina.DTOs.Empleados;
 using Sistema.Gestion.Nómina.DTOs.Roles;
 using Sistema.Gestion.Nómina.Entitys;
@@ -107,15 +108,36 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: RolController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(CreateRolDTO request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var existe = context.Roles.Where(u=> u.Descripcion == request.Descripcion).AsNoTracking().FirstOrDefault();
+                if(existe != null)
+                {
+                    TempData["Error"] = "Ya Existe un Rol con este Nombre";
+                    return RedirectToAction("Index", "Rol");
+                }
+                var session = logger.GetSessionData();
+                Role rol = new Role
+                {
+                    Descripcion = request.Descripcion,
+                    IdEmpresa = session.company,
+                    activo =1
+                };
+                context.Add(rol);
+                await context.SaveChangesAsync();
+                //guardar bitacora
+                await logger.LogTransaction(session.idEmpleado, session.company, "Rol.Create", $"Se creó Rol con Nombre: {request.Descripcion}", session.nombre);
+                TempData["Message"] = "Rol creado con Exito";
+                return RedirectToAction("Index", "Rol");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Rol.Create", $"Error al crear Rol", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo crear Rol";
+                return RedirectToAction("Index", "Rol");
             }
         }
 
