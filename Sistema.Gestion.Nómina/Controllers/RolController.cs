@@ -20,7 +20,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             try
             {
                 var session = logger.GetSessionData();
-                var query = context.Roles.Where(r => r.IdEmpresa == session.company);
+                var query = context.Roles.Where(r => r.IdEmpresa == session.company && r.activo == 1);
                 
                 // Aplicar filtros
                 if (!string.IsNullOrEmpty(request.Descripcion))
@@ -160,24 +160,45 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-        // GET: RolController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
 
         // POST: RolController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var rol = await context.Roles.Where(p => p.Id == id).AsNoTracking().FirstOrDefaultAsync();
+                if (rol == null)
+                {
+                    TempData["Error"] = "El Rol no existe";
+                    return RedirectToAction("Index", "Rol");
+                }
+                //verificar que no esté asignado a algún usuario Activo
+                var usuario = await context.Usuarios.Where(p => p.IdRol == id && p.activo == 1 ).AsNoTracking().FirstOrDefaultAsync(); 
+                if (usuario != null)
+                {
+                    TempData["Error"] = "No se puede eliminar Rol con usuarios asignados";
+                    return RedirectToAction("Index", "Rol");
+                }
+                //desactivar ROL
+                rol.activo = 0;
+                context.Update(rol);
+                await context.SaveChangesAsync();
+
+                //guardar bitácora
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Rol.Delete", $"Se eliminó Rol con id: {rol.Id}, Nombre: {rol.Descripcion}", session.nombre);
+
+                TempData["Message"] = "Rol Eliminado con Exito";
+                return RedirectToAction("Index", "Rol");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Rol.Delete", $"Error al eliminar Rol con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo eliminar Empleado";
+                return RedirectToAction("Index", "Rol");
             }
         }
     }
