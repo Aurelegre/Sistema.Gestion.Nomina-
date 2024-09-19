@@ -95,7 +95,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             catch(Exception ex)
             {
                 var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Rol.Details", $"Error al consultar detalles del rol con Id: {id}", ex.Message, ex.StackTrace);
+                await logger.LogError(session.idEmpleado, session.company, "Rol.Details", $"Error al consultar detalles del rol con idPermiso: {id}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar detalles de Rol";
                 return RedirectToAction("Index", "Rol");
             }

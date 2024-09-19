@@ -1,0 +1,25 @@
+﻿.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+}
+
+    .card-title input {
+        margin-right: 10px;
+    }
+
+.card-body ul {
+    padding-left: 0;
+}
+
+.list-group-item {
+    border: none;
+}
+
+    .list-group-item input {
+        margin-right: 10px;
+    }

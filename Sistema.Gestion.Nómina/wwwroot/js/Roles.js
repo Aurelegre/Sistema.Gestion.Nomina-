@@ -28,6 +28,9 @@
 
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
+            } else if (action === "permisos") {
+                window.location.href = '/Permission/Index?idRol=' + id;
+                dropdown.value = "Seleccionar";
             }
         });
     });

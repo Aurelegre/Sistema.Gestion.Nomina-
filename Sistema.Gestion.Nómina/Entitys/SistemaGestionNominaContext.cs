@@ -242,9 +242,7 @@ public partial class SistemaGestionNominaContext : DbContext
 
         modelBuilder.Entity<RolesPermiso>(entity =>
         {
-            entity.HasNoKey();
-
-            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            
 
             entity.HasOne(d => d.IdPermisoNavigation).WithMany()
                 .HasForeignKey(d => d.IdPermiso)
