@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,8 @@ using Sistema.Gestion.Nómina.Services.Logs;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Controller]
+    [Authorize]
     public class PermissionController (SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         // GET: PermissionController
