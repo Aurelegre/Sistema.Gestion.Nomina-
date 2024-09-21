@@ -35,11 +35,13 @@ namespace Sistema.Gestion.Nómina.Controllers
                                                           idPermiso = u.IdPermisoNavigation.Id,
                                                           Nombre = u.IdPermisoNavigation.Nombre
                                                       }).ToListAsync();
+                var nameRol = await context.Roles.Where(r => r.Id == idRol).Select(r => r.Descripcion).FirstOrDefaultAsync();
                 GetPermissionViewModel getPermissionViewModel = new GetPermissionViewModel
                 {
                     assignedPermissions = asignedPermissions,
                     allPermissions = allPermissions,
                     idRol = idRol,
+                    nameRol =nameRol
                 };
 
                 var session = logger.GetSessionData();
@@ -104,7 +106,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                     var session = logger.GetSessionData();
                     await logger.LogTransaction(session.idEmpleado, session.company, "Permission.Edit", $"Se editaron los permisos del rol: {idRol}", session.nombre);
-                    TempData["Message"] = "Permisos actualizado con Exito";
+                    TempData["Message"] = $"Permisos del rol {request.nameRol} actualizados con Exito";
                     //return RedirectToAction("Index", "Permission", new { idRol = idRol });
                     return RedirectToAction("Index", "Rol");
 

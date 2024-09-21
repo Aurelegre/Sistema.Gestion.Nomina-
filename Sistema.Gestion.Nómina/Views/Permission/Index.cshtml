@@ -5,8 +5,12 @@
 <link rel="stylesheet" href="~/css/StyleSheet.css" asp-append-version="true" />
 
 <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center" style="margin-bottom:35px">
+        <h1 class="my-3">Permisos: @Model.nameRol </h1>
+    </div>
     <form asp-controller="Permission" asp-action="Edit" method="post">
         <input type="hidden" id="idRol" name="idRol" value="@Model.idRol" />
+        <input type="hidden" id="nameRol" name="nameRol" value="@Model.nameRol" />
 
         <div class="row">
             @{

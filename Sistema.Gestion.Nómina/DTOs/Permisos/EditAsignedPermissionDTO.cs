@@ -3,6 +3,7 @@
     public class EditAsignedPermissionDTO
     {
         public List<check> permissions { get; set; }
+        public string nameRol { get; set; }
 
     }
 
