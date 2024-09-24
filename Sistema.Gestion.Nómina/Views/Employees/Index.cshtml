@@ -5,22 +5,8 @@
     ViewData["Title"] = "Empleados";
 }
 
-@if (TempData["Message"] != null)
-{
-    <div class="alert alert-success mt-5" role="alert" id="message">
-        <div>
-            <strong>@TempData["Message"]</strong>
-        </div>
-    </div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger mt-5" role="alert" id="message">
-        <div>
-            <strong>@TempData["Error"]</strong>
-        </div>
-    </div>
-}
+<partial name="Messages" />
+
 
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="my-3">Empleados</h1>

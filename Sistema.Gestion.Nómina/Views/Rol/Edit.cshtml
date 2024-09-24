@@ -1,0 +1,25 @@
+﻿<!-- Modal para editar empleado -->
+<div class="modal fade" id="editRolModal" tabindex="-1" aria-labelledby="editRolModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editRolModalLabel">Editar Empleado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Rol" asp-action="Edit" method="post" id="editRolForm">
+                    <input type="hidden" id="editId" name="Id" />
+                    <div class="mb-3 form-group">
+                        <label for="editDescripcion" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="editDescripcion" name="Descripcion" required />
+                    </div>
+                    <div class="mb-3 form-group modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

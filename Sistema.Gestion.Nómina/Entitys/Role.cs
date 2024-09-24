@@ -11,6 +11,8 @@ public partial class Role
 
     public int? IdEmpresa { get; set; }
 
+    public int? activo { get; set; }
+
     public virtual Empresa? IdEmpresaNavigation { get; set; }
 
     public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();

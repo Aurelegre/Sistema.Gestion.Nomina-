@@ -1,0 +1,76 @@
+﻿@using Sistema.Gestion.Nómina.DTOs.Permisos
+@model GetPermissionViewModel
+<partial name="Messages" />
+
+<link rel="stylesheet" href="~/css/StyleSheet.css" asp-append-version="true" />
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center" style="margin-bottom:35px">
+        <h1 class="my-3">Permisos: @Model.nameRol </h1>
+    </div>
+    <form asp-controller="Permission" asp-action="Edit" method="post">
+        <input type="hidden" id="idRol" name="idRol" value="@Model.idRol" />
+        <input type="hidden" id="nameRol" name="nameRol" value="@Model.nameRol" />
+
+        <div class="row">
+            @{
+                int counter = 0; // Inicializa el contador
+            }
+            @foreach (var parentPermission in Model.allPermissions)
+            {
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <input type="hidden" id="idPermiso" name="permissions[@counter].idPermiso" value="@parentPermission.idPadre" />
+
+                                @if (parentPermission.Hijos.Count() == Model.assignedPermissions.Count(p => p.idPadre == parentPermission.idPadre) && parentPermission.Hijos.Any())
+                                {
+                                    <input type="checkbox" class="form-check-input" id="parent_@parentPermission.idPadre"
+                                           onchange="toggleParent(this, @parentPermission.idPadre)" checked name="permissions[@counter].estado" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" class="form-check-input" id="parent_@parentPermission.idPadre"
+                                           onchange="toggleParent(this, @parentPermission.idPadre)" name="permissions[@counter].estado" />
+                                }
+
+                                <label for="parent_@parentPermission.idPadre">@parentPermission.Padre</label>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if (parentPermission.Hijos.Any())
+                            {
+                                <ul class="list-group">
+                                    @foreach (var childPermission in parentPermission.Hijos)
+                                    {
+                                            counter++;
+                                        <input type="hidden" id="idPermiso" name="permissions[@counter].idPermiso" value="@childPermission.Id" />
+
+                                        <li class="list-group-item">
+                                           
+                                                <input type="checkbox" class="form-check-input" id="child_@childPermission.Id"
+                                                       data-parent-id="@parentPermission.idPadre" onchange="checkParentStatus(@parentPermission.idPadre)"
+                                                       name="permissions[@counter].estado" 
+                                                       @(Model.assignedPermissions.Any(p => p.idPermiso == childPermission.Id) ? "checked" : "") />
+                                           
+                                            <label for="child_@childPermission.Id">@childPermission.Nombre</label>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p>Sin permisos disponibles.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+                counter++;
+            }
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+</div>
+
+<script src="/js/Permisos.js" asp-append-version="true"></script>

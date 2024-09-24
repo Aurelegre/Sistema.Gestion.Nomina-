@@ -1,0 +1,28 @@
+﻿<!-- Modal para crear un empleado -->
+<div class="modal fade" id="createRolModal" tabindex="-1" aria-labelledby="createRolModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <!-- Aumenté el tamaño del modal -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createRolModalLabel">Crear Rol</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createRolForm" asp-controller="Rol" asp-action="Create" method="post">
+                <div class="modal-body">
+                    <!-- Datos del empleado -->
+                    
+                    <div class="mb-3">
+                        <label for="Descripcion" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="Descripcion" name="Descripcion" required maxlength="100">
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

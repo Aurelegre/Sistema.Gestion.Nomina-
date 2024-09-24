@@ -86,14 +86,14 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                 //registro de bítacora
                 var session = LogServices.GetSessionData();
-                LogServices.LogTransaction(session.idEmpleado, session.company, "LogOut", "Se cerró de sesión", session.nombre);
+                await LogServices.LogTransaction(session.idEmpleado, session.company, "LogOut", "Se cerró de sesión", session.nombre);
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return RedirectToAction("Login", "Login");
             }catch  (Exception ex) 
             { 
                 //registro de bítacora
                 var session = LogServices.GetSessionData();
-                LogServices.LogError(session.idEmpleado, session.company, "LogOut", $"Error al cerrar sessión del usuario: {session.nombre}", ex.Message, ex.StackTrace);
+                await LogServices.LogError(session.idEmpleado, session.company, "LogOut", $"Error al cerrar sessión del usuario: {session.nombre}", ex.Message, ex.StackTrace);
                 ModelState.AddModelError("400", "ERROR al iniciar sesión.");
                 return RedirectToAction("Index", "Home");
             }

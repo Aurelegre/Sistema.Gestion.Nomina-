@@ -113,7 +113,8 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                 if (empleado == null)
                 {
-                    return NotFound();
+                    TempData["Error"] = "Error al obtener detalle de Empleado";
+                    return RedirectToAction("Index", "Employees");
                 }
 
                 var session = logger.GetSessionData();
@@ -124,7 +125,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             catch (Exception ex)
             {
                 var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Employees.Details", $"Error al consultar detalles del empleado con Id: {id}", ex.Message, ex.StackTrace);
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Details", $"Error al consultar detalles del empleado con idPermiso: {id}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar detalles de Empleado";
                 return RedirectToAction("Index", "Employees");
             }
@@ -163,7 +164,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             catch (Exception ex)
             {
                 var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Employees.Update", $"Error al obtener datos para actualizar empleado con Id: {id}", ex.Message, ex.StackTrace);
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Update", $"Error al obtener datos para actualizar empleado con idPermiso: {id}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al obtener datos para actualizar Empleado";
                 return RedirectToAction("Index", "Employees");
             }
@@ -339,7 +340,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 int? jefefam = await context.Empleados
                                     .Where(e => e.Dpi == request.Dpi)
                                     .AsNoTracking()
-                                    .Select(u => u.Id) // Devuelve directamente el Id
+                                    .Select(u => u.Id) // Devuelve directamente el idPermiso
                                     .FirstOrDefaultAsync();
 
                 foreach (var familia in request.FamilyEmployeeDTOs)
@@ -420,23 +421,25 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 var session = logger.GetSessionData();
                 var usuariosNoAsignados = await context.Usuarios
-                                                        .GroupJoin(
-                                                            context.Empleados.Where(e => e.IdEmpresa == session.company), // Filtramos empleados de la empresa actual
-                                                            u => u.Id,   // Clave de la tabla Usuarios
-                                                            e => e.IdUsuario,  // Clave de la tabla Empleados
-                                                            (u, e) => new { Usuario = u, Empleados = e } // Combinamos usuarios con empleados
-                                                        )
-                                                        .SelectMany(
-                                                            ue => ue.Empleados.DefaultIfEmpty(), // Usamos DefaultIfEmpty para simular un LEFT JOIN
-                                                            (ue, empleado) => new { ue.Usuario, empleado }
-                                                        )
-                                                        .Where(joinResult => joinResult.empleado == null && joinResult.Usuario.IdEmpresa == session.company) // Usuarios sin empleado asignado y de la empresa actual
-                                                        .Select(joinResult => joinResult.Usuario) // Seleccionamos solo los usuarios
-                                                        .AsNoTracking()
-                                                        .ToListAsync();
+                                                       .Where(u => u.activo == 1 && u.IdEmpresa == session.company) // Filtrar usuarios activos de la empresa actual
+                                                       .GroupJoin(
+                                                           context.Empleados.Where(e => e.IdEmpresa == session.company),
+                                                           u => u.Id,
+                                                           e => e.IdUsuario,
+                                                           (u, e) => new { Usuario = u, Empleados = e }
+                                                       )
+                                                       .SelectMany(
+                                                           ue => ue.Empleados.DefaultIfEmpty(),
+                                                           (ue, empleado) => new { ue.Usuario, empleado }
+                                                       )
+                                                       .Where(joinResult => joinResult.empleado == null) // Usuarios sin empleado asignado
+                                                       .Select(joinResult => joinResult.Usuario)
+                                                       .AsNoTracking()
+                                                       .ToListAsync();
+
 
                 //var usuariosNoAsignados = await context.Usuarios
-                //                                        .Where(u => !context.Empleados.Any(e => e.IdUsuario == u.Id && e.IdEmpresa == session.company)
+                //                                        .Where(u => !context.Empleados.Any(e => e.IdUsuario == u.idPermiso && e.IdEmpresa == session.company)
                 //                                                    && u.IdEmpresa == session.company)
                 //                                        .AsNoTracking()
                 //                                        .ToListAsync();

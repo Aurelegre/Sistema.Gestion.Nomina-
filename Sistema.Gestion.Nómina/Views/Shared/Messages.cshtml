@@ -1,0 +1,25 @@
+﻿@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success mt-5" role="alert" id="message">
+        <div>
+            <strong>@TempData["Message"]</strong>
+        </div>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-5" role="alert" id="message">
+        <div>
+            <strong>@TempData["Error"]</strong>
+        </div>
+    </div>
+}
+
+<script>
+    var errorMessage = document.getElementById('message');
+    if (errorMessage) {
+        setTimeout(function () {
+            errorMessage.style.display = 'none';
+        }, 5000); // Oculta el mensaje después de 5 segundos
+    }
+</script>
