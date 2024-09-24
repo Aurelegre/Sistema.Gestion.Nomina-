@@ -71,6 +71,13 @@
                         data.departamento.forEach(function (departamento) {
                             editDepartamento.append(new Option(departamento.descripcion, departamento.id, data.IdDepto === departamento.id));
                         });
+
+                        // Llenar combobox de departamentos
+                        var editRol = document.getElementById("editRol");
+                        editRol.innerHTML = "";  // Limpiar opciones actuales
+                        data.roles.forEach(function (rol) {
+                            editRol.append(new Option(rol.descripcion, rol.id, data.IdRol === rol.id));
+                        });
                         
                         // Mostrar el modal
                         var modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));

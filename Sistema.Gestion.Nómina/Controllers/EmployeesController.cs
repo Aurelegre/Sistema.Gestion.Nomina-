@@ -147,7 +147,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                    Nombre = u.Nombre,
                    Sueldo = u.Sueldo,
                    IdDepto = u.IdDepartamento,
-                   Usuario = u.IdUsuarioNavigation.Usuario1
+                   Usuario = u.IdUsuarioNavigation.Usuario1,
+                   IdRol = u.IdUsuarioNavigation.IdRol
                }).FirstOrDefaultAsync();
                 if (empleado == null)
                 {
@@ -155,6 +156,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
                 empleado.Puestos = await ObtenerPuestos(empleado.IdDepto);
                 empleado.Departamento = await ObtenerDepartamentos();
+                empleado.Roles = await ObtenerRoles();
 
                 var session = logger.GetSessionData();
                 await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Update", $"Se obtubieron datos para actualizar empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
@@ -245,6 +247,9 @@ namespace Sistema.Gestion.Nómina.Controllers
 
 
                 context.Update(empleado);
+                var user = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync(); 
+                user.IdRol = request?.IdRol;
+                context.Usuarios.Update(user);
                 await context.SaveChangesAsync();
 
                 var session = logger.GetSessionData();
