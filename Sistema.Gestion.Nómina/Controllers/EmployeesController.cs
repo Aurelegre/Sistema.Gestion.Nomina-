@@ -9,6 +9,7 @@ using Sistema.Gestion.Nómina.DTOs.Departamentos;
 using Sistema.Gestion.Nómina.DTOs.Empleados;
 using Sistema.Gestion.Nómina.DTOs.Familia;
 using Sistema.Gestion.Nómina.DTOs.Puestos;
+using Sistema.Gestion.Nómina.DTOs.Roles;
 using Sistema.Gestion.Nómina.DTOs.Usuarios;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
@@ -179,6 +180,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 {
                     Departamentos = await ObtenerDepartamentos(),
                     Puestos = await ObtenerPuestos(id),
+                    Roles = await ObtenerRoles()
                 };
                 if (Datos == null)
                 {
@@ -341,7 +343,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                     {
                         Usuario1 = request.Usuario,
                         IdEmpresa = session.company,
-                        activo = 0
+                        activo = 0,
+                        IdRol = request.IdRol
                     };
                     context.Usuarios.Add(user);
                     await context.SaveChangesAsync();
@@ -502,6 +505,26 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Employees.ObtenerPuestos", $"Error al consultar familiares del empleado: {idEmpleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+        }
+        private async Task<List<GetRolResponse>> ObtenerRoles()
+        {
+            try
+            {
+                var session = logger.GetSessionData();
+                var roles = await context.Roles.Where(p => p.IdEmpresa == session.company && p.activo == 1).AsNoTracking().ToListAsync();
+                var listado = _mapper.Map<List<GetRolResponse>>(roles);
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.ObtenerRoles", $"Se consultaron Roles de la empresa {session.company}", session.nombre);
+
+                return listado;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.ObtenerRoles", $"Error al consultar roles de la empresa: {session.company}", ex.Message, ex.StackTrace);
                 return null;
             }
 

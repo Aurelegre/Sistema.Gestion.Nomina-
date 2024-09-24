@@ -34,6 +34,8 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
 
         [Required(ErrorMessage = "El departamento es obligatorio")]
         public int? IdDepartamento { get; set; }
+        [Required(ErrorMessage = "El rol es obligatorio")]
+        public int? IdRol { get; set; }
 
         public List<GetFamilyEmployeeDTO> FamilyEmployeeDTOs { get; set; }
     }

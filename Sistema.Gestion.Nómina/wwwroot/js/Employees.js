@@ -113,7 +113,20 @@ function fetchEmployeeData() {
                 noDepartamentOption.disabled = true;
                 departamentosSelect.append(noDepartamentOption);
             }
-            
+
+            // Llenar el combobox de Roles
+            var rolesSelect = document.getElementById('IdRol');
+            rolesSelect.innerHTML = '<option value="">Seleccione un Rol</option>';
+            if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+                data.roles.forEach(function (rol) {
+                    rolesSelect.append(new Option(rol.descripcion, rol.id));
+                });
+            } else {
+                var noRolOption = new Option("No hay roles disponibles", "", true, false);
+                noRolOption.disabled = true;
+                rolesSelect.append(noRolOption);
+            }
+
             // Mostrar el modal
             var modal = new bootstrap.Modal(document.getElementById('createEmployeeModal'));
             modal.show();
