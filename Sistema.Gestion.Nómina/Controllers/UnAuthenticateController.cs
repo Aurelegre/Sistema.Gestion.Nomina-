@@ -17,18 +17,12 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         // GET: UnAuthenticateController/Details/5
-        public ActionResult Details(int id)
+        public ActionResult ForgotPassword()
         {
             return View();
         }
 
-        // GET: UnAuthenticateController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: UnAuthenticateController/Create
+        // POST: UnAuthenticateController/ActiveUser
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ActiveUser(ActiveUserDTO request)
@@ -68,7 +62,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var result = await unAuthenticateServices.SetPassword(request.Password1, user.Id);
                 if (!result)
                 {
-                    TempData["Error"] = "Error al activar usurio, vuelva a intentar";
+                    TempData["Error"] = "Error al activar usuario, vuelva a intentar";
                     return RedirectToAction("FirstSession", "UnAuthenticate");
                 }
                 //guardar sessión
@@ -79,29 +73,69 @@ namespace Sistema.Gestion.Nómina.Controllers
             catch (Exception ex)
             {
                 await logger.LogError(1, 1, "ActiveUser", $"Error al Activar usuario:{request.Usuario} y con DPI {request.Dpi}", ex.Message, ex.StackTrace);
-                TempData["Error"] = "Error al activar usurio, vuelva a intentar";
+                TempData["Error"] = "Error al activar usuario, vuelva a intentar";
                 return RedirectToAction("FirstSession", "UnAuthenticate");
             }
-        }
-
-        // GET: UnAuthenticateController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
         }
 
         // POST: UnAuthenticateController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> RestorePassWord(RestorePasswordDTO request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                //estandarización
+                request.Usuario = request.Usuario.ToUpper();
+                if (request.Password1 != request.Password2)
+                {
+                    TempData["Error"] = "Las contraseñas no coinciden";
+                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                }
+                //verificar que el dpi exista en los empleados
+                var employeeWithUser = await context.Empleados.Where(u => u.Dpi == request.Dpi)
+                                                              .AsNoTracking()
+                                                              .Select(e => new
+                                                              {
+                                                                  Employe = e,
+                                                                  User = e.IdUsuarioNavigation
+                                                              }).FirstOrDefaultAsync();
+                if (employeeWithUser == null || employeeWithUser.User == null)
+                {
+                    TempData["Error"] = "El Usuario no existe";
+                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                }
+                var user = employeeWithUser.User;
+                //verificar que esté activo
+                if (string.IsNullOrEmpty(user.Contraseña))
+                {
+                    TempData["Error"] = "Usuario no configurado, debe activarlo";
+                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                }
+                // Verificar si el usuario está bloqueado
+                if (user.activo == 0)
+                {
+                    TempData["Error"] = "El Usuario está bloqueado, comuniquese con soporte.";
+                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                }
+                
+                //setear contraseña
+                var result = await unAuthenticateServices.SetPassword(request.Password1, user.Id);
+                if (!result)
+                {
+                    TempData["Error"] = "Error al activar usuario, vuelva a intentar";
+                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                }
+                //guardar sessión
+                await logger.LogTransaction(employeeWithUser.Employe.Id, employeeWithUser.Employe.IdEmpresa, "RestorePassWord", $"recuperación de contraseña del usuario con id:{user.Id}", user.Usuario1);
+                TempData["Message"] = "Contraseña recuperada con éxito";
+                return RedirectToAction("Login", "Login");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                await logger.LogError(1, 1, "RestorePassWord", $"Error al recuperar contraseña del usuario:{request.Usuario} y con DPI {request.Dpi}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al recuperar contraseña, vuelva a intentar";
+                return RedirectToAction("ForgotPassword", "UnAuthenticate");
             }
         }
 
