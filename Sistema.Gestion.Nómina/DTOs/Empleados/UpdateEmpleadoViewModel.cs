@@ -11,7 +11,6 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
         public string Nombre { get; set; }
         public List<GetPuestoDTO> Puestos { get; set; }
         public List<GetDepartamentoDTO> Departamento { get; set; }
-        public List<GetUsuariosDTO> Usuarios { get; set; }
         public string Usuario { get; set; }
         public decimal? Sueldo { get; set; }
         public int? IdDepto { get; set; }

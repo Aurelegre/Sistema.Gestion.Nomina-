@@ -8,6 +8,5 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
     {
         public List<GetPuestoDTO> Puestos { get; set; }
         public List<GetDepartamentoDTO> Departamentos { get; set;}
-        public List<GetUsuariosDTO> Usuarios { get; set; }
     }
 }

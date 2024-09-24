@@ -5,6 +5,7 @@ using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Helpers;
 using Sistema.Gestion.Nómina.Services;
 using Sistema.Gestion.Nómina.Services.Logs;
+using Sistema.Gestion.Nómina.Services.UnAuthenticate;
 using System.Security;
 using System.Text.Json.Serialization;
 
@@ -24,6 +25,7 @@ var conectionString = builder.Configuration.GetConnectionString("DefaultConnecti
 builder.Services.AddDbContext<SistemaGestionNominaContext>(op => op.UseSqlServer(conectionString));//configuracion de la cadena de coneccion en la clase DBContext
 builder.Services.AddTransient<LoginService>();
 builder.Services.AddTransient<ILogServices,LogService>();
+builder.Services.AddTransient<IUnAuthenticateServices, UnAunthenticateServices>();
 builder.Services.AddTransient<Hasher>();
 builder.Services.AddTransient<IServiceCollection, ServiceCollection>();
 builder.Services.AddAuthorization();

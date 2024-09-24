@@ -39,7 +39,7 @@ namespace Sistema.Gestion.Nómina.Services
                 return usuario;
             }catch (Exception ex)
             {
-                logServices.LogError(0, 0, "LoginUser", $"Error en el servicio inicial para inciar sessión del usuario {userName} ", ex.Message, ex.StackTrace);
+                await logServices.LogError(1, 1, "LoginUser", $"Error en el servicio inicial para inciar sessión del usuario {userName} ", ex.Message, ex.StackTrace);
                 return null;
             }
            

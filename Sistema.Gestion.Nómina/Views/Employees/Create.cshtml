@@ -24,9 +24,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="IdUsuario" class="form-label">Usuario</label>
-                        <select class="form-select" id="IdUsuario" name="IdUsuario">
-                            <option value="">Seleccione un Usuario</option>
-                        </select>
+                        <input type="email" class="form-control" id="Usuario" name="Usuario" oninput="this.value = this.value.toUpperCase()" required maxlength="100" minlength="5" autocomplete="email" placeholder="correo@ejemplo.com" pattern="[a-z0-9._%+-]+@@[a-z0-9.-]+\.[a-z]{2,}$" title="Ingrese una dirección de correo válida">
                     </div>
                     <div class="mb-3">
                         <label for="Sueldo" class="form-label">Sueldo</label>

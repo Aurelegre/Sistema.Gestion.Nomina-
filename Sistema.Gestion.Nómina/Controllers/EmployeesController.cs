@@ -154,7 +154,6 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
                 empleado.Puestos = await ObtenerPuestos(empleado.IdDepto);
                 empleado.Departamento = await ObtenerDepartamentos();
-                empleado.Usuarios = await ObtenerUsuariosSinAsignar();
 
                 var session = logger.GetSessionData();
                 await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Update", $"Se obtubieron datos para actualizar empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
@@ -180,7 +179,6 @@ namespace Sistema.Gestion.Nómina.Controllers
                 {
                     Departamentos = await ObtenerDepartamentos(),
                     Puestos = await ObtenerPuestos(id),
-                    Usuarios = await ObtenerUsuariosSinAsignar(),
                 };
                 if (Datos == null)
                 {
@@ -227,6 +225,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
+        //actualizar empleado
         [HttpPost]
         public async Task<ActionResult> Update(UpdateEmpleadoDTO request, int id)
         {
@@ -241,7 +240,6 @@ namespace Sistema.Gestion.Nómina.Controllers
                 empleado.Sueldo = request.Sueldo;
                 empleado.IdPuesto = request.IdPuesto;
                 empleado.IdDepartamento = request.IdDepartamento;
-                empleado.IdUsuario = request.IdUsuario != 0 ? request.IdUsuario : empleado.IdUsuario;
 
 
                 context.Update(empleado);
@@ -262,7 +260,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-
+        //eliminar (desactivar) Usuario
         [HttpPost]
         public async Task<ActionResult> Delete (int id)
         {
@@ -281,10 +279,19 @@ namespace Sistema.Gestion.Nómina.Controllers
                     TempData["Error"] = "No se pueden eliminar Empleados jefes de Departamento";
                     return RedirectToAction("Index", "Employees");
                 }
-                //desactivar usuario
+
+                //desactivar empleado
                 empleado.Activo = 0;
-                //actualizar
                 context.Update(empleado);
+
+                var usuario = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync();
+                if(usuario != null)
+                {
+                    //desactivar usuario
+                    usuario.activo = 0;
+                    context.Update(usuario);
+                }
+               
                 await context.SaveChangesAsync();
                 //guardar bitácora
                 var session = logger.GetSessionData();
@@ -303,76 +310,96 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpPost]
+        //crear empleado
         public async Task<ActionResult> Create(CreateEmployeeDTO request)
         {
-            try
+            var session = logger.GetSessionData();
+            using (var transaction = await context.Database.BeginTransactionAsync())
             {
-                //verificar que no existan usuarios con el mismo DPI
-                var existe = await context.Empleados.Where(e => e.Dpi == request.Dpi).AsNoTracking().FirstOrDefaultAsync();
-                if (existe != null)
+                try
                 {
-                    TempData["Error"] = "El DPI ya esta registrado en otro empleado";
-                    return RedirectToAction("Index", "Employees");
-                }
-                TimeOnly timeOnly = new TimeOnly(00, 00, 00);
-                var session = logger.GetSessionData();
-                var empleado = new Empleado
-                {
-                    Activo = request.Activo,
-                    Nombre = request.Nombre,
-                    IdEmpresa = session.company,
-                    IdPuesto = request.IdPuesto,
-                    IdDepartamento = request.IdDepartamento,
-                    Sueldo = request.Sueldo,
-                    FechaContratado = request.FechaContratado.ToDateTime(timeOnly),
-                    IdUsuario = request.IdUsuario,
-                    Dpi = request.Dpi,
-                };
-                if (empleado == null)
-                {
-                    TempData["Error"] = "Error al crear usuario";
-                    return RedirectToAction("Index", "Employees");
-                }
-                //agregar a la BD
-                context.Empleados.Add(empleado);
-                await context.SaveChangesAsync();
-
-                int? jefefam = await context.Empleados
-                                    .Where(e => e.Dpi == request.Dpi)
-                                    .AsNoTracking()
-                                    .Select(u => u.Id) // Devuelve directamente el idPermiso
-                                    .FirstOrDefaultAsync();
-
-                foreach (var familia in request.FamilyEmployeeDTOs)
-                {
-                    if (familia != null)
+                    //estandarización
+                    request.Usuario = request.Usuario.ToUpper();
+                    // Verificar existencia de DPI
+                    bool dpiExists = await context.Empleados.AnyAsync(e => e.Dpi == request.Dpi);
+                    if (dpiExists)
                     {
-                        Familia familiar = new Familia
-                        {
-                            Nombre = familia.Nombre,
-                            Edad = familia.Edad,
-                            Parentesco = familia.Parentesco,
-                            IdEmpleado = jefefam
-                        };
-                        context.Add(familiar);
+                        TempData["Error"] = "El DPI ya está registrado en otro empleado";
+                        return RedirectToAction("Index", "Employees");
                     }
+
+                    // Verificar existencia de usuario (correo)
+                    bool userExists = await context.Usuarios.AnyAsync(u => u.Usuario1 == request.Usuario);
+                    if (userExists)
+                    {
+                        TempData["Error"] = "El correo ya está asignado a otro empleado";
+                        return RedirectToAction("Index", "Employees");
+                    }
+
+                    // Crear usuario
+                    var user = new Usuario
+                    {
+                        Usuario1 = request.Usuario,
+                        IdEmpresa = session.company,
+                        activo = 0
+                    };
+                    context.Usuarios.Add(user);
+                    await context.SaveChangesAsync();
+
+                    // Obtener ID del usuario recién creado
+                    int idUser = user.Id; // Usar el ID directamente desde el objeto recién agregado
+
+                    // Crear empleado
+                    TimeOnly timeOnly = new TimeOnly(00, 00, 00);
+                    var empleado = new Empleado
+                    {
+                        Activo = request.Activo,
+                        Nombre = request.Nombre,
+                        IdEmpresa = session.company,
+                        IdPuesto = request.IdPuesto,
+                        IdDepartamento = request.IdDepartamento,
+                        Sueldo = request.Sueldo,
+                        FechaContratado = request.FechaContratado.ToDateTime(timeOnly),
+                        IdUsuario = idUser,
+                        Dpi = request.Dpi,
+                    };
+                    context.Empleados.Add(empleado);
+                    await context.SaveChangesAsync();
+
+                    // Obtener el ID del empleado recién creado
+                    int idEmpleado = empleado.Id;
+
+                    // Crear familiares
+                    foreach (var familia in request.FamilyEmployeeDTOs)
+                    {
+                        if (familia != null)
+                        {
+                            var familiar = new Familia
+                            {
+                                Nombre = familia.Nombre,
+                                Edad = familia.Edad,
+                                Parentesco = familia.Parentesco,
+                                IdEmpleado = idEmpleado
+                            };
+                            context.Familias.Add(familiar);
+                        }
+                    }
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    // Guardar bitácora
+                    await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se creó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+                    
+                    TempData["Message"] = "Empleado creado con éxito";
+                    return RedirectToAction("Index", "Employees");
                 }
-                await context.SaveChangesAsync();
-
-                //guardar bitacora
-                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se creó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
-                TempData["Message"] = "Empleado creado con Exito";
-                return RedirectToAction("Index", "Employees");
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    await logger.LogError(session.idEmpleado, session.company, "Employees.Create", "Error al crear empleado", ex.Message, ex.StackTrace);
+                    TempData["Error"] = "No se pudo crear el empleado";
+                    return RedirectToAction("Index", "Employees");
+                }
             }
-            catch (Exception ex)
-            {
-                var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Employees.Create", $"Error al creaer empleado", ex.Message, ex.StackTrace);
-                TempData["Error"] = "No se pudo crear Empleado";
-                return RedirectToAction("Index", "Employees");
-            }
-
-
         }
         private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
         {

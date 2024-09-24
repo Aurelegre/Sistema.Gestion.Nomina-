@@ -38,6 +38,8 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             try
             {
+                //estandarización
+                request.user = request.user.ToUpper();
                 var usuario = await _loginService.LoginUser(request.user, request.password);
                 if (usuario == null)
                 {

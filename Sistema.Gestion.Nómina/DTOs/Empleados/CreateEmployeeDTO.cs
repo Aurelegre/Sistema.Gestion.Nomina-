@@ -18,7 +18,7 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
         public DateOnly FechaContratado { get; set; }
 
         [Required(ErrorMessage = "El usuario es obligatorio")]
-        public int? IdUsuario { get; set; }
+        public string? Usuario { get; set; }
 
         [Required(ErrorMessage = "El sueldo es obligatorio")]
         [Range(0, double.MaxValue, ErrorMessage = "El sueldo debe ser un valor positivo")]

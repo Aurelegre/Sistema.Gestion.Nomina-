@@ -56,6 +56,7 @@
                         document.getElementById("editId").value = data.id || data.Id;
                         document.getElementById("editNombre").value = data.nombre || data.Nombre;
                         document.getElementById("editSueldo").value = data.sueldo || data.Sueldo;
+                        document.getElementById("editUsuario").value = data.usuario || data.Usuario;
 
                         // Llenar combobox de puestos
                         var editPuesto = document.getElementById("editPuesto");
@@ -70,27 +71,6 @@
                         data.departamento.forEach(function (departamento) {
                             editDepartamento.append(new Option(departamento.descripcion, departamento.id, data.IdDepto === departamento.id));
                         });
-
-                        // Llenar combobox de Usuario
-                        var editUsuario = document.getElementById("editUsuario");
-                            editUsuario.innerHTML = "";  // Limpiar opciones actuales
-
-                        if (data.usuario) {
-                            editUsuario.append(new Option(data.usuario, 0));
-                        } else {
-                            editUsuario.append(new Option("Usuario sin Asingar", 0));
-                        }
-                            
-                        
-                        if (data.usuarios && Array.isArray(data.usuarios) && data.usuarios.length > 0) {
-                            data.usuarios.forEach(function (usuario) {
-                                editUsuario.append(new Option(usuario.usuario1, usuario.id));
-                            });
-                        } else {
-                            var noUsuariosOption = new Option("No hay usuarios disponibles", "", true, false);
-                            noUsuariosOption.disabled = true;
-                            editUsuario.append(noUsuariosOption);
-                        }
                         
                         // Mostrar el modal
                         var modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
@@ -119,26 +99,21 @@ function fetchEmployeeData() {
     fetch('/Employees/Create/') // Reemplaza con la URL correcta de tu controlador
         .then(response => response.json())
         .then(data => {
-            // Llenar el combobox de Usuarios
-            var usuariosSelect = document.getElementById('IdUsuario');
-            usuariosSelect.innerHTML = '<option value="">Seleccione un Usuario</option>';
-            if (data.usuarios && Array.isArray(data.usuarios) && data.usuarios.length > 0) {
-                data.usuarios.forEach(function (usuario) {
-                    usuariosSelect.append(new Option(usuario.usuario1, usuario.Id));
-                });
-            } else {
-                var noUsuariosOption = new Option("No hay usuarios disponibles", "", true, false);
-                noUsuariosOption.disabled = true;
-                usuariosSelect.append(noUsuariosOption);
-            }
             
-
+            
             // Llenar el combobox de Departamentos
             var departamentosSelect = document.getElementById('IdDepartamento');
             departamentosSelect.innerHTML = '<option value="">Seleccione un Departamento</option>';
-            data.departamentos.forEach(function (departamento) {
-                departamentosSelect.append(new Option(departamento.descripcion, departamento.id));
-            });
+            if (data.departamentos && Array.isArray(data.departamentos) && data.departamentos.length > 0) {
+                data.departamentos.forEach(function (departamento) {
+                    departamentosSelect.append(new Option(departamento.descripcion, departamento.id));
+                });
+            } else {
+                var noDepartamentOption = new Option("No hay departamentos disponibles", "", true, false);
+                noDepartamentOption.disabled = true;
+                departamentosSelect.append(noDepartamentOption);
+            }
+            
             // Mostrar el modal
             var modal = new bootstrap.Modal(document.getElementById('createEmployeeModal'));
             modal.show();
