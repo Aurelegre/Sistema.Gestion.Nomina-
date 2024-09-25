@@ -21,6 +21,8 @@ namespace Sistema.Gestion.Nómina.Controllers
     [Authorize]
     public class EmployeesController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
+        [HttpGet]
+        [Authorize(Policy = "Empleados.Listar")]
         public async Task<ActionResult<IEnumerable<GETEmpleadosResponse>>> Index(GetEmployeesDTO request)
         {
             try
@@ -93,6 +95,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "Empleados.Ver")]
         public async Task<ActionResult> Details(int id)
         {
             try
@@ -135,7 +138,8 @@ namespace Sistema.Gestion.Nómina.Controllers
 
         }
 		[HttpGet]
-		public async Task<ActionResult> Update (int id)
+        [Authorize(Policy = "Empleados.Actualizar")]
+        public async Task<ActionResult> Update (int id)
         {
             try
             {
@@ -174,6 +178,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
         }
         [HttpGet]
+        [Authorize(Policy = "Empleados.Crear")]
         public async Task<ActionResult> Create(int id)
         {
             try
@@ -205,6 +210,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
         }
         [HttpGet]
+        [Authorize(Policy = "Empleados.Ver")]
         public async Task<ActionResult<List<object>>> GetPuestos (int id)
         {
             try
@@ -231,6 +237,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
         //actualizar empleado
         [HttpPost]
+        [Authorize(Policy = "Empleados.Actualizar")]
         public async Task<ActionResult> Update(UpdateEmpleadoDTO request, int id)
         {
             try
@@ -269,6 +276,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         //eliminar (desactivar) Usuario
         [HttpPost]
+        [Authorize(Policy = "Empleados.Eliminar")]
         public async Task<ActionResult> Delete (int id)
         {
             try
@@ -317,6 +325,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         [HttpPost]
         //crear empleado
+        [Authorize(Policy = "Empleados.Crear")]
         public async Task<ActionResult> Create(CreateEmployeeDTO request)
         {
             var session = logger.GetSessionData();
@@ -410,6 +419,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         [HttpPost]
         //desbloquear usuario
+        [Authorize(Policy = "Empleados.Actualizar")]
         public async Task<ActionResult> UnlockUser(int id)
         {
             try

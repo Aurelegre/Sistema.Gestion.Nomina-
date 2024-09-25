@@ -14,6 +14,8 @@ namespace Sistema.Gestion.Nómina.Controllers
     public class PermissionController (SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         // GET: PermissionController
+        [HttpGet]
+        [Authorize(Policy = "Permisos.Listar")]
         public async Task<ActionResult> Index(int idRol)
         {
             try
@@ -61,6 +63,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: PermissionController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Permisos.Actualizar")]
         public async Task<ActionResult> Edit(EditAsignedPermissionDTO request, int idRol)
         {
             //crear transacción para evitar inconsistencias
