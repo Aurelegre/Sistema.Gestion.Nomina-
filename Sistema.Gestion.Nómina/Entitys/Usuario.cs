@@ -17,6 +17,8 @@ public partial class Usuario
 
     public int? activo { get; set; }
 
+    public int? Attempts { get; set; }
+
     public virtual ICollection<Empleado> Empleados { get; set; } = new List<Empleado>();
 
     public virtual Empresa? IdEmpresaNavigation { get; set; }

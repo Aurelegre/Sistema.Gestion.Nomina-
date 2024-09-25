@@ -10,13 +10,13 @@ namespace Sistema.Gestion.Nómina.Controllers
 {
     public class UnAuthenticateController(SistemaGestionNominaContext context, ILogServices logger, IUnAuthenticateServices unAuthenticateServices) : Controller
     {
-        // GET: UnAuthenticateController
+        // GET: UnAuthenticateController/FirstSession
         public ActionResult FirstSession()
         {
             return View();
         }
 
-        // GET: UnAuthenticateController/Details/5
+        // GET: UnAuthenticateController/ForgotPassword
         public ActionResult ForgotPassword()
         {
             return View();
@@ -47,7 +47,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 if (employeeWithUser == null || employeeWithUser.User == null)
                 {
                     TempData["Error"] = "El Usuario no existe";
-                    return RedirectToAction("FirstSession", "UnAuthenticate");
+                    return RedirectToAction("login", "login");
                 }
          
                 var user = employeeWithUser.User;
@@ -56,14 +56,14 @@ namespace Sistema.Gestion.Nómina.Controllers
                 if (user.activo == 1 || !string.IsNullOrEmpty(user.Contraseña))
                 {
                     TempData["Error"] = "El Usuario ya se encuentra activo";
-                    return RedirectToAction("FirstSession", "UnAuthenticate");
+                    return RedirectToAction("login", "login");
                 }
                 //setear contraseña
                 var result = await unAuthenticateServices.SetPassword(request.Password1, user.Id);
                 if (!result)
                 {
                     TempData["Error"] = "Error al activar usuario, vuelva a intentar";
-                    return RedirectToAction("FirstSession", "UnAuthenticate");
+                    return RedirectToAction("login", "login");
                 }
                 //guardar sessión
                 await logger.LogTransaction(employeeWithUser.Employe.Id, employeeWithUser.Employe.IdEmpresa, "ActiveUser", $"Activación del usuario con id:{user.Id}", user.Usuario1);
@@ -74,11 +74,11 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 await logger.LogError(1, 1, "ActiveUser", $"Error al Activar usuario:{request.Usuario} y con DPI {request.Dpi}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al activar usuario, vuelva a intentar";
-                return RedirectToAction("FirstSession", "UnAuthenticate");
+                return RedirectToAction("login", "login");
             }
         }
 
-        // POST: UnAuthenticateController/Edit/5
+        // POST: UnAuthenticateController/RestorePassWord/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RestorePassWord(RestorePasswordDTO request)
@@ -103,20 +103,20 @@ namespace Sistema.Gestion.Nómina.Controllers
                 if (employeeWithUser == null || employeeWithUser.User == null)
                 {
                     TempData["Error"] = "El Usuario no existe";
-                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                    return RedirectToAction("login", "login");
                 }
                 var user = employeeWithUser.User;
                 //verificar que esté activo
                 if (string.IsNullOrEmpty(user.Contraseña))
                 {
                     TempData["Error"] = "Usuario no configurado, debe activarlo";
-                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                    return RedirectToAction("login", "login");
                 }
                 // Verificar si el usuario está bloqueado
                 if (user.activo == 0)
                 {
                     TempData["Error"] = "El Usuario está bloqueado, comuniquese con soporte.";
-                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                    return RedirectToAction("login", "login");
                 }
                 
                 //setear contraseña
@@ -124,7 +124,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 if (!result)
                 {
                     TempData["Error"] = "Error al activar usuario, vuelva a intentar";
-                    return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                    return RedirectToAction("login", "login");
                 }
                 //guardar sessión
                 await logger.LogTransaction(employeeWithUser.Employe.Id, employeeWithUser.Employe.IdEmpresa, "RestorePassWord", $"recuperación de contraseña del usuario con id:{user.Id}", user.Usuario1);
@@ -135,29 +135,9 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 await logger.LogError(1, 1, "RestorePassWord", $"Error al recuperar contraseña del usuario:{request.Usuario} y con DPI {request.Dpi}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al recuperar contraseña, vuelva a intentar";
-                return RedirectToAction("ForgotPassword", "UnAuthenticate");
+                return RedirectToAction("login", "login");
             }
         }
 
-        // GET: UnAuthenticateController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: UnAuthenticateController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
     }
 }
