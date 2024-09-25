@@ -61,7 +61,7 @@ namespace Sistema.Gestion.Nómina.Services
                     //contraseña correcta, resetear intentos
                     usuario.Attempts =  0;
                     context.Usuarios.Update(usuario);
-                    context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
                 }
                 return new LoginModel{
                     Usuario = usuario,
@@ -69,15 +69,14 @@ namespace Sistema.Gestion.Nómina.Services
                 };
             }catch (Exception ex)
             {
-                 logServices.LogError(1, 1, "LoginUser", $"Error en el servicio inicial para inciar sessión del usuario {userName} ", ex.Message, ex.StackTrace);
+                 await logServices.LogError(1, 1, "LoginUser", $"Error en el servicio inicial para inciar sessión del usuario {userName} ", ex.Message, ex.StackTrace);
                 return null;
             }
         }
 
         private bool CountAttempts(Usuario usuario)
         {
-            try
-            {
+            
                 int maxAttempts = 3; //hacer configurable
                 if (usuario.Attempts > maxAttempts && usuario.activo == 1)
                 {
@@ -88,12 +87,6 @@ namespace Sistema.Gestion.Nómina.Services
                     return true;
                 }
                 return false;
-            }
-            catch (Exception ex)
-            {
-                logServices.LogError(0, 0, "CountAttempts", $"Error al contar intentos del usuario {usuario.Id}", ex.Message, ex.StackTrace);
-                return false;
-            }
         }
 
         public List<string> GetsessionPermission(int idRol)

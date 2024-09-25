@@ -58,7 +58,9 @@ namespace Sistema.Gestion.Nómina.Controllers
                         Nombre = u.Nombre,
                         Puesto = u.IdPuestoNavigation.Descripcion,
                         Departamento = u.IdDepartamentoNavigation.Descripcion,
-                        DPI = u.Dpi
+                        DPI = u.Dpi,
+                        estado = u.IdUsuarioNavigation.activo,
+                        idUser = u.IdUsuario
                     })
                     .ToListAsync();
 
@@ -132,7 +134,6 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-
 		[HttpGet]
 		public async Task<ActionResult> Update (int id)
         {
@@ -172,7 +173,6 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-
         [HttpGet]
         public async Task<ActionResult> Create(int id)
         {
@@ -204,7 +204,6 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-
         [HttpGet]
         public async Task<ActionResult<List<object>>> GetPuestos (int id)
         {
@@ -229,6 +228,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
+
         //actualizar empleado
         [HttpPost]
         public async Task<ActionResult> Update(UpdateEmpleadoDTO request, int id)
@@ -315,7 +315,6 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Employees");
             }
         }
-
         [HttpPost]
         //crear empleado
         public async Task<ActionResult> Create(CreateEmployeeDTO request)
@@ -409,6 +408,43 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
             }
         }
+        [HttpPost]
+        //desbloquear usuario
+        public async Task<ActionResult> UnlockUser(int id)
+        {
+            try
+            {
+                var user = await context.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
+                {
+                    TempData["Error"] = "Usuario no encontrado";
+                    return RedirectToAction("Index", "Employees");
+                }
+                if (string.IsNullOrEmpty(user.Contraseña))
+                {
+                    TempData["Error"] = "Usuario sin primer inicio de sesión";
+                    return RedirectToAction("Index", "Employees");
+                }
+                user.activo = 1;
+                context.Usuarios.Update(user);
+                await context.SaveChangesAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.UnlockUser", $"Se desbloqueó usuario con id: {id}", session.nombre);
+                TempData["Message"] = "Usuario desbloqueado con éxito";
+                return RedirectToAction("Index", "Employees");
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.UnlockUser", $"Error al desbloquear usuario con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo desbloquear usuario";
+                return RedirectToAction("Index", "Employees");
+            }
+        }
+
+        
+        //obtención de datos
         private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
         {
             try

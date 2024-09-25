@@ -9,6 +9,8 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
 		public string Puesto { get; set; }
 		public string Departamento { get; set; }
 		public string DPI { get; set; }
+		public int? estado {  get; set; }
+		public int? idUser {get; set; }
 
     }
 }

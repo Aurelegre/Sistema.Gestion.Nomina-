@@ -95,6 +95,15 @@
 
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
+            } else if (action === "desbloquear") {
+                document.getElementById("unlockId").value = id;
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('unlockConfirmationModal'));
+                modal.show();
+
+
+                // Restablecer el valor del combobox a la opción predeterminada
+                dropdown.value = "Seleccionar";
             }
         });
     });
