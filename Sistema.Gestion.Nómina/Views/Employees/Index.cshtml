@@ -54,7 +54,9 @@
                     <td>Nombre Completo</td>
                     <td>Puesto</td>
                     <td>Departamento</td>
+                    <td>Usuario</td>
                     <td>Acciones</td>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -69,12 +71,31 @@
                         <td>@item.Nombre</td>
                         <td>@item.Puesto</td>
                         <td>@item.Departamento</td>
+                        @if(item.estado == 1)
+                        {
+                            <td><label class="alert-success" style="padding:2px"><strong>Activo</strong></label></td>
+                        }
+                        else if(item.estado == 0)
+                        {
+                            <td><label class="alert-danger" style="padding:2px"><strong>Bloqueado</strong></label></td>
+
+                        }
+                        else
+                        {
+                            <td><label class="alert-warning" style="padding:2px"><strong>Sin asignar</strong></label></td>
+
+                        }
+
                         <td>
                             <select class="form-select form-select-sm actions-dropdown">
                                 <option selected>Seleccionar</option>
                                 <option value="editar" data-id="@item.Id"> Editar</option>
                                 <option value="eliminar" data-id="@item.Id">Eliminar</option>
                                 <option value="detalle" data-id="@item.Id">Ver Detalle</option>
+                                @if (item.estado == 0)
+                                {
+                                    <option value="desbloquear" data-id="@item.idUser">Desbloquear</option>
+                                }
                             </select>
                         </td>
                     </tr>
@@ -111,5 +132,6 @@ else
 <partial name="Update" />
 <partial name="Details" />
 <partial name="Delete" />
+<partial name="UnlockUser" />
 
 <script src="/js/Employees.js" asp-append-version="true"></script>

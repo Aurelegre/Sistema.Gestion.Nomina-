@@ -18,6 +18,8 @@ namespace Sistema.Gestion.Nómina.Controllers
     [Authorize]
     public class RolController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
+        [HttpGet]
+        [Authorize(Policy = "Roles.Listar")]
         // GET: RolController
         public async Task<ActionResult> Index(GetRolesDTO request)
         {
@@ -68,7 +70,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return View();
             }
         }
-
+        [HttpGet]
+        [Authorize(Policy = "Roles.Ver")]
         // GET: RolController/Details/5
         public async Task<ActionResult> Details(int id)
         {
@@ -102,15 +105,11 @@ namespace Sistema.Gestion.Nómina.Controllers
             
         }
 
-        // GET: RolController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
 
         // POST: RolController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Roles.Crear")]
         public async Task<ActionResult> Create(CreateRolDTO request)
         {
             try
@@ -144,16 +143,11 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-        // GET: RolController/Edit/5
-        public ActionResult Edit()
-        {
-                return View();
-
-        }
 
         // POST: RolController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Roles.Actualizar")]
         public async Task<ActionResult> Edit(EditRolDTO request)
         {
             try
@@ -189,6 +183,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: RolController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Roles.Eliminar")]
         public async Task<ActionResult> Delete(int id)
         {
             try

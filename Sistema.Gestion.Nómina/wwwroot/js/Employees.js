@@ -56,6 +56,7 @@
                         document.getElementById("editId").value = data.id || data.Id;
                         document.getElementById("editNombre").value = data.nombre || data.Nombre;
                         document.getElementById("editSueldo").value = data.sueldo || data.Sueldo;
+                        document.getElementById("editUsuario").value = data.usuario || data.Usuario;
 
                         // Llenar combobox de puestos
                         var editPuesto = document.getElementById("editPuesto");
@@ -71,26 +72,12 @@
                             editDepartamento.append(new Option(departamento.descripcion, departamento.id, data.IdDepto === departamento.id));
                         });
 
-                        // Llenar combobox de Usuario
-                        var editUsuario = document.getElementById("editUsuario");
-                            editUsuario.innerHTML = "";  // Limpiar opciones actuales
-
-                        if (data.usuario) {
-                            editUsuario.append(new Option(data.usuario, 0));
-                        } else {
-                            editUsuario.append(new Option("Usuario sin Asingar", 0));
-                        }
-                            
-                        
-                        if (data.usuarios && Array.isArray(data.usuarios) && data.usuarios.length > 0) {
-                            data.usuarios.forEach(function (usuario) {
-                                editUsuario.append(new Option(usuario.usuario1, usuario.id));
-                            });
-                        } else {
-                            var noUsuariosOption = new Option("No hay usuarios disponibles", "", true, false);
-                            noUsuariosOption.disabled = true;
-                            editUsuario.append(noUsuariosOption);
-                        }
+                        // Llenar combobox de departamentos
+                        var editRol = document.getElementById("editRol");
+                        editRol.innerHTML = "";  // Limpiar opciones actuales
+                        data.roles.forEach(function (rol) {
+                            editRol.append(new Option(rol.descripcion, rol.id, data.IdRol === rol.id));
+                        });
                         
                         // Mostrar el modal
                         var modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
@@ -108,6 +95,15 @@
 
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
+            } else if (action === "desbloquear") {
+                document.getElementById("unlockId").value = id;
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('unlockConfirmationModal'));
+                modal.show();
+
+
+                // Restablecer el valor del combobox a la opción predeterminada
+                dropdown.value = "Seleccionar";
             }
         });
     });
@@ -119,26 +115,34 @@ function fetchEmployeeData() {
     fetch('/Employees/Create/') // Reemplaza con la URL correcta de tu controlador
         .then(response => response.json())
         .then(data => {
-            // Llenar el combobox de Usuarios
-            var usuariosSelect = document.getElementById('IdUsuario');
-            usuariosSelect.innerHTML = '<option value="">Seleccione un Usuario</option>';
-            if (data.usuarios && Array.isArray(data.usuarios) && data.usuarios.length > 0) {
-                data.usuarios.forEach(function (usuario) {
-                    usuariosSelect.append(new Option(usuario.usuario1, usuario.Id));
-                });
-            } else {
-                var noUsuariosOption = new Option("No hay usuarios disponibles", "", true, false);
-                noUsuariosOption.disabled = true;
-                usuariosSelect.append(noUsuariosOption);
-            }
             
-
+            
             // Llenar el combobox de Departamentos
             var departamentosSelect = document.getElementById('IdDepartamento');
             departamentosSelect.innerHTML = '<option value="">Seleccione un Departamento</option>';
-            data.departamentos.forEach(function (departamento) {
-                departamentosSelect.append(new Option(departamento.descripcion, departamento.id));
-            });
+            if (data.departamentos && Array.isArray(data.departamentos) && data.departamentos.length > 0) {
+                data.departamentos.forEach(function (departamento) {
+                    departamentosSelect.append(new Option(departamento.descripcion, departamento.id));
+                });
+            } else {
+                var noDepartamentOption = new Option("No hay departamentos disponibles", "", true, false);
+                noDepartamentOption.disabled = true;
+                departamentosSelect.append(noDepartamentOption);
+            }
+
+            // Llenar el combobox de Roles
+            var rolesSelect = document.getElementById('IdRol');
+            rolesSelect.innerHTML = '<option value="">Seleccione un Rol</option>';
+            if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+                data.roles.forEach(function (rol) {
+                    rolesSelect.append(new Option(rol.descripcion, rol.id));
+                });
+            } else {
+                var noRolOption = new Option("No hay roles disponibles", "", true, false);
+                noRolOption.disabled = true;
+                rolesSelect.append(noRolOption);
+            }
+
             // Mostrar el modal
             var modal = new bootstrap.Modal(document.getElementById('createEmployeeModal'));
             modal.show();

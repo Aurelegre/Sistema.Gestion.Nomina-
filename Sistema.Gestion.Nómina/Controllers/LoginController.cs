@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sistema.Gestion.Nómina.DTOs.Login;
 using Sistema.Gestion.Nómina.Entitys;
-using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services;
 using Sistema.Gestion.Nómina.Services.Logs;
 using System.Security.Claims;
@@ -34,27 +34,43 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login (LoginModel request)
+        public async Task<IActionResult> Login (LoginDTO request)
         {
             try
             {
+                //estandarización
+                request.user = request.user.ToUpper();
                 var usuario = await _loginService.LoginUser(request.user, request.password);
-                if (usuario == null)
+                //usuario alcanzó maximos intentos
+                if (usuario.Usuario == null && usuario.isBloqued )
+                {
+                    ModelState.AddModelError("400", "Usuario o contraseña incorrectos.");
+                    TempData["Error"] = "Atención: Usuario bloqueado por máximo número de intentos fallidos, comuniquese con soporte";
+                    return View();
+                }
+                //credenciales incorrectas
+                if (usuario.Usuario == null && !usuario.isBloqued)
                 {
                     ModelState.AddModelError("400", "Usuario o contraseña incorrectos.");
                     return View();
                 }
+                //usuario bloqueado
+                if(usuario.Usuario.activo == 0)
+                {
+                    ModelState.AddModelError("400", "Usuario bloqueado");
+                    return View();
+                }
 
-                var rol = await context.Roles.SingleAsync(r => r.Id == usuario.IdRol);
+                var rol = await context.Roles.SingleAsync(r => r.Id == usuario.Usuario.IdRol);
                 var permissions = _loginService.GetsessionPermission(rol.Id);
-                _loginService.ConfigureServices(_services);
+                _loginService.ConfigurePermissions(_services);
 
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, usuario.Usuario1),
+                    new Claim(ClaimTypes.Name, usuario.Usuario.Usuario1),
                     new Claim(ClaimTypes.Role, rol.Descripcion),
-                    new Claim("Company", usuario.IdEmpresa.ToString() ),
-                    new Claim("IdEmployed", usuario.Id.ToString())
+                    new Claim("Company", usuario.Usuario.IdEmpresa.ToString() ),
+                    new Claim("IdEmployed", usuario.Usuario.Id.ToString())
                 };
 
                 foreach (var permission in permissions)
@@ -66,8 +82,8 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
                 //registro de bítacora
-                var empleado = await context.Empleados.Where(e=> e.IdUsuario == usuario.Id).FirstOrDefaultAsync();
-                await LogServices.LogTransaction(empleado.Id, usuario.IdEmpresa, "Login", "Inicio de sesión", usuario.Usuario1);
+                var empleado = await context.Empleados.Where(e=> e.IdUsuario == usuario.Usuario.Id).FirstOrDefaultAsync();
+                await LogServices.LogTransaction(empleado.Id, usuario.Usuario.IdEmpresa, "Login", "Inicio de sesión", usuario.Usuario.Usuario1);
 
                 return RedirectToAction("Index", "Home");
             }catch (Exception ex)

@@ -1,0 +1,22 @@
+﻿<!-- Modal de Confirmación de Desbloqueo -->
+<div class="modal fade" id="unlockConfirmationModal" tabindex="-1" aria-labelledby="unlockConfirmationModal" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unlockConfirmationModal">Confirmar Desbloqueo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body alert alert-warning">
+                <strong>¿Está seguro de desbloquear al Usuario?</strong>
+            </div>
+            <div class="modal-footer ">
+                <form asp-controller="Employees" asp-action="UnlockUser" method="post">
+                    <input type="hidden" id="unlockId" name="Id" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="confirmDeleteBtn" class="btn btn-warning">Desbloquear</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>

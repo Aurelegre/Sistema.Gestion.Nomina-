@@ -14,6 +14,10 @@
                         <input  type="text" class="form-control" id="editNombre" name="Nombre" required />
                     </div>
                     <div class="mb-3 form-group">
+                        <label for="editRol" class="form-label">Rol</label>
+                        <select class="form-select" id="editRol" name="idRol"></select>
+                    </div>
+                    <div class="mb-3 form-group">
                         <label for="editSueldo" class="form-label">Sueldo</label>
                         <input type="number" class="form-control" id="editSueldo" name="Sueldo" required />
                     </div>
@@ -27,8 +31,7 @@
                     </div>
                     <div class="mb-3 form-group">
                         <label for="editUsuario" class="form-label">Usuario</label>
-                        <select class="form-select" id="editUsuario" name="IdUsuario">
-                        </select>
+                        <input type="text" class="form-control" id="editUsuario" name="Usuario" disabled />
                     </div>
                     <div class="mb-3 form-group modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

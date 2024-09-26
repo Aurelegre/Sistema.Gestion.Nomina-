@@ -6,7 +6,7 @@
         public string Nombre { get; set; }
         public int IdPuesto { get; set; }
         public int IdDepartamento { get; set; }
-        public int IdUsuario { get; set; }
+        public int IdRol { get; set; }
         public decimal? Sueldo { get; set; }
     }
 }

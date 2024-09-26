@@ -1,6 +1,6 @@
-﻿namespace Sistema.Gestion.Nómina.Models
+﻿namespace Sistema.Gestion.Nómina.DTOs.Login
 {
-    public class LoginModel
+    public class LoginDTO
     {
         public string? user { get; set; }
         public string? password { get; set; }

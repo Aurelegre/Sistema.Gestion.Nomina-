@@ -9,6 +9,7 @@ using Sistema.Gestion.Nómina.DTOs.Departamentos;
 using Sistema.Gestion.Nómina.DTOs.Empleados;
 using Sistema.Gestion.Nómina.DTOs.Familia;
 using Sistema.Gestion.Nómina.DTOs.Puestos;
+using Sistema.Gestion.Nómina.DTOs.Roles;
 using Sistema.Gestion.Nómina.DTOs.Usuarios;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
@@ -20,6 +21,8 @@ namespace Sistema.Gestion.Nómina.Controllers
     [Authorize]
     public class EmployeesController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
+        [HttpGet]
+        [Authorize(Policy = "Empleados.Listar")]
         public async Task<ActionResult<IEnumerable<GETEmpleadosResponse>>> Index(GetEmployeesDTO request)
         {
             try
@@ -57,7 +60,9 @@ namespace Sistema.Gestion.Nómina.Controllers
                         Nombre = u.Nombre,
                         Puesto = u.IdPuestoNavigation.Descripcion,
                         Departamento = u.IdDepartamentoNavigation.Descripcion,
-                        DPI = u.Dpi
+                        DPI = u.Dpi,
+                        estado = u.IdUsuarioNavigation.activo,
+                        idUser = u.IdUsuario
                     })
                     .ToListAsync();
 
@@ -90,6 +95,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "Empleados.Ver")]
         public async Task<ActionResult> Details(int id)
         {
             try
@@ -131,9 +137,9 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-
 		[HttpGet]
-		public async Task<ActionResult> Update (int id)
+        [Authorize(Policy = "Empleados.Actualizar")]
+        public async Task<ActionResult> Update (int id)
         {
             try
             {
@@ -146,7 +152,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                    Nombre = u.Nombre,
                    Sueldo = u.Sueldo,
                    IdDepto = u.IdDepartamento,
-                   Usuario = u.IdUsuarioNavigation.Usuario1
+                   Usuario = u.IdUsuarioNavigation.Usuario1,
+                   IdRol = u.IdUsuarioNavigation.IdRol
                }).FirstOrDefaultAsync();
                 if (empleado == null)
                 {
@@ -154,7 +161,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
                 empleado.Puestos = await ObtenerPuestos(empleado.IdDepto);
                 empleado.Departamento = await ObtenerDepartamentos();
-                empleado.Usuarios = await ObtenerUsuariosSinAsignar();
+                empleado.Roles = await ObtenerRoles();
 
                 var session = logger.GetSessionData();
                 await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Update", $"Se obtubieron datos para actualizar empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
@@ -170,8 +177,8 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-
         [HttpGet]
+        [Authorize(Policy = "Empleados.Crear")]
         public async Task<ActionResult> Create(int id)
         {
             try
@@ -180,7 +187,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 {
                     Departamentos = await ObtenerDepartamentos(),
                     Puestos = await ObtenerPuestos(id),
-                    Usuarios = await ObtenerUsuariosSinAsignar(),
+                    Roles = await ObtenerRoles()
                 };
                 if (Datos == null)
                 {
@@ -202,8 +209,8 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-
         [HttpGet]
+        [Authorize(Policy = "Empleados.Ver")]
         public async Task<ActionResult<List<object>>> GetPuestos (int id)
         {
             try
@@ -227,7 +234,10 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
+
+        //actualizar empleado
         [HttpPost]
+        [Authorize(Policy = "Empleados.Actualizar")]
         public async Task<ActionResult> Update(UpdateEmpleadoDTO request, int id)
         {
             try
@@ -241,10 +251,12 @@ namespace Sistema.Gestion.Nómina.Controllers
                 empleado.Sueldo = request.Sueldo;
                 empleado.IdPuesto = request.IdPuesto;
                 empleado.IdDepartamento = request.IdDepartamento;
-                empleado.IdUsuario = request.IdUsuario != 0 ? request.IdUsuario : empleado.IdUsuario;
 
 
                 context.Update(empleado);
+                var user = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync(); 
+                user.IdRol = request?.IdRol;
+                context.Usuarios.Update(user);
                 await context.SaveChangesAsync();
 
                 var session = logger.GetSessionData();
@@ -262,8 +274,9 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-
+        //eliminar (desactivar) Usuario
         [HttpPost]
+        [Authorize(Policy = "Empleados.Eliminar")]
         public async Task<ActionResult> Delete (int id)
         {
             try
@@ -281,10 +294,19 @@ namespace Sistema.Gestion.Nómina.Controllers
                     TempData["Error"] = "No se pueden eliminar Empleados jefes de Departamento";
                     return RedirectToAction("Index", "Employees");
                 }
-                //desactivar usuario
+
+                //desactivar empleado
                 empleado.Activo = 0;
-                //actualizar
                 context.Update(empleado);
+
+                var usuario = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync();
+                if(usuario != null)
+                {
+                    //desactivar usuario
+                    usuario.activo = 0;
+                    context.Update(usuario);
+                }
+               
                 await context.SaveChangesAsync();
                 //guardar bitácora
                 var session = logger.GetSessionData();
@@ -301,79 +323,138 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Employees");
             }
         }
-
         [HttpPost]
+        //crear empleado
+        [Authorize(Policy = "Empleados.Crear")]
         public async Task<ActionResult> Create(CreateEmployeeDTO request)
+        {
+            var session = logger.GetSessionData();
+            using (var transaction = await context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    //estandarización
+                    request.Usuario = request.Usuario.ToUpper();
+                    // Verificar existencia de DPI
+                    bool dpiExists = await context.Empleados.AnyAsync(e => e.Dpi == request.Dpi);
+                    if (dpiExists)
+                    {
+                        TempData["Error"] = "El DPI ya está registrado en otro empleado";
+                        return RedirectToAction("Index", "Employees");
+                    }
+
+                    // Verificar existencia de usuario (correo)
+                    bool userExists = await context.Usuarios.AnyAsync(u => u.Usuario1 == request.Usuario);
+                    if (userExists)
+                    {
+                        TempData["Error"] = "El correo ya está asignado a otro empleado";
+                        return RedirectToAction("Index", "Employees");
+                    }
+
+                    // Crear usuario
+                    var user = new Usuario
+                    {
+                        Usuario1 = request.Usuario,
+                        IdEmpresa = session.company,
+                        activo = 0,
+                        IdRol = request.IdRol
+                    };
+                    context.Usuarios.Add(user);
+                    await context.SaveChangesAsync();
+
+                    // Obtener ID del usuario recién creado
+                    int idUser = user.Id; // Usar el ID directamente desde el objeto recién agregado
+
+                    // Crear empleado
+                    TimeOnly timeOnly = new TimeOnly(00, 00, 00);
+                    var empleado = new Empleado
+                    {
+                        Activo = request.Activo,
+                        Nombre = request.Nombre,
+                        IdEmpresa = session.company,
+                        IdPuesto = request.IdPuesto,
+                        IdDepartamento = request.IdDepartamento,
+                        Sueldo = request.Sueldo,
+                        FechaContratado = request.FechaContratado.ToDateTime(timeOnly),
+                        IdUsuario = idUser,
+                        Dpi = request.Dpi,
+                    };
+                    context.Empleados.Add(empleado);
+                    await context.SaveChangesAsync();
+
+                    // Obtener el ID del empleado recién creado
+                    int idEmpleado = empleado.Id;
+
+                    // Crear familiares
+                    foreach (var familia in request.FamilyEmployeeDTOs)
+                    {
+                        if (familia != null)
+                        {
+                            var familiar = new Familia
+                            {
+                                Nombre = familia.Nombre,
+                                Edad = familia.Edad,
+                                Parentesco = familia.Parentesco,
+                                IdEmpleado = idEmpleado
+                            };
+                            context.Familias.Add(familiar);
+                        }
+                    }
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    // Guardar bitácora
+                    await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se creó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+                    
+                    TempData["Message"] = "Empleado creado con éxito";
+                    return RedirectToAction("Index", "Employees");
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    await logger.LogError(session.idEmpleado, session.company, "Employees.Create", "Error al crear empleado", ex.Message, ex.StackTrace);
+                    TempData["Error"] = "No se pudo crear el empleado";
+                    return RedirectToAction("Index", "Employees");
+                }
+            }
+        }
+        [HttpPost]
+        //desbloquear usuario
+        [Authorize(Policy = "Empleados.Actualizar")]
+        public async Task<ActionResult> UnlockUser(int id)
         {
             try
             {
-                //verificar que no existan usuarios con el mismo DPI
-                var existe = await context.Empleados.Where(e => e.Dpi == request.Dpi).AsNoTracking().FirstOrDefaultAsync();
-                if (existe != null)
+                var user = await context.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
                 {
-                    TempData["Error"] = "El DPI ya esta registrado en otro empleado";
+                    TempData["Error"] = "Usuario no encontrado";
                     return RedirectToAction("Index", "Employees");
                 }
-                TimeOnly timeOnly = new TimeOnly(00, 00, 00);
+                if (string.IsNullOrEmpty(user.Contraseña))
+                {
+                    TempData["Error"] = "Usuario sin primer inicio de sesión";
+                    return RedirectToAction("Index", "Employees");
+                }
+                user.activo = 1;
+                context.Usuarios.Update(user);
+                await context.SaveChangesAsync();
+
                 var session = logger.GetSessionData();
-                var empleado = new Empleado
-                {
-                    Activo = request.Activo,
-                    Nombre = request.Nombre,
-                    IdEmpresa = session.company,
-                    IdPuesto = request.IdPuesto,
-                    IdDepartamento = request.IdDepartamento,
-                    Sueldo = request.Sueldo,
-                    FechaContratado = request.FechaContratado.ToDateTime(timeOnly),
-                    IdUsuario = request.IdUsuario,
-                    Dpi = request.Dpi,
-                };
-                if (empleado == null)
-                {
-                    TempData["Error"] = "Error al crear usuario";
-                    return RedirectToAction("Index", "Employees");
-                }
-                //agregar a la BD
-                context.Empleados.Add(empleado);
-                await context.SaveChangesAsync();
-
-                int? jefefam = await context.Empleados
-                                    .Where(e => e.Dpi == request.Dpi)
-                                    .AsNoTracking()
-                                    .Select(u => u.Id) // Devuelve directamente el idPermiso
-                                    .FirstOrDefaultAsync();
-
-                foreach (var familia in request.FamilyEmployeeDTOs)
-                {
-                    if (familia != null)
-                    {
-                        Familia familiar = new Familia
-                        {
-                            Nombre = familia.Nombre,
-                            Edad = familia.Edad,
-                            Parentesco = familia.Parentesco,
-                            IdEmpleado = jefefam
-                        };
-                        context.Add(familiar);
-                    }
-                }
-                await context.SaveChangesAsync();
-
-                //guardar bitacora
-                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se creó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
-                TempData["Message"] = "Empleado creado con Exito";
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.UnlockUser", $"Se desbloqueó usuario con id: {id}", session.nombre);
+                TempData["Message"] = "Usuario desbloqueado con éxito";
                 return RedirectToAction("Index", "Employees");
             }
             catch (Exception ex)
             {
                 var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Employees.Create", $"Error al creaer empleado", ex.Message, ex.StackTrace);
-                TempData["Error"] = "No se pudo crear Empleado";
+                await logger.LogError(session.idEmpleado, session.company, "Employees.UnlockUser", $"Error al desbloquear usuario con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo desbloquear usuario";
                 return RedirectToAction("Index", "Employees");
             }
-
-
         }
+
+        
+        //obtención de datos
         private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
         {
             try
@@ -475,6 +556,26 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Employees.ObtenerPuestos", $"Error al consultar familiares del empleado: {idEmpleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+        }
+        private async Task<List<GetRolResponse>> ObtenerRoles()
+        {
+            try
+            {
+                var session = logger.GetSessionData();
+                var roles = await context.Roles.Where(p => p.IdEmpresa == session.company && p.activo == 1).AsNoTracking().ToListAsync();
+                var listado = _mapper.Map<List<GetRolResponse>>(roles);
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.ObtenerRoles", $"Se consultaron Roles de la empresa {session.company}", session.nombre);
+
+                return listado;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.ObtenerRoles", $"Error al consultar roles de la empresa: {session.company}", ex.Message, ex.StackTrace);
                 return null;
             }
 
