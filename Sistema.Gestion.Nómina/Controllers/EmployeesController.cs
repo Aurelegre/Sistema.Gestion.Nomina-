@@ -357,7 +357,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                         Usuario1 = request.Usuario,
                         IdEmpresa = session.company,
                         activo = 0,
-                        IdRol = request.IdRol
+                        IdRol = request.IdRol,
+                        Attempts = 0
                     };
                     context.Usuarios.Add(user);
                     await context.SaveChangesAsync();
