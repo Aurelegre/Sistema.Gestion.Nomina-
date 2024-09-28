@@ -70,7 +70,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     new Claim(ClaimTypes.Name, usuario.Usuario.Usuario1),
                     new Claim(ClaimTypes.Role, rol.Descripcion),
                     new Claim("Company", usuario.Usuario.IdEmpresa.ToString() ),
-                    new Claim("IdEmployed", usuario.Usuario.Id.ToString())
+                    new Claim("IdEmployed", usuario.IdEmployee.ToString())
                 };
 
                 foreach (var permission in permissions)

@@ -63,9 +63,12 @@ namespace Sistema.Gestion.Nómina.Services
                     context.Usuarios.Update(usuario);
                     await context.SaveChangesAsync();
                 }
+                //retornar consultar id de Empleado
+                int idEmployee = await context.Empleados.Where(p=>p.IdUsuario == usuario.Id).AsNoTracking().Select(p=> p.Id).FirstOrDefaultAsync();
                 return new LoginModel{
                     Usuario = usuario,
-                    isBloqued = false
+                    isBloqued = false,
+                    IdEmployee = idEmployee
                 };
             }catch (Exception ex)
             {
