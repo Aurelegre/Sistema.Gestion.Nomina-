@@ -58,14 +58,14 @@ namespace Sistema.Gestion.Nómina.Controllers
                 ViewBag.Descripcion = request.Descripcion;
 
                 // Registrar en bitácora
-                await logger.LogTransaction(session.idEmpleado, session.company, "Roles.Index", $"Se consultaron todos los Roles activos de la empresa {session.company} y se envió a la vista", session.nombre);
+                await logger.LogTransaction(session.idEmpleado, session.company, "Rol.Index", $"Se consultaron todos los Roles activos de la empresa {session.company} y se envió a la vista", session.nombre);
 
                 return View(paginatedResult);
             }
             catch(Exception ex)
             {
                 var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Employees.Index", "Error al realizar el Get de todos los empleados activos", ex.Message, ex.StackTrace);
+                await logger.LogError(session.idEmpleado, session.company, "Rol.Index", "Error al realizar el Get de todos los empleados activos", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Empleados";
                 return View();
             }
