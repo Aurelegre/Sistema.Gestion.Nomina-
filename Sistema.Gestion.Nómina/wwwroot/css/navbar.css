@@ -4,12 +4,15 @@
     height: 100vh;
     background-color: rgb(20, 83, 154);
     transition: all 0.3s;
+    
 }
 
 .sidebar .nav-link {
     color: white;
     padding: 15px;
     transition: background-color 0.3s;
+    background-color: rgb(20, 83, 154);
+    font-weight: bold;
 }
 
     .sidebar .nav-link:hover {
@@ -19,14 +22,41 @@
     .sidebar .nav-link:active {
         background-color: rgb(13, 53, 98);
     }
-
-    .sidebar .nav-link{
-        
-        border-radius:10px;
-        margin:2.5px 5px 2.5px 2.5px;
-        /*border-style:solid;
-        border-color: rgb(45, 105, 172)*/
+.nav-link i {
+        font-size: 20px;
+        margin-right: 10px;
     }
+
+.sidebar .nav-link {
+    background-color: transparent;
+    color: white;
+    border-radius: 10px;
+    margin: 2.5px 5px 2.5px 2.5px;
+    /*border-style:solid;
+        border-color: rgb(45, 105, 172)*/
+}
+.accordion-button {
+    border: none;
+    padding: 10px;
+    font-weight: bold;
+    text-align: left;
+    width:auto
+}
+
+    .accordion-button:hover {
+        background-color: rgb(24, 67, 117);
+    }
+    .accordion-button:active {
+        background-color: rgb(13, 53, 98);
+    }
+
+.accordion-body .nav-link {
+    font-size: 0.9rem;
+}
+
+.accordion-body{
+    margin:-10px
+}
 
 .sidebar-heading {
     padding: 15px;
