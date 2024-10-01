@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina.DTOs.Departamentos;
+using Sistema.Gestion.Nómina.DTOs.Puestos;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Logs;
@@ -62,22 +63,45 @@ namespace Sistema.Gestion.Nómina.Controllers
             catch (Exception ex)
             {
                 var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Employees.Index", "Error al realizar el Get de todos los empleados activos", ex.Message, ex.StackTrace);
-                TempData["Error"] = "Error al consultar Empleados";
+                await logger.LogError(session.idEmpleado, session.company, "Departamento.Index", "Error al realizar el Get de todos los Departamentos", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar Departamento";
                 return View();
             }
         }
 
         // GET: DepartamentoController/Details/5
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
-            return View();
-        }
+            try
+            {
+                var depto = await context.Departamentos.Where(d => d.Id == id)
+                                                       .AsNoTracking()
+                                                       .Select( d => new GetDepartamentoResponse
+                                                       {
+                                                           Id = d.Id,
+                                                           Descripcion = d.Descripcion,
+                                                           Jefe = d.IdJefeNavigation.Nombre
+                                                       }).FirstOrDefaultAsync();
+                if(depto == null)
+                {
+                    TempData["Error"] = "Error al obtener detalle de Departamento";
+                    return RedirectToAction("Index", "Departamento");
+                }
 
-        // GET: DepartamentoController/Create
-        public ActionResult Create()
-        {
-            return View();
+                depto.Puestos = await ObtenerPuestos(id);
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Departamento.Details", $"Se consultaron detalles del departamendo con id: {id}", session.nombre);
+
+                return Json(depto);
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Departamento.Details", $"Error al consultar detalles del Departamento con idPermiso: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar detalles de Departamento";
+                return RedirectToAction("Index", "Rol");
+            }
         }
 
         // POST: DepartamentoController/Create
@@ -135,6 +159,26 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 return View();
             }
+        }
+        private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
+        {
+            try
+            {
+                var puestos = await context.Puestos.Where(p => p.IdDepartamento == idDepartamento).AsNoTracking().ToListAsync();
+                var listado = _mapper.Map<List<GetPuestoDTO>>(puestos);
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Departamento.ObtenerPuestos", $"Se consultaron puestos del departamento {idDepartamento}", session.nombre);
+
+                return listado;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Departamento.ObtenerPuestos", $"Error al consultar puestos del departamento {idDepartamento}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
         }
     }
 }
