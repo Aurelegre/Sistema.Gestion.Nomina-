@@ -76,7 +76,7 @@
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                    <a class="page-link" href="@Url.Action("Index", new { page = i, DPI = ViewBag.Descripcion })">
+                    <a class="page-link" href="@Url.Action("Index", new GetRolesDTO { page = i, Descripcion = ViewBag.Descripcion })">
                         @i
                     </a>
                 </li>
