@@ -16,14 +16,12 @@ namespace Sistema.Gestion.Nómina.Controllers
     {
         private readonly LoginService _loginService;
         private readonly SistemaGestionNominaContext context;
-        private readonly IServiceCollection _services;
         public ILogServices LogServices { get; }
 
-        public LoginController(LoginService loginService, SistemaGestionNominaContext context, IServiceCollection services, ILogServices logServices)
+        public LoginController(LoginService loginService, SistemaGestionNominaContext context, ILogServices logServices)
         {
             _loginService = loginService;
             this.context = context;
-            _services = services;
             LogServices = logServices;
         }
 
@@ -41,36 +39,47 @@ namespace Sistema.Gestion.Nómina.Controllers
                 //estandarización
                 request.user = request.user.ToUpper();
                 var usuario = await _loginService.LoginUser(request.user, request.password);
-                //usuario alcanzó maximos intentos
-                if (usuario.Usuario == null && usuario.isBloqued )
+                // Validar el objeto devuelto por el servicio
+                if (usuario == null)
                 {
-                    ModelState.AddModelError("400", "Usuario o contraseña incorrectos.");
-                    TempData["Error"] = "Atención: Usuario bloqueado por máximo número de intentos fallidos, comuniquese con soporte";
-                    return View();
-                }
-                //credenciales incorrectas
-                if (usuario.Usuario == null && !usuario.isBloqued)
-                {
-                    ModelState.AddModelError("400", "Usuario o contraseña incorrectos.");
-                    return View();
-                }
-                //usuario bloqueado
-                if(usuario.Usuario.activo == 0)
-                {
-                    ModelState.AddModelError("400", "Usuario bloqueado");
+                    ModelState.AddModelError("500", "Error interno al procesar la solicitud.");
+                    TempData["Error"] = "Ocurrió un error. Intente nuevamente.";
                     return View();
                 }
 
+                // Verificar si el usuario está bloqueado por intentos fallidos
+                if (usuario.Usuario == null && usuario.isBloqued)
+                {
+                    ModelState.AddModelError("400", "Usuario o contraseña incorrectos.");
+                    TempData["Error"] = "Usuario bloqueado por máximo número de intentos fallidos, contacte a soporte.";
+                    return View();
+                }
+
+                // Credenciales incorrectas pero no bloqueado
+                if (usuario.Usuario == null)
+                {
+                    ModelState.AddModelError("400", "Usuario o contraseña incorrectos.");
+                    return View();
+                }
+
+                // Verificar si el usuario está bloqueado manualmente (activo = 0)
+                if (usuario.Usuario.activo == 0)
+                {
+                    ModelState.AddModelError("400", "Usuario bloqueado, contacte a soporte.");
+                    return View();
+                }
+
+                //cofigurar permisos
                 var rol = await context.Roles.SingleAsync(r => r.Id == usuario.Usuario.IdRol);
-                var permissions = _loginService.GetsessionPermission(rol.Id);
-                _loginService.ConfigurePermissions(_services);
+                var permissions = await _loginService.GetUserPermission(usuario.Usuario.IdRol);
+                await _loginService.ConfigurePermissions();
 
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, usuario.Usuario.Usuario1),
                     new Claim(ClaimTypes.Role, rol.Descripcion),
                     new Claim("Company", usuario.Usuario.IdEmpresa.ToString() ),
-                    new Claim("IdEmployed", usuario.Usuario.Id.ToString())
+                    new Claim("IdEmployed", usuario.IdEmployee.ToString())
                 };
 
                 foreach (var permission in permissions)

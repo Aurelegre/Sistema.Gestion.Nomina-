@@ -1,4 +1,17 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿document.addEventListener('DOMContentLoaded', function () {
+    const toggleButton = document.getElementById('menu-toggle');
+    const wrapper = document.getElementById('wrapper');
 
-// Write your JavaScript code.
+    // Get the state from local storage and apply it
+    if (localStorage.getItem('sidebarToggled') === 'true') {
+        wrapper.classList.add('toggled');
+    }
+
+    toggleButton.addEventListener('click', function () {
+        wrapper.classList.toggle('toggled');
+
+        // Save the state to local storage
+        const isToggled = wrapper.classList.contains('toggled');
+        localStorage.setItem('sidebarToggled', isToggled);
+    });
+});

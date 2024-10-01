@@ -30,10 +30,13 @@ namespace Sistema.Gestion.Nómina.Services
         {
             try
             {
-                var usuario = await context.Usuarios.SingleOrDefaultAsync(u => u.Usuario1 == userName);
+                // Consulta el usuario y el empleado en una sola operación
+                var empleado = await context.Empleados
+                    .Include(u => u.IdUsuarioNavigation) // Si hay una relación entre Usuario y Empleado
+                    .SingleOrDefaultAsync(u => u.IdUsuarioNavigation.Usuario1 == userName);
 
-                // el usuario no existe
-                if (usuario == null)
+                // Verificar si el empleado existe
+                if (empleado == null || empleado.IdUsuarioNavigation == null)
                 {
                     return new LoginModel
                     {
@@ -41,105 +44,117 @@ namespace Sistema.Gestion.Nómina.Services
                         isBloqued = false
                     };
                 }
+
+                // Asignar el usuario a la variable usuario
+                var usuario = empleado.IdUsuarioNavigation;
+
+                // Si la contraseña es incorrecta
                 if (!hasher.VerifyPassword(password, usuario.Contraseña))
                 {
-                    //incrementar los intentos
+                    // Incrementa los intentos
                     usuario.Attempts++;
-                    context.Usuarios.Update(usuario);
-                     await context.SaveChangesAsync();
-                    //contraseña incorrecta, conteo de intentos
-                    bool isBloqued = CountAttempts(usuario);//devuelve true si se alcazó el maximo y bloque de usuario
+                    bool isBlocked = await CheckAndHandleUserBlocking(usuario);
 
-                    return new LoginModel {
+                    return new LoginModel
+                    {
                         Usuario = null,
-                        isBloqued =isBloqued
-                    }; 
+                        isBloqued = isBlocked
+                    };
                 }
-                //verificar el número de intentos
-                if (!CountAttempts(usuario))
+
+                // Si la contraseña es correcta, restablece los intentos
+                if (usuario.Attempts > 0)
                 {
-                    //contraseña correcta, resetear intentos
-                    usuario.Attempts =  0;
+                    usuario.Attempts = 0;
                     context.Usuarios.Update(usuario);
-                    await context.SaveChangesAsync();
                 }
-                return new LoginModel{
+
+                await context.SaveChangesAsync(); // Guardar solo una vez
+
+                // Obtener el id del empleado
+                int idEmployee = empleado.Id;
+
+                return new LoginModel
+                {
                     Usuario = usuario,
-                    isBloqued = false
+                    isBloqued = false,
+                    IdEmployee = idEmployee
                 };
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                 await logServices.LogError(1, 1, "LoginUser", $"Error en el servicio inicial para inciar sessión del usuario {userName} ", ex.Message, ex.StackTrace);
+                await logServices.LogError(1, 1, "LoginUser", $"Error al iniciar sesión del usuario {userName}", ex.Message, ex.StackTrace);
                 return null;
             }
         }
 
-        private bool CountAttempts(Usuario usuario)
+        private async Task<bool> CheckAndHandleUserBlocking(Usuario usuario)
         {
-            
-                int maxAttempts = 3; //hacer configurable
-                if (usuario.Attempts > maxAttempts && usuario.activo == 1)
-                {
-                    // si es mayor bloquear usuario
-                    usuario.activo = 0;
-                    context.Usuarios.Update(usuario);
-                    context.SaveChanges();
-                    return true;
-                }
-                return false;
+            int maxAttempts = 3; // Hacer configurable
+            if (usuario.Attempts >= maxAttempts && usuario.activo == 1)
+            {
+                // Bloquear al usuario si supera el máximo de intentos
+                usuario.activo = 0;
+                context.Usuarios.Update(usuario);
+                await context.SaveChangesAsync(); // Es mejor hacer un guardado asíncrono
+                return true;
+            }
+            return false;
         }
 
-        public List<string> GetsessionPermission(int idRol)
+
+        public async Task<List<string>> GetUserPermission(int? idRol)
         {
             try
             {
                 List<string> userPermissions = new List<string>();
                 // Obtener los permisos del rol del usuario
-                var permissions = context.RolesPermisos.Include(p => p.IdPermisoNavigation)
+                var permissions = await context.RolesPermisos.Include(p => p.IdPermisoNavigation)
                                           .Where(p => p.IdRol == idRol && p.IdPermisoNavigation.Padre != null)
                                           .Select(p => new { p.IdPermisoNavigation.Nombre, p.IdPermisoNavigation.Padre })
-                                          .ToList();
+                                          .ToListAsync();
                 foreach (var permission in permissions)
                 {
-                    var padre = context.Permisos.Single(p => p.Id == permission.Padre);
+                    var padre = await context.Permisos.SingleAsync(p => p.Id == permission.Padre);
                     userPermissions.Add($"{padre.Nombre}.{permission.Nombre}");
                 }
                 return userPermissions;
             }
             catch (Exception ex)
             {
-                logServices.LogError(0, 0, "GetsessionPermission",  $"Error al consultar permisos del rol: {idRol}", ex.Message, ex.StackTrace);
+                await logServices.LogError(0, 0, "GetUserPermission",  $"Error al consultar permisos del rol: {idRol}", ex.Message, ex.StackTrace);
                 return null;
             }
 
         }
         
-        public List<string> GetallPermissions()
+        public async Task<List<string>> GetallPermissions()
         {
             try
             {
                 List<string> allPermissions = new List<string> ();
-               var permissions = context.Permisos
+               var permissions = await context.Permisos
                                     .Where(p=> p.Padre !=null)
-                                    .Select( p => new { p.Nombre, p.Padre }).ToList();
+                                    .Select( p => new { p.Nombre, p.Padre })
+                                    .ToListAsync();
                 foreach (var permission in permissions)
                 {
-                    var padre = context.Permisos.Single(p => p.Id == permission.Padre);
+                    var padre = await context.Permisos.SingleAsync(p => p.Id == permission.Padre);
                     allPermissions.Add($"{padre.Nombre}.{permission.Nombre}");
                 }
                 return allPermissions;
             }
             catch (Exception ex) 
             {
-                logServices.LogError(1, 1, "GetallPermissions", "Error al consultar todos los permisos del sistema", ex.Message, ex.StackTrace);
+                await logServices.LogError(1, 1, "GetallPermissions", "Error al consultar todos los permisos del sistema", ex.Message, ex.StackTrace);
                 return new List<string> ();
             }
         }
-        public void ConfigurePermissions( IServiceCollection services)
+        public async Task ConfigurePermissions()
         {
             try
             {
-                List<string> permissions = GetallPermissions();
+                List<string> permissions = await  GetallPermissions();
                 using var scope = _services.CreateScope();
                 var authorizationOptions = scope.ServiceProvider.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
 
@@ -152,7 +167,7 @@ namespace Sistema.Gestion.Nómina.Services
             }
             catch (Exception ex)
             {
-                logServices.LogError(1, 1, "ConfigurePermissions", $"Error guardar permisos del usuario", ex.Message, ex.StackTrace);
+                await logServices.LogError(1, 1, "ConfigurePermissions", $"Error guardar permisos del usuario", ex.Message, ex.StackTrace);
             }
         }
     }
