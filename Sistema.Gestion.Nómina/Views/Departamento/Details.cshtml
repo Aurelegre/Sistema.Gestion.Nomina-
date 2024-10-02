@@ -1,0 +1,21 @@
+﻿<!-- Modal para mostrar los detalles del departamento -->
+<div class="modal fade" id="deptoDetailModal" tabindex="-1" aria-labelledby="deptoDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deptoDetailModalLabel">Detalle del Departamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>ID:</strong> <span id="deptoId"></span></p>
+                <p><strong>Departamento:</strong> <span id="deptoName"></span></p>
+                <p><strong>Jefe:</strong> <span id="deptoJefe"></span></p>
+                <h5>Puestos</h5>
+                <div id="puestosDepto"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Salir</button>
+            </div>
+        </div>
+    </div>
+</div>
