@@ -7,11 +7,13 @@ using Sistema.Gestion.Nómina.DTOs.Puestos;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Logs;
+using System.Linq;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
     public class DepartamentoController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
+        [HttpGet]
         // GET: DepartamentoController
         public async Task<ActionResult> Index(GetDepartamentosDTO request)
         {
@@ -69,6 +71,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
+        [HttpGet]
         // GET: DepartamentoController/Details/5
         public async Task<ActionResult> Details(int id)
         {
@@ -107,59 +110,132 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: DepartamentoController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(CreateDepartamentoDTO request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+                var exist = await context.Departamentos.AnyAsync(d=> d.Descripcion == request.Descripcion);
+                if (exist)
+                {
+                    TempData["Error"] = "Ya existe un Departamento con este nombre";
+                    return RedirectToAction("Index", "Departamento");
+                }
+                var session = logger.GetSessionData();
+                Departamento depto =new Departamento
+                {
+                    Descripcion = request.Descripcion,
+                    IdEmpresa = session.company,
+                    IdJefe = null
+                };
+                context.Departamentos.Add(depto);
+                await context.SaveChangesAsync();
+                //crear el puesto JEFE
+                Puesto puesto = new Puesto
+                {
+                    Descripcion = "Jefe",
+                    IdDepartamento = depto.Id,
+                };
+                context.Puestos.Add(puesto);
+                await context.SaveChangesAsync();
 
-        // GET: DepartamentoController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
+                //guardar bitácora
+                await logger.LogTransaction(session.idEmpleado, session.company, "Departamento.Create", $"Se creó departamento con id: {depto.Id}, Nombre: {depto.Descripcion}", session.nombre); ;
+                TempData["Message"] = "Departamento creado con Exito";
+                return RedirectToAction("Index", "Departamento");
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Departamento.Create", $"Error al crear Departamento", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo crear Departamento";
+                return RedirectToAction("Index", "Departamento");
+            }
         }
 
         // POST: DepartamentoController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(EditDepartamentoDTO request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+                var depto = await context.Departamentos.SingleAsync(d => d.Id == request.Id);
+                if (depto == null)
+                {
+                    TempData["Error"] = "El Departamento a editar no existe";
+                    return RedirectToAction("Index", "Departamento");
+                }
+                depto.Descripcion = request.Descripcion;
+                context.Departamentos.Update(depto);
+                await context.SaveChangesAsync();
 
-        // GET: DepartamentoController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Departamento.Edit", $"Se actualizó Departamento con id: {depto.Id}, Nombre: {depto.Descripcion}", session.nombre);
+
+                TempData["Message"] = "Departamento actualizado con Exito";
+                return RedirectToAction("Index", "Departamento");
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Departamento.Edit", $"Error al acualizar Departamento con id {request.Id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo actualizar Departamento";
+                return RedirectToAction("Index", "Departamento");
+            } 
         }
 
         // POST: DepartamentoController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                // Obtener el departamento por su Id
+                var depto = await context.Departamentos.SingleOrDefaultAsync(d => d.Id == id);
+                if (depto == null)
+                {
+                    TempData["Error"] = "El Departamento no existe";
+                    return RedirectToAction("Index", "Departamento");
+                }
+
+                // Verificar si existen puestos asociados a este departamento
+                var puestos = await context.Puestos.Where(p => p.IdDepartamento == id).ToListAsync();
+                if (puestos.Any())
+                {
+                    var puestosConEmpleados = await context.Puestos
+                                                            .Where(p => p.IdDepartamento == id && context.Empleados.Any(e => e.IdPuesto == p.Id))
+                                                            .ToListAsync();
+
+                    if (puestosConEmpleados.Any())
+                    {
+                        TempData["Error"] = "No se puede eliminar el departamento, ya que hay empleados asignados a puestos de este departamento.";
+                        return RedirectToAction("Index", "Departamento");
+                    }
+                }
+
+                // Si no hay empleados en puestos del departamento, se puede proceder con la eliminación de los puestos
+                context.Puestos.RemoveRange(puestos);
+
+                // Eliminar el departamento
+                context.Departamentos.Remove(depto);
+                await context.SaveChangesAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Departamento.Delete", $"Se eliminó Departamento con id: {depto.Id}, Nombre: {depto.Descripcion}", session.nombre);
+
+                TempData["Message"] = "Departamento eliminado exitosamente.";
+                return RedirectToAction("Index", "Departamento");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Departamento.Delete", $"Error al eliminar Departamento con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Ocurrió un error al intentar eliminar el departamento";
+                return RedirectToAction("Index", "Departamento");
             }
         }
+
         private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
         {
             try

@@ -45,7 +45,7 @@
 
             }
             if (action === "editar") {
-                fetch('/Rol/Details/' + id)
+                fetch('/Departamento/Details/' + id)
                     .then(response => response.json())
                     .then(data => {
                         // Llenar los campos de edición del empleado en el modal
@@ -53,13 +53,14 @@
                         document.getElementById("editDescripcion").value = data.descripcion || data.Descripcion;
 
                         // Mostrar el modal
-                        var modal = new bootstrap.Modal(document.getElementById('editRolModal'));
+                        var modal = new bootstrap.Modal(document.getElementById('editDeptoModal'));
                         modal.show();
 
                         // Restablecer el valor del combobox a la opción predeterminada
                         dropdown.value = "Seleccionar";
                     });
-            } else if (action === "eliminar") {
+            }
+            else if (action === "eliminar") {
                 document.getElementById("deleteId").value = id;
                 // Mostrar el modal
                 var modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
@@ -68,7 +69,8 @@
 
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
-            } else if (action === "permisos") {
+            }
+            else if (action === "permisos") {
                 window.location.href = '/Permission/Index?idRol=' + id;
                 dropdown.value = "Seleccionar";
             }
@@ -77,6 +79,6 @@
 });
 function fetchDepto() {
     // Mostrar el modal
-    var modal = new bootstrap.Modal(document.getElementById('createRolModal'));
+    var modal = new bootstrap.Modal(document.getElementById('createDeptoModal'));
     modal.show();
 }
