@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,8 @@ namespace Sistema.Gestion.Nómina.Controllers
     public class DepartamentoController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         [HttpGet]
+        [Authorize(Policy = "Departamento.Listar")]
+        
         // GET: DepartamentoController
         public async Task<ActionResult> Index(GetDepartamentosDTO request)
         {
@@ -72,6 +75,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "Departamento.Ver")]
         // GET: DepartamentoController/Details/5
         public async Task<ActionResult> Details(int id)
         {
@@ -110,6 +114,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: DepartamentoController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Departamento.Crear")]
         public async Task<ActionResult> Create(CreateDepartamentoDTO request)
         {
             try
@@ -155,6 +160,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: DepartamentoController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Departamento.Actualizar")]
         public async Task<ActionResult> Edit(EditDepartamentoDTO request)
         {
             try
@@ -187,6 +193,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: DepartamentoController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Departamento.Eliminar")]
         public async Task<ActionResult> Delete(int id)
         {
             try
