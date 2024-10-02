@@ -65,8 +65,8 @@ namespace Sistema.Gestion.Nómina.Controllers
             catch(Exception ex)
             {
                 var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Rol.Index", "Error al realizar el Get de todos los empleados activos", ex.Message, ex.StackTrace);
-                TempData["Error"] = "Error al consultar Empleados";
+                await logger.LogError(session.idEmpleado, session.company, "Rol.Index", "Error al realizar el Get de todos los Roles activos", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar Roles";
                 return View();
             }
         }
@@ -114,7 +114,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             try
             {
-                var existe = context.Roles.Where(u=> u.Descripcion == request.Descripcion).AsNoTracking().FirstOrDefault();
+                var existe = context.Roles.AnyAsync(r=> r.Descripcion == request.Descripcion);
                 if(existe != null)
                 {
                     TempData["Error"] = "Ya Existe un Rol con este Nombre";
@@ -152,13 +152,11 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             try
             {
-                var rol = context.Roles.Where(u => u.Id == request.Id)
-                                       .AsNoTracking()
-                                       .FirstOrDefault();
+                var rol = await context.Roles.SingleAsync(r=> r.Id == request.Id);
                 if (rol == null)
                 {
                     TempData["Error"] = "Error al actualizar Rol";
-                    return RedirectToAction("Index", "Employees");
+                    return RedirectToAction("Index", "Rol");
                 }
                 rol.Descripcion = request.Descripcion;
                 context.Update(rol);
@@ -188,7 +186,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             try
             {
-                var rol = await context.Roles.Where(p => p.Id == id).AsNoTracking().FirstOrDefaultAsync();
+                var rol = await context.Roles.SingleAsync(r=> r.Id == id);
                 if (rol == null)
                 {
                     TempData["Error"] = "El Rol no existe";
@@ -203,14 +201,14 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
                 //desactivar ROL
                 rol.activo = 0;
-                context.Update(rol);
+                context.Roles.Update(rol);
                 await context.SaveChangesAsync();
 
                 //guardar bitácora
                 var session = logger.GetSessionData();
                 await logger.LogTransaction(session.idEmpleado, session.company, "Rol.Delete", $"Se eliminó Rol con id: {rol.Id}, Nombre: {rol.Descripcion}", session.nombre);
 
-                TempData["Message"] = "Rol Eliminado con Exito";
+                TempData["Message"] = "Rol eliminado con Exito";
                 return RedirectToAction("Index", "Rol");
             }
             catch (Exception ex)
