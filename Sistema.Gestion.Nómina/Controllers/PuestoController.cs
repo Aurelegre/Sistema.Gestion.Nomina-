@@ -145,24 +145,44 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-        // GET: PuestoController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
         // POST: PuestoController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var puesto = await context.Puestos.AsNoTracking().SingleOrDefaultAsync(d => d.Id == id);
+                if (puesto == null)
+                {
+                    TempData["Error"] = "El Puesto no existe";
+                    return RedirectToAction("Index", "Puesto");
+                }
+
+                //verificar que no tenga usuarios asignados
+                var employee = await context.Empleados.CountAsync(e => e.IdPuesto == id);
+                if(employee != 0)
+                {
+                    TempData["Error"] = "No se puede eliminar el puesto, ya que hay empleados asignados.";
+                    return RedirectToAction("Index", "Puesto");
+                }
+
+                //eliminar puesto
+                context.Puestos.Remove(puesto);
+                await context.SaveChangesAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Puesto.Delete", $"Se eliminó Puesto con id: {puesto.Id}, Nombre: {puesto.Descripcion}", session.nombre);
+
+                TempData["Message"] = "Puesto eliminado exitosamente.";
+                return RedirectToAction("Index", "Puesto");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Puesto.Delete", $"Error al eliminar Puesto con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Ocurrió un error al intentar eliminar el puesto";
+                return RedirectToAction("Index", "Puesto");
             }
         }
     }
