@@ -12,6 +12,7 @@ using System.Linq;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Authorize]
     public class DepartamentoController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         [HttpGet]
