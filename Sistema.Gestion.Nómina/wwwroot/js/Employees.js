@@ -62,21 +62,23 @@
                         var editPuesto = document.getElementById("editPuesto");
                         editPuesto.innerHTML = "";  // Limpiar opciones actuales
                         data.puestos.forEach(function (puesto) {
-                            editPuesto.append(new Option(puesto.descripcion, puesto.id, data.idPuesto === puesto.id));
+                            var isSelected = data.idPuesto === puesto.id;
+                            editPuesto.append(new Option(puesto.descripcion, puesto.id, isSelected, isSelected));
                         });
 
                         // Llenar combobox de departamentos
                         var editDepartamento = document.getElementById("editDepartamento");
                         editDepartamento.innerHTML = "";  // Limpiar opciones actuales
                         data.departamento.forEach(function (departamento) {
-                            editDepartamento.append(new Option(departamento.descripcion, departamento.id, data.IdDepto === departamento.id));
+                            var isSelected = data.idDepto === departamento.id;
+                            editDepartamento.append(new Option(departamento.descripcion, departamento.id, isSelected, isSelected));
                         });
 
                         // Llenar combobox de departamentos
                         var editRol = document.getElementById("editRol");
                         editRol.innerHTML = "";  // Limpiar opciones actuales
                         data.roles.forEach(function (rol) {
-                            editRol.append(new Option(rol.descripcion, rol.id, data.IdRol === rol.id));
+                            editRol.append(new Option(rol.descripcion, rol.id, data.idRol === rol.id, data.idRol === rol.id));
                         });
                         
                         // Mostrar el modal

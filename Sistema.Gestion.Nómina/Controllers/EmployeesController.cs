@@ -151,15 +151,16 @@ namespace Sistema.Gestion.Nómina.Controllers
                    Id = u.Id,
                    Nombre = u.Nombre,
                    Sueldo = u.Sueldo,
-                   IdDepto = u.IdDepartamento,
+                   idDepto = u.IdDepartamento,
                    Usuario = u.IdUsuarioNavigation.Usuario1,
-                   IdRol = u.IdUsuarioNavigation.IdRol
+                   idRol = u.IdUsuarioNavigation.IdRol,
+                   idPuesto = u.IdPuesto
                }).FirstOrDefaultAsync();
                 if (empleado == null)
                 {
                     return NotFound();
                 }
-                empleado.Puestos = await ObtenerPuestos(empleado.IdDepto);
+                empleado.Puestos = await ObtenerPuestos(empleado.idDepto);
                 empleado.Departamento = await ObtenerDepartamentos();
                 empleado.Roles = await ObtenerRoles();
 

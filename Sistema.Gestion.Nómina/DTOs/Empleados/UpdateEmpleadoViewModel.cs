@@ -15,7 +15,8 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
         public List<GetRolResponse> Roles { get; set; }
         public string Usuario { get; set; }
         public decimal? Sueldo { get; set; }
-        public int? IdDepto { get; set; }
-        public int? IdRol { get; set; }
+        public int? idDepto { get; set; }
+        public int? idRol { get; set; }
+        public int? idPuesto { get; set; }
     }
 }
