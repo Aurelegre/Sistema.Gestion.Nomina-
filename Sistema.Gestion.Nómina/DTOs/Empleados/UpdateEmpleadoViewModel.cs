@@ -10,12 +10,14 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
     {
         public int Id { get; set; }
         public string Nombre { get; set; }
+        public string Apellidos { get; set; }
         public List<GetPuestoDTO> Puestos { get; set; }
         public List<GetDepartamentoDTO> Departamento { get; set; }
         public List<GetRolResponse> Roles { get; set; }
         public string Usuario { get; set; }
         public decimal? Sueldo { get; set; }
-        public int? IdDepto { get; set; }
-        public int? IdRol { get; set; }
+        public int? idDepto { get; set; }
+        public int? idRol { get; set; }
+        public int? idPuesto { get; set; }
     }
 }

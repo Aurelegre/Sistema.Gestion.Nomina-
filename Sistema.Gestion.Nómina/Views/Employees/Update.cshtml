@@ -10,8 +10,12 @@
                 <form asp-controller="Employees" asp-action="Update" method="post" id="editEmployeeForm">
                     <input type="hidden" id="editId" name="Id" />
                     <div class="mb-3 form-group">
-                        <label for="editNombre" class="form-label">Nombre</label>
+                        <label for="editNombre" class="form-label">Nombres</label>
                         <input  type="text" class="form-control" id="editNombre" name="Nombre" required />
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="editApellidos" class="form-label">Apellidos</label>
+                        <input  type="text" class="form-control" id="editApellidos" name="Apellidos" required />
                     </div>
                     <div class="mb-3 form-group">
                         <label for="editRol" class="form-label">Rol</label>

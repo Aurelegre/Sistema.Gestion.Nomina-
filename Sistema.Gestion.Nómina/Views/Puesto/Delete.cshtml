@@ -1,0 +1,22 @@
+﻿<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body alert alert-danger">
+                <strong>¿Está seguro de eliminar el Puesto?</strong>
+            </div>
+            <div class="modal-footer ">
+                <form asp-controller="Puesto" asp-action="Delete" method="post">
+                    <input type="hidden" id="deleteId" name="Id" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="confirmDeleteBtn" class="btn btn-danger">Eliminar</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
