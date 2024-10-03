@@ -70,8 +70,40 @@
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
             }
-            else if (action === "permisos") {
-                window.location.href = '/Permission/Index?idRol=' + id;
+            else if (action == "puesto"){
+                fetch('/Puesto/GetDeptos')
+                    .then(response => response.json())
+                    .then(data => {
+
+
+                        // Llenar el combobox de Departamentos
+                        var departamentosSelect = document.getElementById('IdDepartamento');
+                        var hiddenDepartamento = document.getElementById('hiddenIdDepartamento');
+                        var vista = document.getElementById('hiddenVista');
+                        vista.value = "Departamento";
+                        departamentosSelect.innerHTML = "";  // Limpiar opciones actuales
+                        //departamentosSelect.innerHTML = '<option value="">Seleccione un Departamento</option>';
+                        if (data.departamentos && Array.isArray(data.departamentos) && data.departamentos.length > 0) {
+                            data.departamentos.forEach(function (departamento) {
+                                var isSelected = departamento.id === parseInt(id);
+                                departamentosSelect.append(new Option(departamento.descripcion, departamento.id, isSelected, isSelected));
+                                departamentosSelect.disabled = true;
+                                hiddenDepartamento.value = departamentosSelect.value;
+                            });
+                        } else {
+                            var noDepartamentOption = new Option("No hay departamentos disponibles", "", true, false);
+                            noDepartamentOption.disabled = true;
+                            departamentosSelect.append(noDepartamentOption);
+                        }
+                    });
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('createPuestoModal'));
+                modal.show();
+                // Evento para mantener sincronizados el valor del select y el campo oculto
+                document.getElementById('IdDepartamento').addEventListener('change', function () {
+                    document.getElementById('hiddenIdDepartamento').value = this.value;
+                });
+                // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
             }
         });

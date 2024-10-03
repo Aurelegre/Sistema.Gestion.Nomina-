@@ -2,7 +2,7 @@
 @model PaginatedResult<GetDepartamentosResponse>
 
 @{
-    ViewData["Title"] = "Roles";
+    ViewData["Title"] = "Departamentos";
 }
 
 <partial name="Messages" />
@@ -68,6 +68,7 @@
                                 <option value="editar" data-id="@item.Id"> Editar</option>
                                 <option value="eliminar" data-id="@item.Id">Eliminar</option>
                                 <option value="detalle" data-id="@item.Id">Ver detalle</option>
+                                <option value="puesto" data-id="@item.Id">Crear Puesto</option>
                             </select>
                         </td>
                     </tr>
@@ -103,7 +104,8 @@ else
 <partial name="Edit" />
 <partial name="Delete" />
 <partial name="Create" /> 
-<partial name="Details"/>   
+<partial name="Details"/> 
+<partial name="~/Views/Puesto/Create.cshtml" />
 
 
 <script src="/js/Departamentos.js" asp-append-version="true"></script>

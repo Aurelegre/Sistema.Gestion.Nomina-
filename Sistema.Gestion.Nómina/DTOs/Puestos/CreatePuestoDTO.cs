@@ -4,5 +4,6 @@
     {
         public string Descripcion { get; set; }
         public int IdDepartamento { get; set; }
+        public string Vista { get; set; }
     }
 }

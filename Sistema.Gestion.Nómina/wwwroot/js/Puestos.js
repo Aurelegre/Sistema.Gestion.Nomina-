@@ -85,6 +85,8 @@ function fetchCreatePuesto() {
 
             // Llenar el combobox de Departamentos
             var departamentosSelect = document.getElementById('IdDepartamento');
+            var vista = document.getElementById('hiddenVista');
+            vista.value = "Puesto";
             departamentosSelect.innerHTML = '<option value="">Seleccione un Departamento</option>';
             if (data.departamentos && Array.isArray(data.departamentos) && data.departamentos.length > 0) {
                 data.departamentos.forEach(function (departamento) {

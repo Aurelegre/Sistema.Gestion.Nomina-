@@ -97,7 +97,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Puestos.GetDeptos", $"Error al obtener los departamendos de la empresa: {session.company}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al obtener puestos por departamento";
-                return RedirectToAction("Index", "Puestos");
+                return RedirectToAction("Index", "Puesto");
             }
         }
         // GET: PuestoController/Details/5
@@ -148,7 +148,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 if (exist)
                 {
                     TempData["Error"] = "El puesto ya existe dentro del Departamento seleccionado";
-                    return RedirectToAction("Index", "Puesto");
+                    return RedirectToAction("Index", request.Vista);
                 }
                 //crear puesto
                 Puesto puesto = new Puesto
@@ -163,7 +163,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 await logger.LogTransaction(session.idEmpleado, session.company, "Puesto.Create", $"Se creó puesto con id: {puesto.Id}, Nombre: {puesto.Descripcion}", session.nombre);
 
                 TempData["Message"] = "Puesto creado con éxito";
-                return RedirectToAction("Index", "Puesto");
+                return RedirectToAction("Index", request.Vista);
 
             }
             catch (Exception ex)
@@ -171,7 +171,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Puesto.Create", "Error al crear puesto", ex.Message, ex.StackTrace);
                 TempData["Error"] = "No se pudo crear el Puesto";
-                return RedirectToAction("Index", "Puesto");
+                return RedirectToAction("Index", request.Vista);
             }
         }
 
