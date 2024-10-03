@@ -245,7 +245,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var empleado = await context.Empleados.Where(u => u.Id == id).AsNoTracking().FirstOrDefaultAsync();
                 if (empleado == null)
                 {
-                    return NotFound();
+                    TempData["Error"] = "Empleado no encontrado";
+                    return RedirectToAction("Index", "Employees");
                 }
                 empleado.Nombre = request.Nombre;
                 empleado.Sueldo = request.Sueldo;

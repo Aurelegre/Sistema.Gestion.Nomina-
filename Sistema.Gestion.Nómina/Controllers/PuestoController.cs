@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Configuration;
 using Sistema.Gestion.Nómina.DTOs.Departamentos;
 using Sistema.Gestion.Nómina.DTOs.Empleados;
 using Sistema.Gestion.Nómina.DTOs.Puestos;
@@ -11,15 +13,17 @@ using Sistema.Gestion.Nómina.Services.Logs;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Authorize]
     public class PuestoController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         // GET: PuestoController
+        [Authorize(Policy = "Puesto.Listar")]
         public async Task<ActionResult> Index(GetPuestosDTO request)
         {
             try
             {
                 var session = logger.GetSessionData();
-                var query = context.Puestos.Where(p=> p.IdDepartamentoNavigation.IdEmpresa == session.company);
+                var query = context.Puestos.Where(p => p.IdDepartamentoNavigation.IdEmpresa == session.company);
 
                 //aplicar empleados
                 if (!string.IsNullOrEmpty(request.Descripcion))
@@ -34,9 +38,10 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var totalItems = await query.CountAsync();
                 var puestos = await query
                     .AsNoTracking()
-                    .Skip((request.page - 1)* request.pageSize)
+                    .OrderBy(p => p.IdDepartamentoNavigation.Descripcion)
+                    .Skip((request.page - 1) * request.pageSize)
                     .Take(request.pageSize)
-                    .Select(p=> new GetPuestosResponse
+                    .Select(p => new GetPuestosResponse
                     {
                         Id = p.Id,
                         Descripcion = p.Descripcion,
@@ -69,7 +74,34 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
+        [Authorize(Policy = "Puesto.Ver")]
+        public async Task<ActionResult> GetDeptos()
+        {
+            try
+            {
+                var session = logger.GetSessionData();
+                var deptos = await context.Departamentos.Where(p => p.IdEmpresa == session.company).AsNoTracking().Select(p => new
+                {
+                    id = p.Id,
+                    descripcion = p.Descripcion,
+                }).ToListAsync();
+                var departamentos = new
+                {
+                    departamentos = deptos
+                };
+                await logger.LogTransaction(session.idEmpleado, session.company, "Puestos.GetDeptos", $"Se obtubieron todos los departamentos de la empresa con id: {session.company}", session.nombre);
+                return Json(departamentos);
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Puestos.GetDeptos", $"Error al obtener los departamendos de la empresa: {session.company}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al obtener puestos por departamento";
+                return RedirectToAction("Index", "Puestos");
+            }
+        }
         // GET: PuestoController/Details/5
+        [Authorize(Policy = "Puesto.Ver")]
         public async Task<ActionResult> Details(int id)
         {
             try
@@ -88,7 +120,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     TempData["Error"] = "Error al obtener detalle de Puesto";
                     return RedirectToAction("Index", "Puesto");
                 }
-                puesto.Empleados = await context.Empleados.Where(p => p.IdPuesto == id).AsNoTracking().Select(e=> e.Nombre).ToListAsync();
+                puesto.Empleados = await context.Empleados.Where(p => p.IdPuesto == id).AsNoTracking().Select(e => e.Nombre).ToListAsync();
                 var session = logger.GetSessionData();
                 await logger.LogTransaction(session.idEmpleado, session.company, "Puesto.Details", $"Se consultaron detalles del puesto con id: {id}", session.nombre);
 
@@ -103,51 +135,84 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-        // GET: PuestoController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
 
         // POST: PuestoController/Create
         [HttpPost]
+        [Authorize(Policy = "Puesto.Crear")]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(CreatePuestoDTO request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var exist = await context.Puestos.AnyAsync(p => p.Descripcion == request.Descripcion && p.IdDepartamento == request.IdDepartamento);
+                if (exist)
+                {
+                    TempData["Error"] = "El puesto ya existe dentro del Departamento seleccionado";
+                    return RedirectToAction("Index", "Puesto");
+                }
+                //crear puesto
+                Puesto puesto = new Puesto
+                {
+                    Descripcion = request.Descripcion,
+                    IdDepartamento = request.IdDepartamento
+                };
+                context.Puestos.Add(puesto);
+                await context.SaveChangesAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Puesto.Create", $"Se creó puesto con id: {puesto.Id}, Nombre: {puesto.Descripcion}", session.nombre);
+
+                TempData["Message"] = "Puesto creado con éxito";
+                return RedirectToAction("Index", "Puesto");
+
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Puesto.Create", "Error al crear puesto", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo crear el Puesto";
+                return RedirectToAction("Index", "Puesto");
             }
         }
 
-        // GET: PuestoController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
 
         // POST: PuestoController/Edit/5
         [HttpPost]
+        [Authorize(Policy = "Puesto.Actualizar")]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(UpdatePuestoDTO request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var puesto = await context.Puestos.AsNoTracking().SingleOrDefaultAsync(p => p.Id == request.id);
+                if (puesto == null)
+                {
+                    TempData["Error"] = "Puesto no encontrado";
+                    return RedirectToAction("Index", "Puesto");
+                }
+                puesto.Descripcion = request.descripcion;
+                context.Puestos.Update(puesto);
+                await context.SaveChangesAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Puesto.Update", $"Se actualizó puesto con id: {puesto.Id}, Nombre: {puesto.Descripcion}", session.nombre);
+
+                TempData["Message"] = "Puesto Actualizado con Exito";
+                return RedirectToAction("Index", "Puesto");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Puesto.Update", $"Error al acualizar Puesto con id {request.id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo actualizar Puesto";
+                return RedirectToAction("Index", "Puesto");
             }
         }
 
         // POST: PuestoController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Puesto.Eliminar")]
         public async Task<ActionResult> Delete(int id)
         {
             try
@@ -163,7 +228,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var employee = await context.Empleados.CountAsync(e => e.IdPuesto == id);
                 if(employee != 0)
                 {
-                    TempData["Error"] = "No se puede eliminar el puesto, ya que hay empleados asignados.";
+                    TempData["Error"] = "No se puede eliminar el puesto con empleados asignados.";
                     return RedirectToAction("Index", "Puesto");
                 }
 

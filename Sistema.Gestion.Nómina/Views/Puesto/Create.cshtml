@@ -1,0 +1,32 @@
+﻿<!-- Modal para crear un Puesto -->
+<div class="modal fade" id="createPuestoModal" tabindex="-1" aria-labelledby="createPuestoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <!-- Aumenté el tamaño del modal -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPuestoModalLabel">Crear Puesto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createPuestoForm" asp-controller="Puesto" asp-action="Create" method="post">
+                <div class="modal-body">
+                    <!-- Datos del Puesto -->
+
+                    <div class="mb-6">
+                        <label for="Descripcion" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="Descripcion" name="Descripcion" required maxlength="100">
+                    </div>
+                    <div class="mb-6">
+                        <label for="IdDepartamento" class="form-label">Departamento</label>
+                        <select class="form-select" id="IdDepartamento" name="IdDepartamento" required >
+                            <option value="">Seleccione un Departamento</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

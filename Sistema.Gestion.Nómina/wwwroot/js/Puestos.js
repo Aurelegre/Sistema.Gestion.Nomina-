@@ -45,7 +45,7 @@
 
             }
             if (action === "editar") {
-                fetch('/Departamento/Details/' + id)
+                fetch('/Puesto/Details/' + id)
                     .then(response => response.json())
                     .then(data => {
                         // Llenar los campos de edición del empleado en el modal
@@ -53,7 +53,7 @@
                         document.getElementById("editDescripcion").value = data.descripcion || data.Descripcion;
 
                         // Mostrar el modal
-                        var modal = new bootstrap.Modal(document.getElementById('editDeptoModal'));
+                        var modal = new bootstrap.Modal(document.getElementById('editPuestoModal'));
                         modal.show();
 
                         // Restablecer el valor del combobox a la opción predeterminada
@@ -77,8 +77,26 @@
         });
     });
 });
-function fetchDepto() {
+function fetchCreatePuesto() {
+    fetch('/Puesto/GetDeptos/') 
+        .then(response => response.json())
+        .then(data => {
+
+
+            // Llenar el combobox de Departamentos
+            var departamentosSelect = document.getElementById('IdDepartamento');
+            departamentosSelect.innerHTML = '<option value="">Seleccione un Departamento</option>';
+            if (data.departamentos && Array.isArray(data.departamentos) && data.departamentos.length > 0) {
+                data.departamentos.forEach(function (departamento) {
+                    departamentosSelect.append(new Option(departamento.descripcion, departamento.id));
+                });
+            } else {
+                var noDepartamentOption = new Option("No hay departamentos disponibles", "", true, false);
+                noDepartamentOption.disabled = true;
+                departamentosSelect.append(noDepartamentOption);
+            }
+        });
     // Mostrar el modal
-    var modal = new bootstrap.Modal(document.getElementById('createDeptoModal'));
+    var modal = new bootstrap.Modal(document.getElementById('createPuestoModal'));
     modal.show();
 }
