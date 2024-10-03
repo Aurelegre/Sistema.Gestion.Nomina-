@@ -12,6 +12,7 @@
                         // Mostrar los detalles del empleado en el modal
                         document.getElementById("employeeId").innerText = data.id || data.Id;
                         document.getElementById("employeeName").innerText = data.nombre || data.Nombre;
+                        document.getElementById("employeeApellido").innerText = data.apellidos || data.Apellidos;
                         document.getElementById("employeeDpi").innerText = data.dpi || data.DPI;
                         document.getElementById("employeePuesto").innerText = data.puesto || data.Puesto;
                         document.getElementById("employeeDepartamento").innerText = data.departamento || data.Departamento;
@@ -55,6 +56,7 @@
                         // Llenar los campos de edición del empleado en el modal
                         document.getElementById("editId").value = data.id || data.Id;
                         document.getElementById("editNombre").value = data.nombre || data.Nombre;
+                        document.getElementById("editApellidos").value = data.apellidos || data.Apellidos;
                         document.getElementById("editSueldo").value = data.sueldo || data.Sueldo;
                         document.getElementById("editUsuario").value = data.usuario || data.Usuario;
 

@@ -10,6 +10,7 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
     {
         public int Id { get; set; }
         public string Nombre { get; set; }
+        public string Apellidos { get; set; }
         public List<GetPuestoDTO> Puestos { get; set; }
         public List<GetDepartamentoDTO> Departamento { get; set; }
         public List<GetRolResponse> Roles { get; set; }

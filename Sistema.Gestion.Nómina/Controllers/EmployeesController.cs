@@ -57,7 +57,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     .Select(u => new GETEmpleadosResponse
                     {
                         Id = u.Id,
-                        Nombre = u.Nombre,
+                        Nombre = u.Nombre.Substring(0, u.Nombre.IndexOf(" ") != -1 ? u.Nombre.IndexOf(" ") : u.Nombre.Length) +" "+ u.Apellidos.Substring(0, u.Apellidos.IndexOf(" ") != -1 ? u.Apellidos.IndexOf(" ") : u.Apellidos.Length),
                         Puesto = u.IdPuestoNavigation.Descripcion,
                         Departamento = u.IdDepartamentoNavigation.Descripcion,
                         DPI = u.Dpi,
@@ -107,6 +107,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 {
                     Id = u.Id,
                     Nombre = u.Nombre,
+                    Apellidos = u.Apellidos,
                     Puesto = u.IdPuestoNavigation.Descripcion,
                     Departamento = u.IdDepartamentoNavigation.Descripcion,
                     DPI = u.Dpi,
@@ -150,6 +151,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                {
                    Id = u.Id,
                    Nombre = u.Nombre,
+                   Apellidos = u.Apellidos,
                    Sueldo = u.Sueldo,
                    idDepto = u.IdDepartamento,
                    Usuario = u.IdUsuarioNavigation.Usuario1,
@@ -250,6 +252,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     return RedirectToAction("Index", "Employees");
                 }
                 empleado.Nombre = request.Nombre;
+                empleado.Apellidos = request.Apellidos;
                 empleado.Sueldo = request.Sueldo;
                 empleado.IdPuesto = request.IdPuesto;
                 empleado.IdDepartamento = request.IdDepartamento;
@@ -374,6 +377,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     {
                         Activo = request.Activo,
                         Nombre = request.Nombre,
+                        Apellidos = request.Apellidos,
                         IdEmpresa = session.company,
                         IdPuesto = request.IdPuesto,
                         IdDepartamento = request.IdDepartamento,
@@ -456,7 +460,6 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-        
         //obtención de datos
         private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
         {

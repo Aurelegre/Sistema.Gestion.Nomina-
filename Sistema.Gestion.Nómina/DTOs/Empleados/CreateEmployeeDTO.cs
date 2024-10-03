@@ -12,6 +12,9 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
         [Required(ErrorMessage = "El nombre es obligatorio")]
         [StringLength(100, ErrorMessage = "El nombre no debe exceder los 100 caracteres")]
         public string? Nombre { get; set; }
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        [StringLength(100, ErrorMessage = "Los apellidos no deben exceder los 100 caracteres")]
+        public string? Apellidos { get; set; }
 
         [Required(ErrorMessage = "La fecha de contratación es obligatoria")]
         [DataType(DataType.Date, ErrorMessage = "Fecha inválida")]
