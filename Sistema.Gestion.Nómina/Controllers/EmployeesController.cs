@@ -16,9 +16,9 @@ using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Logs;
 
 namespace Sistema.Gestion.Nómina.Controllers
-{
+{   [Authorize]
     [Controller]
-    [Authorize]
+    
     public class EmployeesController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         [HttpGet]
