@@ -6,13 +6,15 @@ using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina.DTOs.Empleados;
 using Sistema.Gestion.Nómina.DTOs.Empresa;
 using Sistema.Gestion.Nómina.Entitys;
+using Sistema.Gestion.Nómina.Helpers;
 using Sistema.Gestion.Nómina.Models;
+using Sistema.Gestion.Nómina.Services.Empresa;
 using Sistema.Gestion.Nómina.Services.Logs;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
-    [Authorize]
-    public class EmpresaController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
+    [Authorize(Roles = "SuperRol")]
+    public class EmpresaController(SistemaGestionNominaContext context, ILogServices logger, IEmpresaServices empresaServices) : Controller
     {
         [HttpGet]
         public async Task<ActionResult> Index(GetEmpresasDTO request)
@@ -125,6 +127,58 @@ namespace Sistema.Gestion.Nómina.Controllers
                 TempData["Error"] = "Error al consultar detalles de Empresa";
                 return RedirectToAction("Index", "Empresa");
             }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Create(CreateEmpresaDTO request)
+        {
+            
+                try
+                {
+                    var exist = await context.Empresas.CountAsync(e => e.Nombre == request.Nombre);
+                    if (exist > 0)
+                    {
+                        TempData["Error"] = "La empresa ya existe";
+                        return RedirectToAction("Index", "Empresa");
+                    }
+
+                    Empresa empresa = new Empresa
+                    {
+                        Nombre = request.Nombre,
+                        Direccion = request.Direccion,
+                        Teléfono = request.Telefono
+                    };
+                    context.Empresas.Add(empresa);
+                    await context.SaveChangesAsync();
+
+                    var idEmpresa = empresa.Id;
+                    int createUser = await empresaServices.CreateUser(idEmpresa, request.Usuario, request.Contrasena);
+                    if (createUser == 0)
+                    {
+                        TempData["Error"] = "Error al crear usuario administrador, Vuelva a Intentar.";
+                        return RedirectToAction("Index", "Empresa");
+                    }
+                    int crearEmpleado = await empresaServices.CreateAdmin(idEmpresa, request.Nombre, "0", createUser);
+                    if (crearEmpleado == 0)
+                    {
+                        TempData["Error"] = "Error al crear Empleado Administrador, Vuelva a Intentar.";
+                        return RedirectToAction("Index", "Empresa");
+                    }
+
+                    var session = logger.GetSessionData();
+                    await logger.LogTransaction(session.idEmpleado, session.company, "Empresa.Create", $"Se creó empresa con el Nombre: {empresa.Nombre}, Usuario id: {createUser}, Empleado Id: {crearEmpleado}", session.nombre);
+
+                    TempData["Message"] = "Empresa creada con éxito";
+                    return RedirectToAction("Index", "Empresa");
+                }
+                catch (Exception ex)
+                {
+                    var session = logger.GetSessionData();
+                    await logger.LogError(session.idEmpleado, session.company, "Empresa.Create", "Error al crear Empresa", ex.Message, ex.StackTrace);
+                    TempData["Error"] = "Error al crear Empresa, Vuelva a Intentar.";
+                    return RedirectToAction("Index", "Empresa");
+                }
+            
         }
 
     }

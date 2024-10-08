@@ -22,7 +22,7 @@ namespace Sistema.Gestion.Nómina.Services.UnAuthenticate
                 await context.SaveChangesAsync();
 
                 //guardar bitácora
-                await logger.LogTransaction(1, user.IdEmpresa, "SetPassword", $"Se cambió contraseña a usuario con id: {idUser}", "UnAuthenticate");
+                await logger.LogTransaction(1, user.IdEmpresa, "SetPassword", $"Se seteó contraseña a usuario con id: {idUser}", "UnAuthenticate");
                 return true;
             }catch (Exception ex)
             {

@@ -29,7 +29,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 var session = logger.GetSessionData();
                 var query = context.Empleados
-                    .Where(e => e.Activo == 1 && e.IdEmpresa == session.company);
+                    .Where(e => e.Activo == 1 && e.IdEmpresa == session.company && !e.Dpi.Equals("0") && !e.Apellidos.Equals("Administrador"));
 
                 // Aplicar filtros
                 if (!string.IsNullOrEmpty(request.DPI))

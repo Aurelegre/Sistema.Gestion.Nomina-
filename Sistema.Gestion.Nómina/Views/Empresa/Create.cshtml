@@ -1,0 +1,60 @@
+﻿<!-- Modal para crear una Empresa -->
+<div class="modal fade" id="createEmpresaModal" tabindex="-1" aria-labelledby="createEmpresaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <!-- Aumenté el tamaño del modal -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createEmpresaModalLabel">Crear Empresa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createEmpresaForm" asp-controller="Empresa" asp-action="Create" method="post">
+                <div class="modal-body">
+                    <!-- Datos de la Empresa -->
+                    <div class="mb-3">
+                        <label for="Nombre" class="form-label">Nombre de la Empresa</label>
+                        <input type="text" class="form-control" id="Nombre" name="Nombre" required maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="Direccion" class="form-label">Dirección de la Empresa</label>
+                        <input type="text" class="form-control" id="Direccion" name="Direccion" required maxlength="150">
+                    </div>
+                    <div class="mb-3">
+                        <label for="Telefono" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="Telefono" name="Telefono" required
+                               maxlength="15"
+                               pattern="^\+?[0-9]{1,4}?[-. ]?(\(?\d{1,3}?\)?[-. ]?)?\d{4}[-. ]?\d{4}$"
+                               title="Ingrese un número de teléfono válido (ejemplo: +502-4567-8990)">
+                        <div class="form-text">Formato sugerido: +502-4567-8990</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="IdUsuario" class="form-label">Correo de Usuario</label>
+                        <input type="email" class="form-control" id="Usuario" name="Usuario" 
+                                oninput="this.value = this.value.toUpperCase()" 
+                                required maxlength="100" minlength="5" 
+                                autocomplete="email" 
+                                placeholder="correo@ejemplo.com" 
+                                pattern="[a-z0-9._%+-]+@@[a-z0-9.-]+\.[a-z]{2,}$" 
+                                title="Ingrese una dirección de correo válida" >
+                    </div>
+                    <div class="mb-3">
+                        <label for="Password" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="Password" name="Contrasena"
+                               required minlength="8" maxlength="100"
+                               title="La contraseña debe tener al menos 8 caracteres" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="Contrasena"
+                               required minlength="8" maxlength="100"
+                               title="La contraseña debe tener al menos 8 caracteres" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="error" class="alert alert-danger" style="display:none;"></div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="createCompany()">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

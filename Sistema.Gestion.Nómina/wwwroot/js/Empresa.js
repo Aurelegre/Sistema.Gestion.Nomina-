@@ -1,4 +1,5 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
+    
     document.querySelectorAll('.actions-dropdown').forEach(function (dropdown) {
         dropdown.addEventListener('change', function () {
             var action = this.value;
@@ -95,42 +96,36 @@
 
 });
 
-function fetchEmployeeData() {
-    fetch('/Employees/Create/') // Reemplaza con la URL correcta de tu controlador
-        .then(response => response.json())
-        .then(data => {
+function createCompany() {
+    const form = document.getElementById('createEmpresaForm');
+    const errorDiv = document.getElementById('error');
+    const newPassword = document.getElementById('Password');
+    const confirmPassword = document.getElementById('confirmPassword');
+
+    
+        // Limpiar mensaje de error
+        errorDiv.style.display = 'none';
+        errorDiv.innerText = '';
+
+        // Validación de contraseña
+        if (newPassword.value !== confirmPassword.value) {
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = 'Las contraseñas no coinciden. Por favor, inténtalo de nuevo.';
+            setTimeout(function () {
+                errorDiv.style.display = 'none';
+            }, 5000); // Oculta el mensaje después de 5 segundos
+            return;
+        }
 
 
-            // Llenar el combobox de Departamentos
-            var departamentosSelect = document.getElementById('IdDepartamento');
-            departamentosSelect.innerHTML = '<option value="">Seleccione un Departamento</option>';
-            if (data.departamentos && Array.isArray(data.departamentos) && data.departamentos.length > 0) {
-                data.departamentos.forEach(function (departamento) {
-                    departamentosSelect.append(new Option(departamento.descripcion, departamento.id));
-                });
-            } else {
-                var noDepartamentOption = new Option("No hay departamentos disponibles", "", true, false);
-                noDepartamentOption.disabled = true;
-                departamentosSelect.append(noDepartamentOption);
-            }
 
-            // Llenar el combobox de Roles
-            var rolesSelect = document.getElementById('IdRol');
-            rolesSelect.innerHTML = '<option value="">Seleccione un Rol</option>';
-            if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
-                data.roles.forEach(function (rol) {
-                    rolesSelect.append(new Option(rol.descripcion, rol.id));
-                });
-            } else {
-                var noRolOption = new Option("No hay roles disponibles", "", true, false);
-                noRolOption.disabled = true;
-                rolesSelect.append(noRolOption);
-            }
-
-            // Mostrar el modal
-            var modal = new bootstrap.Modal(document.getElementById('createEmployeeModal'));
-            modal.show();
-        });
+        // Enviar el formulario si todo está correcto
+        form.submit();
+}
+function createEmpresa() {
+           // Mostrar el modal
+    var modal = new bootstrap.Modal(document.getElementById('createEmpresaModal'));
+    modal.show();
 }
 function onDepartamentoChange(selectElement, idpuesto) {
     var departamentoId = selectElement.value; // Obtener el ID del departamento seleccionado
