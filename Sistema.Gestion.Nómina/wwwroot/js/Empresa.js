@@ -30,42 +30,21 @@
                         console.error('Error al obtener los detalles del empleado:', error);
                     });
 
-            } else if (action === "editar") {
-                fetch('/Employees/Update/' + id)
+            }
+            else if (action === "editar") {
+                fetch('/Empresa/Details/' + id)
                     .then(response => response.json())
                     .then(data => {
                         // Llenar los campos de edición del empleado en el modal
                         document.getElementById("editId").value = data.id || data.Id;
-                        document.getElementById("editNombre").value = data.nombre || data.Nombre;
-                        document.getElementById("editApellidos").value = data.apellidos || data.Apellidos;
-                        document.getElementById("editSueldo").value = data.sueldo || data.Sueldo;
-                        document.getElementById("editUsuario").value = data.usuario || data.Usuario;
-
-                        // Llenar combobox de puestos
-                        var editPuesto = document.getElementById("editPuesto");
-                        editPuesto.innerHTML = "";  // Limpiar opciones actuales
-                        data.puestos.forEach(function (puesto) {
-                            var isSelected = data.idPuesto === puesto.id;
-                            editPuesto.append(new Option(puesto.descripcion, puesto.id, isSelected, isSelected));
-                        });
-
-                        // Llenar combobox de departamentos
-                        var editDepartamento = document.getElementById("editDepartamento");
-                        editDepartamento.innerHTML = "";  // Limpiar opciones actuales
-                        data.departamento.forEach(function (departamento) {
-                            var isSelected = data.idDepto === departamento.id;
-                            editDepartamento.append(new Option(departamento.descripcion, departamento.id, isSelected, isSelected));
-                        });
-
-                        // Llenar combobox de departamentos
-                        var editRol = document.getElementById("editRol");
-                        editRol.innerHTML = "";  // Limpiar opciones actuales
-                        data.roles.forEach(function (rol) {
-                            editRol.append(new Option(rol.descripcion, rol.id, data.idRol === rol.id, data.idRol === rol.id));
-                        });
+                        document.getElementById("editIdUser").value = data.idUsuario;
+                        document.getElementById("editNombre").value = data.nombre;
+                        document.getElementById("editDireccion").value = data.direccion;
+                        document.getElementById("editTelefono").value = data.telefono;
+                        document.getElementById("editUsuario").value = data.usuario;
 
                         // Mostrar el modal
-                        var modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
+                        var modal = new bootstrap.Modal(document.getElementById('editEmpresaModal'));
                         modal.show();
 
                         // Restablecer el valor del combobox a la opción predeterminada
@@ -96,11 +75,10 @@
 
 });
 
-function createCompany() {
-    const form = document.getElementById('createEmpresaForm');
-    const errorDiv = document.getElementById('error');
-    const newPassword = document.getElementById('Password');
-    const confirmPassword = document.getElementById('confirmPassword');
+function ConfirmPassword(idform, password, confirmpass,error) {
+    const errorDiv = document.getElementById(error);
+    const newPassword = document.getElementById(password);
+    const confirmPassword = document.getElementById(confirmpass);
 
     
         // Limpiar mensaje de error
@@ -116,11 +94,17 @@ function createCompany() {
             }, 5000); // Oculta el mensaje después de 5 segundos
             return;
         }
+}
 
-
-
-        // Enviar el formulario si todo está correcto
+function confirmEdit(idForm,idModal, idForm2) {
+    const form = document.getElementById(idForm);
+    const form2 = document.getElementById(idForm2);
+    var modal = new bootstrap.Modal(document.getElementById(idModal));
+    modal.show();
+    form2.addEventListener('submit', function (event) {
+        event.preventDefault();
         form.submit();
+    });
 }
 function createEmpresa() {
            // Mostrar el modal

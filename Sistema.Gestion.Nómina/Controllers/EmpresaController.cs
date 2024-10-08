@@ -14,7 +14,7 @@ using Sistema.Gestion.Nómina.Services.Logs;
 namespace Sistema.Gestion.Nómina.Controllers
 {
     [Authorize(Roles = "SuperRol")]
-    public class EmpresaController(SistemaGestionNominaContext context, ILogServices logger, IEmpresaServices empresaServices) : Controller
+    public class EmpresaController(SistemaGestionNominaContext context, ILogServices logger, IEmpresaServices empresaServices, Hasher hasher) : Controller
     {
         [HttpGet]
         public async Task<ActionResult> Index(GetEmpresasDTO request)
@@ -101,7 +101,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                     .Select(e => new
                     {
                         Nombre = e.Nombre,
-                        Usuario = e.IdUsuarioNavigation.Usuario1
+                        Usuario = e.IdUsuarioNavigation.Usuario1,
+                        IdUsuario = e.IdUsuario
                     })
                     .FirstOrDefaultAsync();
 
@@ -112,7 +113,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     return RedirectToAction("Index", "Empresa");
                 }
                 empresa.Administrador = admin.Nombre;
-
+                empresa.IdUsuario = admin.IdUsuario;
                 empresa.Usuario = admin.Usuario;
 
                 var session = logger.GetSessionData();
@@ -181,5 +182,43 @@ namespace Sistema.Gestion.Nómina.Controllers
             
         }
 
+        [HttpPost]
+        public async Task<ActionResult> Edit(EditEmpresaDTO request)
+        {
+            try
+            {
+                var empresa = await context.Empresas.SingleAsync(e => e.Id == request.Id);
+                if(empresa == null)
+                {
+                    TempData["Error"] = "Empresa no encontrada";
+                    return RedirectToAction("Index", "Empresa");
+                }
+                empresa.Nombre = request.Nombre;
+                empresa.Direccion = request.Direccion;
+                empresa.Teléfono = request.Telefono;
+                context.Empresas.Update(empresa);
+
+                var user = await context.Usuarios.AsNoTracking().SingleAsync(u => u.Id == request.IdUsuario);
+                user.Usuario1 = request.Usuario;
+                if (!string.IsNullOrEmpty(request.Contrasena))
+                {
+                    user.Contraseña = hasher.HashPassword(request.Contrasena);
+                }
+                context.Usuarios.Update(user);
+                await context.SaveChangesAsync();
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Empresa.Edit", $"Se actualizó empresa con id: {empresa.Id}, Nombre: {empresa.Nombre}", session.nombre);
+
+                TempData["Message"] = "Empresa Actualizada con Exito";
+                return RedirectToAction("Index", "Empresa");
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Empresa.Edit", $"Error al acualizar empresa con id {request.Id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo actualizar empresa";
+                return RedirectToAction("Index", "Empresa");
+            }
+        }
     }
 }
