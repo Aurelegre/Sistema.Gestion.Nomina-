@@ -69,6 +69,13 @@ namespace Sistema.Gestion.Nómina.Controllers
                     return View();
                 }
 
+                //Verificar que la empresa del usuario este activa
+                var stateEmpresa = await context.Empresas.AnyAsync(e => e.Id == usuario.Usuario.IdEmpresa && e.Active == 1);
+                if (!stateEmpresa)
+                {
+                    ModelState.AddModelError("400", "Empresa bloqueada, contacte a soporte.");
+                    return View();
+                }
                 //cofigurar permisos
                 var rol = await context.Roles.SingleAsync(r => r.Id == usuario.Usuario.IdRol);
                 var permissions = await _loginService.GetUserPermission(usuario.Usuario.IdRol);
