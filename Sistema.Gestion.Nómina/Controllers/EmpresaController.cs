@@ -148,7 +148,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                     {
                         Nombre = request.Nombre,
                         Direccion = request.Direccion,
-                        Teléfono = request.Telefono
+                        Teléfono = request.Telefono,
+                        Active = 1
                     };
                     context.Empresas.Add(empresa);
                     await context.SaveChangesAsync();
