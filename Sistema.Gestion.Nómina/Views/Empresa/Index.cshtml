@@ -45,6 +45,7 @@
                     <td>Nombre</td>
                     <td>Dirección</td>
                     <td>Teléfono</td>
+                    <td>Estado</td>
                     <td>Acciones</td>
                     
                 </tr>
@@ -60,15 +61,31 @@
                         <td>@item.Nombre</td>
                         <td>@item.Direccion</td>
                         <td>@item.Telefono</td>
-
+                        @if (item.Active == 1)
+                        {
+                            <td><label class="alert-success" style="padding:2px"><strong>Activa</strong></label></td>
+                        }
+                        else
+                        {
+                            <td><label class="alert-danger" style="padding:2px"><strong>Inactiva</strong></label></td>
+                        }
                         <td>
                             <select class="form-select form-select-sm actions-dropdown">
                                 <option selected>Seleccionar</option>
                                 <option value="editar" data-id="@item.Id"> Editar</option>
-                                <option value="eliminar" data-id="@item.Id">Eliminar</option>
                                 <option value="detalle" data-id="@item.Id">Ver Detalle</option>
+                                @if (item.Active == 1)
+                                {
+                                    <option value="disable" data-id="@item.Id">Desactivar</option>
+                                }
+                                else
+                                {
+                                    <option value="enable" data-id="@item.Id">Activar</option>
+                                }
                             </select>
                         </td>
+                        
+
                     </tr>
 
                     counter++; // Incrementa el contador
@@ -101,11 +118,13 @@ else
 
 @* <partial name="Create" />
 
-<partial name="Delete" />
 <partial name="UnlockUser" /> *@
 <partial name="Create" />
 <partial name="Details" />
 <partial name="Edit" />
 <partial name="ConfirmEdit" />
+<partial name="Disable" />
+<partial name="Enable" />
+
 
 <script src="/js/Empresa.js" asp-append-version="true"></script>

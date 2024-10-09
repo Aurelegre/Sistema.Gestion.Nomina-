@@ -50,19 +50,20 @@
                         // Restablecer el valor del combobox a la opción predeterminada
                         dropdown.value = "Seleccionar";
                     });
-            } else if (action === "eliminar") {
-                document.getElementById("deleteId").value = id;
+            }
+            else if (action === "disable") {
+                document.getElementById("disableId").value = id;
                 // Mostrar el modal
-                var modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                var modal = new bootstrap.Modal(document.getElementById('disableConfirmationModal'));
                 modal.show();
 
 
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
-            } else if (action === "desbloquear") {
-                document.getElementById("unlockId").value = id;
+            } else if (action === "enable") {
+                document.getElementById("enableId").value = id;
                 // Mostrar el modal
-                var modal = new bootstrap.Modal(document.getElementById('unlockConfirmationModal'));
+                var modal = new bootstrap.Modal(document.getElementById('enableConfirmationModal'));
                 modal.show();
 
 

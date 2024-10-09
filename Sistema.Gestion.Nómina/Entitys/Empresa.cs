@@ -12,6 +12,8 @@ public partial class Empresa
     public string? Direccion { get; set; }
 
     public string? Teléfono { get; set; }
+    
+    public int? Active { get; set; }
 
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
 

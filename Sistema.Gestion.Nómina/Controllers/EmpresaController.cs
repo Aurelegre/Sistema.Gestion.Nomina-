@@ -42,7 +42,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                         Id = u.Id,
                         Nombre = u.Nombre,
                         Direccion = u.Direccion,
-                        Telefono = u.Teléfono
+                        Telefono = u.Teléfono,
+                        Active = u.Active
                     })
                     .ToListAsync();
 
@@ -217,6 +218,62 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Empresa.Edit", $"Error al acualizar empresa con id {request.Id}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "No se pudo actualizar empresa";
+                return RedirectToAction("Index", "Empresa");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Disable(int id)
+        {
+            try
+            {
+                var empresa = await context.Empresas.AsNoTracking().SingleAsync(e => e.Id == id);
+                if (empresa == null)
+                {
+                    TempData["Error"] = "Empresa no encontrada";
+                    return RedirectToAction("Index", "Empresa");
+                }
+                empresa.Active = 0;//desactivar empresa
+                context.Empresas.Update(empresa);
+                await context.SaveChangesAsync();
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Empresa.Disable", $"Se desactivó la empresa con id: {id}", session.nombre);
+                TempData["Message"] = "Empresa desactivada con éxito";
+                return RedirectToAction("Index", "Empresa");
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Empresa.Disable", $"Error al desactivar empresa con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo desactivar Empresa";
+                return RedirectToAction("Index", "Empresa");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Enable(int id)
+        {
+            try
+            {
+                var empresa = await context.Empresas.AsNoTracking().SingleAsync(e => e.Id == id);
+                if (empresa == null)
+                {
+                    TempData["Error"] = "Empresa no encontrada";
+                    return RedirectToAction("Index", "Empresa");
+                }
+                empresa.Active = 1;//activar empresa
+                context.Empresas.Update(empresa);
+                await context.SaveChangesAsync();
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Empresa.Enable", $"Se activó la empresa con id: {id}", session.nombre);
+                TempData["Message"] = "Empresa activada con éxito";
+                return RedirectToAction("Index", "Empresa");
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Empresa.Enable", $"Error al activar empresa con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo activar Empresa";
                 return RedirectToAction("Index", "Empresa");
             }
         }
