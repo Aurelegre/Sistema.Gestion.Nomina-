@@ -90,16 +90,17 @@ namespace Sistema.Gestion.Nómina.Services
 
         private async Task<bool> CheckAndHandleUserBlocking(Usuario usuario)
         {
+            bool result = false;
             int maxAttempts = 3; // Hacer configurable
             if (usuario.Attempts >= maxAttempts && usuario.activo == 1)
             {
                 // Bloquear al usuario si supera el máximo de intentos
                 usuario.activo = 0;
-                context.Usuarios.Update(usuario);
-                await context.SaveChangesAsync(); // Es mejor hacer un guardado asíncrono
-                return true;
+                result = true;
             }
-            return false;
+            context.Usuarios.Update(usuario);
+            await context.SaveChangesAsync(); // Es mejor hacer un guardado asíncrono
+            return result;
         }
 
 
