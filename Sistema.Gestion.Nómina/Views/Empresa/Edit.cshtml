@@ -1,0 +1,61 @@
+﻿<!-- Modal para editar empresa -->
+<div class="modal fade" id="editEmpresaModal" tabindex="-1" aria-labelledby="editEmpresaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEmpresaModalLabel">Editar Empresa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Empresa" asp-action="Edit" method="post" id="editEmpresaForm">
+                    <input type="hidden" id="editId" name="Id" />
+                    <input type="hidden" id="editIdUser" name="IdUsuario" />
+                    <div class="mb-3 form-group">
+                        <label for="editNombre" class="form-label">Nombre de la Empresa</label>
+                        <input type="text" class="form-control" id="editNombre" name="Nombre" required maxlength="100">
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="editDireccion" class="form-label">Dirección de la Empresa</label>
+                        <input type="text" class="form-control" id="editDireccion" name="Direccion" required maxlength="150">
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="editTelefono" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="editTelefono" name="Telefono" required
+                               maxlength="15"
+                               pattern="^\+?[0-9]{1,4}?[-. ]?(\(?\d{1,3}?\)?[-. ]?)?\d{4}[-. ]?\d{4}$"
+                               title="Ingrese un número de teléfono válido (ejemplo: +502-4567-8990)">
+                        <div class="form-text">Formato sugerido: +502-4567-8990</div>
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="IdUsuario" class="form-label">Correo de Usuario</label>
+                        <input type="email" class="form-control" id="editUsuario" name="Usuario"
+                               oninput="this.value = this.value.toUpperCase()"
+                               required maxlength="100" minlength="5"
+                               autocomplete="email"
+                               placeholder="correo@ejemplo.com"
+                               pattern="[a-z0-9._%+-]+@@[a-z0-9.-]+\.[a-z]{2,}$"
+                               title="Ingrese una dirección de correo válida">
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="Password" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="editPassword" name="Contrasena"
+                                minlength="8" maxlength="100"
+                               title="La contraseña debe tener al menos 8 caracteres" />
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                        <input type="password" class="form-control" id="editconfirmPassword" name="Contrasena"
+                                minlength="8" maxlength="100"
+                               title="La contraseña debe tener al menos 8 caracteres" />
+                    </div>
+                    <div class="mb-3 form-group modal-footer">
+                        <div id="editError" class="alert alert-danger" style="display:none;"></div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="ConfirmPassword('editEmpresaForm','editPassword','editconfirmPassword','editError'), confirmEdit('editEmpresaForm','editConfirmationModal','ConfirmEditEmpresa')">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

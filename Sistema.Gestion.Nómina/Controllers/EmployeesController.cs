@@ -16,9 +16,9 @@ using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Logs;
 
 namespace Sistema.Gestion.Nómina.Controllers
-{
+{   [Authorize]
     [Controller]
-    [Authorize]
+    
     public class EmployeesController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
     {
         [HttpGet]
@@ -29,7 +29,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 var session = logger.GetSessionData();
                 var query = context.Empleados
-                    .Where(e => e.Activo == 1 && e.IdEmpresa == session.company);
+                    .Where(e => e.Activo == 1 && e.IdEmpresa == session.company && !e.Dpi.Equals("0") && !e.Apellidos.Equals("Administrador"));
 
                 // Aplicar filtros
                 if (!string.IsNullOrEmpty(request.DPI))

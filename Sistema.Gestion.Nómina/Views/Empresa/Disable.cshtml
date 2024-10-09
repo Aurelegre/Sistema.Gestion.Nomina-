@@ -1,0 +1,22 @@
+﻿<!-- Modal de Confirmación de desactivación -->
+<div class="modal fade" id="disableConfirmationModal" tabindex="-1" aria-labelledby="disableConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="disableConfirmationModalLabel">Confirmar Desactivación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body alert alert-danger">
+                <strong>¿Está seguro de desactivar esta Empresa?</strong>
+            </div>
+            <div class="modal-footer ">
+                <form asp-controller="Empresa" asp-action="Disable" method="post">
+                    <input type="hidden" id="disableId" name="Id" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="confirmDeleteBtn" class="btn btn-danger">Desactivar</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
