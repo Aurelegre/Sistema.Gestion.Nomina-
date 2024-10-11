@@ -255,7 +255,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 empleado.Apellidos = request.Apellidos;
                 empleado.Sueldo = request.Sueldo;
                 var puesto = await context.Puestos.SingleAsync(p => p.Id == request.IdPuesto);
-                if (puesto.Descripcion.Equals("Jefe"))
+                if (puesto.Descripcion.Equals("Jefe")&& empleado.IdPuesto != puesto.Id)
                 {
                     var asignedEmployee = await context.Empleados.CountAsync(e => e.IdPuesto == puesto.Id);//buscar si un empleado tiene ese puesto
                     if(asignedEmployee > 0)
@@ -265,7 +265,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     }
                     else
                     {
-                        var depto = await context.Departamentos.SingleAsync(d => empleado.Id == request.IdDepartamento);//buscar el departamento asignado
+                        var depto = await context.Departamentos.SingleAsync(d => d.Id == request.IdDepartamento);//buscar el departamento asignado
                         depto.IdJefe = empleado.Id;//asigno el jefe al dpto
                         //actualizar Depto
                         context.Departamentos.Update(depto);
@@ -376,7 +376,17 @@ namespace Sistema.Gestion.Nómina.Controllers
                         TempData["Error"] = "El correo ya está asignado a otro empleado";
                         return RedirectToAction("Index", "Employees");
                     }
-
+                    // verificar que si el puesto es Jefe, verificar que no esté asignado a otro empleado
+                    var puesto = await context.Puestos.SingleAsync(p => p.Id == request.IdPuesto);
+                    if (puesto.Descripcion.Equals("Jefe"))
+                    {
+                        var asignedEmployee = await context.Empleados.CountAsync(e => e.IdPuesto == puesto.Id);//buscar si un empleado tiene ese puesto
+                        if (asignedEmployee > 0)
+                        {
+                            TempData["Error"] = "Ya existe un Jefe en el Departamento asignado";
+                            return RedirectToAction("Index", "Employees");
+                        }
+                    }
                     // Crear usuario
                     var user = new Usuario
                     {
@@ -412,6 +422,14 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                     // Obtener el ID del empleado recién creado
                     int idEmpleado = empleado.Id;
+
+                    //si el puesto asignado es Jefe, actualizar Departamento
+                    if (puesto.Descripcion.Equals("Jefe"))
+                    {
+                        var depto = await context.Departamentos.AsNoTracking().SingleAsync(d => d.Id == request.IdDepartamento);
+                        depto.IdJefe = idEmpleado;
+                        context.Departamentos.Update(depto);
+                    }
 
                     // Crear familiares
                     foreach (var familia in request.FamilyEmployeeDTOs)
