@@ -88,7 +88,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                                                        {
                                                            Id = d.Id,
                                                            Descripcion = d.Descripcion,
-                                                           Jefe = d.IdJefeNavigation.Nombre
+                                                           Jefe = d.IdJefeNavigation.Nombre,
+                                                           IdJefe = d.IdJefe
                                                        }).FirstOrDefaultAsync();
                 if(depto == null)
                 {
@@ -97,6 +98,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
 
                 depto.Puestos = await ObtenerPuestos(id);
+                depto.empleadoPuesto = await Obtenerempleados(id, depto.IdJefe);
 
                 var session = logger.GetSessionData();
                 await logger.LogTransaction(session.idEmpleado, session.company, "Departamento.Details", $"Se consultaron detalles del departamendo con id: {id}", session.nombre);
@@ -173,6 +175,38 @@ namespace Sistema.Gestion.Nómina.Controllers
                     return RedirectToAction("Index", "Departamento");
                 }
                 depto.Descripcion = request.Descripcion;
+
+                if(!(request.idJefe == depto.IdJefe))
+                {
+                    var newJefe = await context.Empleados
+                                                .AsNoTracking()
+                                                .SingleAsync(e => e.Id == request.idJefe);
+                   
+                    if(depto.IdJefe != null)
+                    {
+                        var oldjefe = await context.Empleados
+                                              .AsNoTracking()
+                                              .SingleAsync(e => e.Id == depto.IdJefe);
+                        newJefe.IdPuesto = oldjefe.IdPuesto;// acutalizar el puesto del nuevo jefe
+                        oldjefe.IdPuesto = null; // dejar al anterior jefe sin puestos
+                        context.Empleados.Update(oldjefe);
+
+                    }
+                    else
+                    {
+                        var idPuesto = await context.Puestos
+                                                    .AsNoTracking()
+                                                    .SingleAsync(p => p.IdDepartamento == depto.Id && p.Descripcion.Equals("Jefe"));
+                        if (idPuesto == null)
+                        {
+                            TempData["Error"] = "No existe el puesto Jefe dentro del Departamento";
+                            return RedirectToAction("Index", "Departamento");
+                        }
+                        newJefe.IdPuesto = idPuesto.Id;
+                    }
+                    context.Empleados.Update(newJefe);
+                    depto.IdJefe = request.idJefe;                 
+                }
                 context.Departamentos.Update(depto);
                 await context.SaveChangesAsync();
 
@@ -260,6 +294,35 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Departamento.ObtenerPuestos", $"Error al consultar puestos del departamento {idDepartamento}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+        }
+        private async Task<List<EmpleadoPuestoDTO>> Obtenerempleados(int? idDepartamento, int? idJefe)
+        {
+            try
+            {
+                var empleado = await context.Empleados
+                                            .Where(p => p.IdDepartamento == idDepartamento && p.Id != idJefe)
+                                            .AsNoTracking()
+                                            .Select(e=> new EmpleadoPuestoDTO
+                                            {
+                                                idEmpleado = e.Id,
+                                                Empleado = e.Nombre,
+                                                idPuesto = e.IdPuesto,
+                                                Puesto = e.IdPuestoNavigation.Descripcion
+                                            })
+                                            .ToListAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Departamento.Empleados", $"Se consultaron Empleados del departamento {idDepartamento}", session.nombre);
+
+                return empleado;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Departamento.Empleados", $"Error al consultar Empleados del departamento {idDepartamento}", ex.Message, ex.StackTrace);
                 return null;
             }
 

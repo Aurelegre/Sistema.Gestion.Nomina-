@@ -51,7 +51,20 @@
                         // Llenar los campos de edición del empleado en el modal
                         document.getElementById("editId").value = data.id || data.Id;
                         document.getElementById("editDescripcion").value = data.descripcion || data.Descripcion;
+                        // Llenar el combobox de Departamentos
+                        var empleadosSelect = document.getElementById('editJefe');
+                        empleadosSelect.innerHTML = `<option value="${data.idJefe}">${data.jefe}</option>`;
 
+                        if (data.empleadoPuesto && Array.isArray(data.empleadoPuesto) && data.empleadoPuesto.length > 0) {
+                            data.empleadoPuesto.forEach(function (empleado) {
+                                empleadosSelect.append(new Option(empleado.empleado, empleado.idEmpleado))
+                            });
+                        }
+                        //else {
+                        //    var noDepartamentOption = new Option("No hay empleados disponibles", "", true, false);
+                        //    noDepartamentOption.disabled = true;
+                        //    departamentosSelect.append(noDepartamentOption);
+                        //}
                         // Mostrar el modal
                         var modal = new bootstrap.Modal(document.getElementById('editDeptoModal'));
                         modal.show();
