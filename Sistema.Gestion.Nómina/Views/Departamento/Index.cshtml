@@ -1,4 +1,5 @@
 ﻿@using Sistema.Gestion.Nómina.DTOs.Departamentos
+@using Sistema.Gestion.Nómina.Helpers
 @model PaginatedResult<GetDepartamentosResponse>
 
 @{
@@ -10,9 +11,12 @@
 
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="my-3">Departamentos</h1>
-    <button type="button" class="btn btn-primary" onclick="fetchDepto(0)">
+    @if (PermissionHelper.HasPermission("Departamento.Crear"))
+    {
+        <button type="button" class="btn btn-primary" onclick="fetchDepto(0)">
         <i class="bi bi-plus-circle-fill" style="font-size: 20px"></i>&emsp;Crear Departamento
-    </button>
+        </button>
+    }
 </div>
 
 <!-- Filtros de Búsqueda -->
@@ -65,10 +69,22 @@
                         <td>
                             <select class="form-select form-select-sm actions-dropdown" id="selectId">
                                 <option selected>Seleccionar</option>
-                                <option value="editar" data-id="@item.Id"> Editar</option>
-                                <option value="eliminar" data-id="@item.Id">Eliminar</option>
-                                <option value="detalle" data-id="@item.Id">Ver detalle</option>
-                                <option value="puesto" data-id="@item.Id">Crear Puesto</option>
+                                @if (PermissionHelper.HasPermission("Departamento.Actualizar"))
+                                {
+                                    <option value="editar" data-id="@item.Id"> Editar</option>
+
+                                }@if (PermissionHelper.HasPermission("Departamento.Eliminar"))
+                                {
+                                    <option value="eliminar" data-id="@item.Id">Eliminar</option>
+
+                                }@if (PermissionHelper.HasPermission("Departamento.Ver"))
+                                {
+                                    <option value="detalle" data-id="@item.Id">Ver detalle</option>
+
+                                }@if (PermissionHelper.HasPermission("Puesto.Crear") && PermissionHelper.HasPermission("Departamento.Actualizar"))
+                                {
+                                    <option value="puesto" data-id="@item.Id">Crear Puesto</option>
+                                }
                             </select>
                         </td>
                     </tr>
@@ -98,7 +114,7 @@
 }
 else
 {
-    <p>No hay roles disponibles.</p>
+    <p>No hay Departamentos disponibles.</p>
 }
 
 <partial name="Edit" />

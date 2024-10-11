@@ -1,4 +1,5 @@
 ﻿@using Sistema.Gestion.Nómina.DTOs.Permisos
+@using Sistema.Gestion.Nómina.Helpers
 @model GetPermissionViewModel
 <partial name="Messages" />
 
@@ -69,7 +70,10 @@
                 counter++;
             }
         </div>
-        <button type="submit" class="btn btn-primary">Guardar</button>
+        @if (PermissionHelper.HasPermission("Permisos.Actualizar"))
+        {
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        }
     </form>
 </div>
 
