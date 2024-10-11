@@ -254,14 +254,35 @@ namespace Sistema.Gestion.Nómina.Controllers
                 empleado.Nombre = request.Nombre;
                 empleado.Apellidos = request.Apellidos;
                 empleado.Sueldo = request.Sueldo;
-                empleado.IdPuesto = request.IdPuesto;
+                var puesto = await context.Puestos.SingleAsync(p => p.Id == request.IdPuesto);
+                if (puesto.Descripcion.Equals("Jefe"))
+                {
+                    var asignedEmployee = await context.Empleados.CountAsync(e => e.IdPuesto == puesto.Id);//buscar si un empleado tiene ese puesto
+                    if(asignedEmployee > 0)
+                    {
+                        TempData["Error"] = "Ya existe un jefe en el departamento";
+                        return RedirectToAction("Index", "Employees");
+                    }
+                    else
+                    {
+                        var depto = await context.Departamentos.SingleAsync(d => empleado.Id == request.IdDepartamento);//buscar el departamento asignado
+                        depto.IdJefe = empleado.Id;//asigno el jefe al dpto
+                        //actualizar Depto
+                        context.Departamentos.Update(depto);
+                        empleado.IdPuesto = request.IdPuesto;//asigno el puesto jefe
+                    }
+                }
+                else
+                {
+                    empleado.IdPuesto = request.IdPuesto;
+                }
                 empleado.IdDepartamento = request.IdDepartamento;
-
-
                 context.Update(empleado);
+                //actualizar ROl
                 var user = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync(); 
                 user.IdRol = request?.IdRol;
                 context.Usuarios.Update(user);
+                //Guardar Cambios
                 await context.SaveChangesAsync();
 
                 var session = logger.GetSessionData();
