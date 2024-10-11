@@ -1,9 +1,4 @@
 ﻿@using Sistema.Gestion.Nómina.Helpers 
-@inject IHttpContextAccessor HttpContextAccessor
-
-@{
-    var httpContext = HttpContextAccessor.HttpContext;
-}
 
 
 <!DOCTYPE html>
@@ -42,7 +37,7 @@
                 <li class="nav-item">
                     <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door-fill"></i> Home</a>
                 </li>
-                @if (PermissionHelper.HasRole(httpContext, "SuperRol"))
+                @if (PermissionHelper.HasRole( "SuperRol"))
                 {
                     <li class="nav-item">
                         <a class="nav-link text-light" asp-area="" asp-controller="Empresa" asp-action="Index">
@@ -50,7 +45,7 @@
                         </a>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission(httpContext, "Empleados.Listar"))
+                @if (PermissionHelper.HasPermission( "Empleados.Listar"))
                 {
                     <li class="nav-item">
                         <a class="nav-link text-light" asp-area="" asp-controller="Employees" asp-action="Index">
@@ -58,9 +53,9 @@
                         </a>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission(httpContext, "Departamento.Listar") ||
-                        PermissionHelper.HasPermission(httpContext, "Roles.Listar") ||
-                        PermissionHelper.HasPermission(httpContext, "Puesto.Listar"))
+                @if (PermissionHelper.HasPermission( "Departamento.Listar") ||
+                        PermissionHelper.HasPermission( "Roles.Listar") ||
+                        PermissionHelper.HasPermission( "Puesto.Listar"))
                 {
 
                     <li class="nav-item">
@@ -76,16 +71,16 @@
                             <!-- Collapsible content (Roles link) -->
                             <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    @if (PermissionHelper.HasPermission(httpContext, "Roles.Listar"))
+                                    @if (PermissionHelper.HasPermission( "Roles.Listar"))
                                     {
                                         <a class="nav-link text-light ps-3" asp-area="" asp-controller="Rol" asp-action="Index">Roles</a>
                                     }
-                                    @if (PermissionHelper.HasPermission(httpContext, "Departamento.Listar"))
+                                    @if (PermissionHelper.HasPermission( "Departamento.Listar"))
                                     {
                                         <a class="nav-link text-light ps-3" asp-area="" asp-controller="Departamento" asp-action="Index">Departamentos</a>
 
                                     }
-                                    @if (PermissionHelper.HasPermission(httpContext, "Puesto.Listar"))
+                                    @if (PermissionHelper.HasPermission( "Puesto.Listar"))
                                     {
                                         <a class="nav-link text-light ps-3" asp-area="" asp-controller="Puesto" asp-action="Index">Puesto</a>
 

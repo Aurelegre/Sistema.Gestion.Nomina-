@@ -37,7 +37,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 
 var app = builder.Build();
-
+PermissionHelper.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -55,7 +55,6 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Login}/{action=Login}/{id?}");
