@@ -1,4 +1,6 @@
 ﻿@using Sistema.Gestion.Nómina.DTOs.Empleados
+@using Sistema.Gestion.Nómina.Helpers
+
 @model PaginatedResult<GETEmpleadosResponse>
 
 @{
@@ -10,9 +12,12 @@
 
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="my-3">Empleados</h1>
-    <button type="button" class="btn btn-primary" onclick="fetchEmployeeData(0)">
-        Crear Empleado
-    </button>
+    @if (PermissionHelper.HasPermission("Empleados.Crear"))
+    {
+        <button type="button" class="btn btn-primary" onclick="fetchEmployeeData(0)">
+            Crear Empleado
+        </button>
+    }
 </div>
 
 <!-- Filtros de Búsqueda -->
@@ -89,12 +94,22 @@
                         <td>
                             <select class="form-select form-select-sm actions-dropdown">
                                 <option selected>Seleccionar</option>
-                                <option value="editar" data-id="@item.Id"> Editar</option>
-                                <option value="eliminar" data-id="@item.Id">Eliminar</option>
-                                <option value="detalle" data-id="@item.Id">Ver Detalle</option>
-                                @if (item.estado == 0)
+                                @if (PermissionHelper.HasPermission("Empleados.Actualizar"))
+                                {
+                                    <option value="editar" data-id="@item.Id"> Editar</option>
+
+                                }@if (PermissionHelper.HasPermission("Empleados.Eliminar"))
+                                {
+                                    <option value="eliminar" data-id="@item.Id">Eliminar</option>
+
+                                }@if (PermissionHelper.HasPermission("Empleados.Ver"))
+                                {
+                                    <option value="detalle" data-id="@item.Id">Ver Detalle</option>
+
+                                }@if (PermissionHelper.HasPermission("Empleados.Actualizar") && item.estado == 0)
                                 {
                                     <option value="desbloquear" data-id="@item.idUser">Desbloquear</option>
+
                                 }
                             </select>
                         </td>
