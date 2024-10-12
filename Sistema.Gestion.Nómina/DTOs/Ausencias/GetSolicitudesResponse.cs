@@ -5,9 +5,8 @@
         public int Id { get; set; }
         public string Nombre { get; set; }
         public int? Estado { get; set; }
-        public DateTime FechaSolicitud { get; set; }
-        public DateTime FechaInicio { get; set; }
-        public DateTime FechaFin { get; set; }
-        public string Depto { get; set; }
+        public DateOnly FechaSolicitud { get; set; }
+        public DateOnly FechaInicio { get; set; }
+        public DateOnly FechaFin { get; set; }
     }
 }

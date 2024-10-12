@@ -11,8 +11,12 @@
 
 
 <div class="d-block justify-content-between align-items-center">
-    <h1 class="my-3">Solicitudes de Ausencia</h1>
-    <h3 class="my-4">Departamento: @Model.Items.Select(d=> d.Depto).First()</h3>
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="my-3">Solicitudes de Ausencia</h1>
+        <a method="get" asp-controller="Ausencias" asp-action="Index" class="btn btn-primary" style="font-size: 20px"><i class="bi bi-box-arrow-in-left"></i></a>
+    </div>
+    
+    <h3 class="my-4" style="margin-top:-40px">Departamento: <strong>@ViewBag.Depto</strong></h3>
 </div>
 
 <!-- Filtros de Búsqueda -->

@@ -90,6 +90,14 @@
                         </div>
                     </li>
                 }
+                @if (PermissionHelper.HasPermission("Empleados.Listar"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-light" asp-area="" asp-controller="Ausencias" asp-action="Index">
+                            <i class="bi bi-calendar-x-fill"></i> Ausencias
+                        </a>
+                    </li>
+                }
             </ul>
         </div>
         <!-- /#sidebar-wrapper -->

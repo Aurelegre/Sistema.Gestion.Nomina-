@@ -30,9 +30,11 @@ namespace Sistema.Gestion.Nómina.Controllers
                     query = query.Where(q => q.Autorizado == request.Estado);
                 }
                 if(request.Tipo != 0)
-                {
+                {   //0 = Todos
                     //1 = traer deducible
-                    //2 = traer no deducibles
+                    //2 = trare Pendientes
+                    //3 = traer no deducibles
+
                     query = query.Where(q => q.Deducible == request.Tipo);
                 }
                 bool isjefe = await context.Departamentos.AnyAsync(d => d.IdJefe == session.idEmpleado);
@@ -50,7 +52,6 @@ namespace Sistema.Gestion.Nómina.Controllers
                         FechaSolicitud = DateOnly.FromDateTime( u.FechaSolicitud),
                         FechaInicio = DateOnly.FromDateTime( u.FechaInicio),
                         FechaFin = DateOnly.FromDateTime(u.FechaFin),
-                        IsJefe = isjefe
                     })
                     .ToListAsync();
 
@@ -64,6 +65,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 // Pasar filtros a la vista
                 ViewBag.Tipo = request.Tipo;
                 ViewBag.Estado = request.Estado;
+                ViewBag.IsJefe = isjefe;
 
                 // Registrar en bitácora
                 await logger.LogTransaction(session.idEmpleado, session.company, "Ausencias.Index", $"Se consultaron todas las ausencias del empleado{session.idEmpleado} y se envió a la vista", session.nombre);
@@ -112,11 +114,10 @@ namespace Sistema.Gestion.Nómina.Controllers
                     {
                         Id = u.Id,
                         Nombre = u.IdEmpleadoNavigation.Nombre.Substring(0, u.IdEmpleadoNavigation.Nombre.IndexOf(" ") != -1 ? u.IdEmpleadoNavigation.Nombre.IndexOf(" ") : u.IdEmpleadoNavigation.Nombre.Length) + " " + u.IdEmpleadoNavigation.Apellidos.Substring(0, u.IdEmpleadoNavigation.Apellidos.IndexOf(" ") != -1 ? u.IdEmpleadoNavigation.Apellidos.IndexOf(" ") : u.IdEmpleadoNavigation.Apellidos.Length),
-                        FechaSolicitud = u.FechaSolicitud,
                         Estado= u.Autorizado,
-                        FechaFin = u.FechaFin,
-                        FechaInicio = u.FechaInicio,
-                        Depto = depto.Descripcion
+                        FechaSolicitud = DateOnly.FromDateTime(u.FechaSolicitud),
+                        FechaInicio = DateOnly.FromDateTime(u.FechaInicio),
+                        FechaFin = DateOnly.FromDateTime(u.FechaFin),
                     })
                     .ToListAsync();
 
@@ -130,6 +131,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 // Pasar filtros a la vista
                 ViewBag.Empleado = request.Empleado;
                 ViewBag.Fecha = request.fechaSoli;
+                ViewBag.Depto = depto.Descripcion;
 
                 // Registrar en bitácora
                 await logger.LogTransaction(session.idEmpleado, session.company, "Ausencias.GetSolicitudes", $"Se consultaron todas las solicitudes del departamendo {depto.Id} {depto.Descripcion}", session.nombre);
@@ -181,7 +183,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                         TotalDias = (fechafin - fechaInicio).Days,
                         Detalle = request.Detalle,
                         Autorizado = 2,
-                        Deducible = 0,
+                        Deducible = 2,
                         FechaAutorizado = null
                     };
                     context.Ausencias.Add(ausencia);

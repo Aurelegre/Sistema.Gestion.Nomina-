@@ -10,42 +10,47 @@
 <partial name="Messages" />
 
 
-<div class="d-flex justify-content-between align-items-center">
-    <h1 class="my-3">Empleados</h1>
-    <div class="d-flex justify-content-center">
-        @if (Model.Items.Any(e=> e.IsJefe == true))
+<div class="row align-items-center">
+    <div class="col-12 col-md-auto">
+        <h1 class="my-3 text-center text-md-start">Historial Solicitudes</h1>
+    </div>
+
+    <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
+
+        @if (ViewBag.IsJefe)
         {
-            <button type="button" class="btn btn-secondary" onclick="fetchEmployeeData(0)" style="margin-right: 10px">
+            <button type="button" class="btn btn-secondary mb-2 me-1 me-md-2" onclick="fetchEmployeeData(0)">
                 Historial del Departamento
             </button>
-            <button type="button" class="btn btn-secondary" onclick="fetchEmployeeData(0)" style="margin-right: 10px">
+            <a type="button" method="get" asp-controller="Ausencias" asp-action="GetSolicitudes" class="btn btn-secondary mb-2  me-1 me-md-2 ">
                 Autorizar Ausencias
-            </button>
+            </a>
         }
+
         @if (PermissionHelper.HasPermission("Empleados.Crear"))
         {
-            <button type="button" class="btn btn-primary" onclick="createAusencia()">
+            <button type="button" class="btn btn-primary mb-2">
                 Solicitar Ausencia
             </button>
         }
     </div>
-    
 </div>
-
 <!-- Filtros de Búsqueda -->
 <!-- Filtros de Búsqueda -->
 <form method="get" asp-controller="Ausencias" asp-action="Index" class="mb-4">
     <div class="row">
         <div class="col-md-3">
             <label for="Tipo">Tipo</label>
-            <select onselect=@ViewBag.Tipo name="Tipo" class="form-control" id="Tipo">
-                <option value=1>Deducible</option>
-                <option value=2>No Deducible</option>
+            <select name="Tipo" class="form-control" id="Tipo" value="@ViewBag.Tipo">
+                <option value="0">Todos</option>
+                <option value="1">Deducible</option>
+                <option value="2">Pendiente</option>
+                <option value="3">No Deducible</option>
             </select>
         </div>
         <div class="col-md-3">
             <label for="Estado">Estado</label>
-            <select onselect=@ViewBag.Estado name="Estado" class="form-control" id="Estado">
+            <select value="@ViewBag.Estado" name="Estado" class="form-control" id="Estado">
                 <option value=0>Todos</option>
                 <option value=1>Autorizado</option>
                 <option value=2>Pendiente</option>
@@ -101,7 +106,7 @@
                             <td><label class="alert-warning" style="padding:2px"><strong>Pendiente</strong></label></td>
 
                         }
-                        @if(item.Deducible == 0)
+                        @if(item.Deducible == 2)
                         {
                             <td><label class="alert-warning" style="padding:2px"><strong>Pendiente</strong></label></td>
                         }
@@ -109,7 +114,7 @@
                         {
                             <td><label class="alert-danger" style="padding:2px"><strong>Deducible</strong></label></td>
                         }
-                        else if (item.Deducible == 2)
+                        else if (item.Deducible == 3)
                         {
                             <td><label class="alert-success" style="padding:2px"><strong>No Deducible</strong></label></td>
                         }
