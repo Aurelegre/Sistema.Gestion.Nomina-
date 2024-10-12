@@ -60,10 +60,14 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.Property(e => e.FechaFin).HasColumnType("datetime");
             entity.Property(e => e.FechaInicio).HasColumnType("datetime");
             entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
+            entity.Property(e => e.FechaAutorizado).HasColumnType("datetime");
 
             entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Ausencia)
                 .HasForeignKey(d => d.IdEmpleado)
                 .HasConstraintName("FK_Ausencias_Empleados");
+            entity.HasOne(d => d.idJefeNavigation).WithMany(p => p.AusenciaJefe)
+                .HasForeignKey(d => d.idJefe)
+                .HasConstraintName("FK_Ausencias_Jefe");
         });
 
         modelBuilder.Entity<Departamento>(entity =>

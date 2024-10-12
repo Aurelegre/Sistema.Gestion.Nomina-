@@ -28,6 +28,8 @@ public partial class Empleado
 
     public virtual ICollection<Ausencia> Ausencia { get; set; } = new List<Ausencia>();
 
+    public virtual ICollection<Ausencia> AusenciaJefe { get; set; } = new List<Ausencia>();
+
     public virtual ICollection<Familia> Familia { get; set; } = new List<Familia>(); 
 
     public virtual ICollection<HistorialPago> HistorialPagos { get; set; } = new List<HistorialPago>();
