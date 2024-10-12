@@ -145,8 +145,40 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
             }
         }
+        [HttpPost]
+        public async Task<ActionResult> Authorize(AuthorizeDTO request)
+        {   var session = logger.GetSessionData();
+            try
+            {
+                
+                var ausencia = await context.Ausencias.SingleAsync(a => a.Id == request.Id);
+                if (ausencia == null)
+                {
+                    TempData["Error"] = "La ausencia seleccionada no existe";
+                    return RedirectToAction("Index", "Ausencias");
+                }
+                ausencia.Autorizado = request.Estado;
+                ausencia.Deducible = request.Tipo;
+                ausencia.FechaAutorizado = DateTime.Now;
+                ausencia.idJefe = session.idEmpleado;
+                context.Ausencias.Update(ausencia);
+                await context.SaveChangesAsync();
 
-        
+                string accion = request.Estado == 1 ? "Autorizada" : request.Estado == 3 ? "Denegada" : "Error";
+
+                //registrar bitácora
+                await logger.LogTransaction(session.idEmpleado, session.company, "Ausencias.Authorize", $"Fue {accion} la ausencia del empleado id: {ausencia.IdEmpleado}, por parte de el empleado: {request.Id}", session.nombre);
+
+                TempData["Message"] = $"Ausencia {accion} con éxito";
+                return RedirectToAction("Index", "Ausencias");
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Ausencias.Authorize", "Error al Autorizar o denegar Solicitud de ausencia", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo crear el empleado";
+                return RedirectToAction("Index", "Ausencias");
+            }
+        }
         // GET: AusenciasController/Edit/5
         public ActionResult Edit(int id)
         {
