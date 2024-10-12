@@ -85,7 +85,6 @@ namespace Sistema.Gestion.Nómina.Controllers
             return View();
         }
 
-
         // POST: AusenciasController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -103,12 +102,14 @@ namespace Sistema.Gestion.Nómina.Controllers
                     var exist = await context.Ausencias.AnyAsync(a => a.FechaInicio < fechaInicio && a.FechaFin > fechaInicio && a.IdEmpleado == session.idEmpleado);
                     //verificar que la ausencia sea mayor a la fecha actual
                     var fecha = DateTime.Now > fechaInicio ? true : false;
+                    //verificar que la fecha inicio sea menor a la del final
+                    var mayor = fechaInicio > fechafin ? true : false;
                     if (exist)
                     {
                         TempData["Error"] = "Ya existe una ausencia registrada en este rango de fechas";
                         return RedirectToAction("Index", "Ausencias");
                     }
-                    if (fecha)
+                    if (fecha || mayor)
                     {
                         TempData["Error"] = "Las Fechas ingresadas no son válidas";
                         return RedirectToAction("Index", "Ausencias");
@@ -145,6 +146,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
+        
         // GET: AusenciasController/Edit/5
         public ActionResult Edit(int id)
         {
