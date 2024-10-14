@@ -127,6 +127,11 @@
                                     <option value="detalle" data-id="@item.Id">Ver Detalle</option>
 
                                 }
+                                @if (PermissionHelper.HasPermission("Empleados.Actualizar") && item.Estado == 2)
+                                {
+                                    <option value="editar" data-id="@item.Id">Editar</option>
+
+                                }
                             </select>
                         </td>
                     </tr>
@@ -162,5 +167,8 @@ else
 
 <partial name="Create" />
 <partial name="Details" />
+<partial name="Edit" />
+
+
 
 <script src="/js/Ausencias.js" asp-append-version="true"></script>

@@ -83,6 +83,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         // GET: AusenciasController/Details/5
+        [HttpGet]
         public async Task<ActionResult> Details(int id)
         {
             try
@@ -203,27 +204,47 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
             }
         }
-        
-        // GET: AusenciasController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
 
         // POST: AusenciasController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(EditAusenciaDTO request)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var ausencia = await context.Ausencias.FindAsync(request.Id);
+                if(ausencia == null)
+                {
+                    TempData["Error"] = "Ausencia no encontrada";
+                    return RedirectToAction("Index", "Ausencias");
+                }
+                ausencia.Detalle = request.Detalle;
+                if (request.FechaIni.Date != ausencia.FechaInicio.Date || request.FechaFin.Date != ausencia.FechaFin.Date)
+                {
+                    ausencia.FechaFin = request.FechaFin;
+                    ausencia.FechaInicio = request.FechaIni;
+                    ausencia.FechaSolicitud = DateTime.Now.Date;
+                    ausencia.TotalDias = (request.FechaFin - request.FechaIni).Days;
+                }
+                context.Ausencias.Update(ausencia);
+                await context.SaveChangesAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Ausencias.Edit", $"Se actualizó ausencia con id: {ausencia.Id}, empleado: {ausencia.IdEmpleado}", session.nombre);
+
+                TempData["Message"] = "Ausencia actualizada con éxito";
+                return RedirectToAction("Index", "Ausencias");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Ausencias.Edit", $"Error al acualizar ausencuia con id {request.Id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo actualizar Ausencia";
+                return RedirectToAction("Index", "Ausencias");
             }
         }
+
+        
 
         // GET: AusenciasController/Delete/5
         public ActionResult Delete(int id)

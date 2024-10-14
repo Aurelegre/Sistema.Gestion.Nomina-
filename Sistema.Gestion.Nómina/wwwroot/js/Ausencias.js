@@ -110,45 +110,37 @@
 
             }
             else if (action === "editar") {
-                fetch('/Employees/Update/' + id)
+                fetch('/Ausencias/Details/' + id)
                     .then(response => response.json())
                     .then(data => {
-                        // Llenar los campos de edición del empleado en el modal
-                        document.getElementById("editId").value = data.id || data.Id;
-                        document.getElementById("editNombre").value = data.nombre || data.Nombre;
-                        document.getElementById("editApellidos").value = data.apellidos || data.Apellidos;
-                        document.getElementById("editSueldo").value = data.sueldo || data.Sueldo;
-                        document.getElementById("editUsuario").value = data.usuario || data.Usuario;
+                        // Verificación de que el elemento exista antes de asignar valores
+                        const editIdA = document.getElementById("editIdA");
+                        const editDetalle = document.getElementById("editDetalle");
+                        const editFechaIni = document.getElementById("editFechaIni");
+                        const editFechafin = document.getElementById("editFechafin");
 
-                        // Llenar combobox de puestos
-                        var editPuesto = document.getElementById("editPuesto");
-                        editPuesto.innerHTML = "";  // Limpiar opciones actuales
-                        data.puestos.forEach(function (puesto) {
-                            var isSelected = data.idPuesto === puesto.id;
-                            editPuesto.append(new Option(puesto.descripcion, puesto.id, isSelected, isSelected));
-                        });
-
-                        // Llenar combobox de departamentos
-                        var editDepartamento = document.getElementById("editDepartamento");
-                        editDepartamento.innerHTML = "";  // Limpiar opciones actuales
-                        data.departamento.forEach(function (departamento) {
-                            var isSelected = data.idDepto === departamento.id;
-                            editDepartamento.append(new Option(departamento.descripcion, departamento.id, isSelected, isSelected));
-                        });
-
-                        // Llenar combobox de departamentos
-                        var editRol = document.getElementById("editRol");
-                        editRol.innerHTML = "";  // Limpiar opciones actuales
-                        data.roles.forEach(function (rol) {
-                            editRol.append(new Option(rol.descripcion, rol.id, data.idRol === rol.id, data.idRol === rol.id));
-                        });
+                        if (editIdA) {
+                            editIdA.value = data.id || data.Id;
+                        }
+                        if (editDetalle) {
+                            editDetalle.value = data.detalle || '';
+                        }
+                        if (editFechaIni) {
+                            editFechaIni.value = data.fechaInicio || '';
+                        }
+                        if (editFechafin) {
+                            editFechafin.value = data.fechaFin || '';
+                        }
 
                         // Mostrar el modal
-                        var modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
+                        var modal = new bootstrap.Modal(document.getElementById('editAusenciaModal'));
                         modal.show();
 
                         // Restablecer el valor del combobox a la opción predeterminada
                         dropdown.value = "Seleccionar";
+                    })
+                    .catch(error => {
+                        console.error("Error al obtener los detalles de la ausencia:", error);
                     });
             }
             else if (action === "eliminar") {

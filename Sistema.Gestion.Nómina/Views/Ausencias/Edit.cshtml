@@ -1,0 +1,33 @@
+﻿<!-- Modal para editar Ausencia -->
+<div class="modal fade" id="editAusenciaModal" tabindex="-1" aria-labelledby="editAusenciaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAusenciaModalLabel">Editar Ausencia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Ausencias" asp-action="Edit" method="post" id="editAusenciaForm">
+                    <input type="hidden" id="editIdA" name="Id" />
+                    <div class="mb-3 form-group">
+                        <label for="editDetalle" class="form-label">Detalle</label>
+                        <textarea class="form-control" id="editDetalle" name="Detalle" required></textarea>
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="editFechaIni" class="form-label">Fecha Inicio</label>
+                        <input type="date" class="form-control" id="editFechaIni" name="FechaIni" required />
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label for="editFechafin" class="form-label">Fecha Fin</label>
+                        <input type="date" class="form-control" id="editFechafin" name="FechaFin" required />
+                    </div>
+                    <div class="mb-3 form-group modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
