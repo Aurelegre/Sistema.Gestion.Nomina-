@@ -22,14 +22,14 @@
             <button type="button" class="btn btn-secondary mb-2 me-1 me-md-2" onclick="fetchEmployeeData(0)">
                 Historial del Departamento
             </button>
-            <a type="button" method="get" asp-controller="Ausencias" asp-action="GetSolicitudes" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+            <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="btn btn-secondary mb-2  me-1 me-md-2 ">
                 Autorizar Ausencias
             </a>
         }
 
         @if (PermissionHelper.HasPermission("Empleados.Crear"))
         {
-            <button type="button" class="btn btn-primary mb-2">
+            <button type="button" class="btn btn-primary mb-2" onclick="createAusencia()">
                 Solicitar Ausencia
             </button>
         }

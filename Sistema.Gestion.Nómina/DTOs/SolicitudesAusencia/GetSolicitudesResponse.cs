@@ -1,4 +1,4 @@
-﻿namespace Sistema.Gestion.Nómina.DTOs.Ausencias
+﻿namespace Sistema.Gestion.Nómina.DTOs.SolicitudesAusencia
 {
     public class GetSolicitudesResponse
     {

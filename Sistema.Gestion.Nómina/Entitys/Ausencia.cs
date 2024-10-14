@@ -17,7 +17,7 @@ public partial class Ausencia
 
     public DateTime FechaFin { get; set; }
 
-    public DateTime? FechaAutorizado { get; set; }
+    public DateTime FechaAutorizado { get; set; }
 
     public int? TotalDias { get; set; }
 

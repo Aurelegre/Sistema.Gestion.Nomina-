@@ -1,5 +1,5 @@
-﻿@using Sistema.Gestion.Nómina.DTOs.Ausencias
-@using Sistema.Gestion.Nómina.Helpers
+﻿@    using Sistema.Gestion.Nómina.DTOs.Ausencias
+@    using Sistema.Gestion.Nómina.Helpers
 
 @model PaginatedResult<GetSolicitudesResponse>
 
@@ -15,13 +15,13 @@
         <h1 class="my-3">Solicitudes de Ausencia</h1>
         <a method="get" asp-controller="Ausencias" asp-action="Index" class="btn btn-primary" style="font-size: 20px"><i class="bi bi-box-arrow-in-left"></i></a>
     </div>
-    
+
     <h3 class="my-4" style="margin-top:-40px">Departamento: <strong>@ViewBag.Depto</strong></h3>
 </div>
 
 <!-- Filtros de Búsqueda -->
 <!-- Filtros de Búsqueda -->
-<form method="get" asp-controller="Ausencias" asp-action="GetSolicitudes" class="mb-4">
+<form method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="mb-4">
     <div class="row">
         <div class="col-md-3">
             <label for="Empleado">Nombre</label>
@@ -34,7 +34,7 @@
     </div>
     <div class="mt-3">
         <button type="submit" class="btn btn-primary">Buscar</button>
-        <a method="get" asp-controller="Ausencias" asp-action="GetSolicitudes" class="btn btn-secondary">Limpiar</a>
+        <a method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="btn btn-secondary">Limpiar</a>
     </div>
 </form>
 
@@ -120,7 +120,5 @@ else
     <p>No hay Solicitudes registradas.</p>
 }
 
-
-<partial name="Create" />
 
 <script src="/js/Ausencias.js" asp-append-version="true"></script>
