@@ -22,7 +22,7 @@
             <button type="button" class="btn btn-secondary mb-2 me-1 me-md-2" onclick="fetchEmployeeData(0)">
                 Historial del Departamento
             </button>
-            <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+            <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="btn btn-warning mb-2  me-1 me-md-2 ">
                 Autorizar Ausencias
             </a>
         }
@@ -132,6 +132,11 @@
                                     <option value="editar" data-id="@item.Id">Editar</option>
 
                                 }
+                                @if (PermissionHelper.HasPermission("Empleados.Eliminar") && item.Estado == 2)
+                                {
+                                    <option value="eliminar" data-id="@item.Id">Eliminar</option>
+
+                                }
                             </select>
                         </td>
                     </tr>
@@ -168,6 +173,7 @@ else
 <partial name="Create" />
 <partial name="Details" />
 <partial name="Edit" />
+<partial name="Delete" />
 
 
 

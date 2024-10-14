@@ -244,27 +244,46 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-        
 
-        // GET: AusenciasController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
 
         // POST: AusenciasController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                //obnter la aunsencia a elimiar
+                var ausencia = await context.Ausencias.FindAsync(id);
+                if (ausencia == null)
+                {
+                    TempData["Error"] = "La Ausencia no existe";
+                    return RedirectToAction("Index", "Ausencias");
+                }
+                //verificar que sea de estado pendiente == 2
+                if(ausencia.Autorizado != 2)
+                {
+                    TempData["Error"] = "Solo se pueden eliminar Pendientes";
+                    return RedirectToAction("Index", "Ausencias");
+                }
+                context.Ausencias.Remove(ausencia);
+                await context.SaveChangesAsync();
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Ausencias.Delete", $"Se eliminó ausencia con id: {id}", session.nombre);
+
+                TempData["Message"] = "Ausencia eliminada exitosamente.";
+                return RedirectToAction("Index", "Ausencias");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Ausencias.Delete", $"Error al eliminar Ausencia con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Ocurrió un error al intentar eliminar la Ausencia";
+                return RedirectToAction("Index", "Ausencias");
             }
         }
+
+        
     }
 }
