@@ -29,7 +29,13 @@
         </div>
         <div class="col-md-3">
             <label for="Estado">Fecha de Solicitud</label>
-            <input type="date" class="form-control" id="fechaSoli" name="fechaSoli">
+            @{
+                var fechaPorDefecto = ViewBag.Fecha != null
+                ? ((DateTime)ViewBag.Fecha).ToString("yyyy-MM-dd")
+                : ""; // Deja vacío si no hay fecha
+            }
+
+            <input type="date" class="form-control" id="fechaSoli" name="fechaSoli" value="@fechaPorDefecto" placeholder="Seleccione Fecha" />
         </div>
     </div>
     <div class="mt-3">
