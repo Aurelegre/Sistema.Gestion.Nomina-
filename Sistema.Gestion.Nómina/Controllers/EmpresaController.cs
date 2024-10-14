@@ -169,7 +169,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     }
 
                     var session = logger.GetSessionData();
-                    await logger.LogTransaction(session.idEmpleado, session.company, "Empresa.Create", $"Se creó empresa con el Nombre: {empresa.Nombre}, Usuario id: {createUser}, Empleado Id: {crearEmpleado}", session.nombre);
+                    await logger.LogTransaction(session.idEmpleado, session.company, "Empresa.Create", $"Se creó empresa con el Nombre: {empresa.Nombre}, Usuario id: {createUser}, Empleado IdEmpleado: {crearEmpleado}", session.nombre);
 
                     TempData["Message"] = "Empresa creada con éxito";
                     return RedirectToAction("Index", "Empresa");

@@ -233,7 +233,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             try
             {
-                // Obtener el departamento por su Id
+                // Obtener el departamento por su IdEmpleado
                 var depto = await context.Departamentos.SingleOrDefaultAsync(d => d.Id == id);
                 if (depto == null)
                 {

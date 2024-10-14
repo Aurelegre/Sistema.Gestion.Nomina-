@@ -7,10 +7,11 @@ using Sistema.Gestion.Nómina.DTOs.Empleados;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Logs;
+using Sistema.Gestion.Nómina.Services.Nomina;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
-    public class AusenciasController (SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
+    public class AusenciasController (SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
         // GET: AusenciasController
         public async Task<ActionResult> Index(GetAusenciasDTO request)
@@ -81,9 +82,67 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
+        // GET: AusenciasController/Details/5
+        public async Task<ActionResult> Details(int id)
+        {
+            try
+            {
+                var ausencia = await context.Ausencias.Where(a => a.Id == id)
+                                                      .AsNoTracking()
+                                                      .Select(e => new GetAusenciaResponse
+                                                      {
+                                                          Id = id,
+                                                          IdEmpleado = e.IdEmpleado,
+                                                          Tipo = e.Deducible,
+                                                          Detalle = e.Detalle,
+                                                          FechaSoli = DateOnly.FromDateTime(e.FechaSolicitud),
+                                                          FechaInicio = DateOnly.FromDateTime(e.FechaInicio),
+                                                          FechaFin = DateOnly.FromDateTime(e.FechaFin),
+                                                          Dias = e.TotalDias,
+                                                          Estado = e.Autorizado,
+                                                          FechaAut = DateOnly.FromDateTime(e.FechaAutorizado.GetValueOrDefault()),
+                                                          Jefe = e.idJefeNavigation.Nombre.Substring(0, e.idJefeNavigation.Nombre.IndexOf(" ") != -1 ? e.idJefeNavigation.Nombre.IndexOf(" ") : e.idJefeNavigation.Nombre.Length) + " " + e.idJefeNavigation.Apellidos.Substring(0, e.idJefeNavigation.Apellidos.IndexOf(" ") != -1 ? e.idJefeNavigation.Apellidos.IndexOf(" ") : e.idJefeNavigation.Apellidos.Length),
+                                                      })
+                                                      .FirstOrDefaultAsync();
 
+                if (ausencia == null)
+                {
+                    TempData["Error"] = "Error al obtener detalle de Ausencia";
+                    return RedirectToAction("Index", "Ausencias");
+                }
+                if (ausencia.Tipo == 1)
+                {
 
+                    decimal? sueldoEmpleado = await context.Empleados
+                                                    .Where(e => e.Id == ausencia.IdEmpleado)
+                                                    .AsNoTracking()
+                                                    .Select(e => e.Sueldo)
+                                                    .FirstOrDefaultAsync();
+
+                    if (sueldoEmpleado.HasValue)
+                    {
+                        // Llamar al servicio de nómina para calcular el descuento
+                        ausencia.Deducible = nominaServices.DescuentoAusencia(sueldoEmpleado.Value, ausencia.Dias);
+                    }
+                }
+
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Ausencias.Details", $"Se consultaron detalles de la ausencia: {id} ", session.nombre);
+
+                return Json(ausencia);
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Ausencias.Details", $"Error al consultar detalles de la ausencia: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar detalles de la Ausencia";
+                return RedirectToAction("Index", "Ausencias");
+            }
+        }
         
+
+
+
         // POST: AusenciasController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
