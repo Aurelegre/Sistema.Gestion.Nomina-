@@ -26,7 +26,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 //traer el departamento del que es JEFE
                 var depto = await context.Departamentos.SingleAsync(d => d.IdJefe == session.idEmpleado);
                 //traer todas las solicitudes de los departamentos menos la de el jefe
-                var query = context.Ausencias.Where(a => a.IdEmpleadoNavigation.IdDepartamento == depto.Id && a.Autorizado == 2 /*&& a.IdEmpleado != session.idEmpleado*/);
+                var query = context.Ausencias.Where(a => a.IdEmpleadoNavigation.IdDepartamento == depto.Id /*&& a.IdEmpleado != session.idEmpleado*/);
                 //aplicar filtros
                 if (!string.IsNullOrEmpty(request.Empleado))
                 {
@@ -35,6 +35,14 @@ namespace Sistema.Gestion.Nómina.Controllers
                 if (request.fechaSoli.HasValue)
                 {
                     query = query.Where(a => a.FechaSolicitud == request.fechaSoli.Value);
+                }
+                if (request.Estado != 0)
+                {
+                    //0 = Todos
+                    //1 = Autorizado
+                    //2 = Pendiente
+                    //3 = Denegados
+                    query = query.Where(q => q.Autorizado == request.Estado);
                 }
                 var totalItems = await query.CountAsync();
                 var solicitudes = await query
@@ -63,6 +71,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 ViewBag.Empleado = request.Empleado;
                 ViewBag.Fecha = request.fechaSoli;
                 ViewBag.Depto = depto.Descripcion;
+                ViewBag.Estado = request.Estado;
 
                 // Registrar en bitácora
                 await logger.LogTransaction(session.idEmpleado, session.company, "SolicitudesAusencias.Index", $"Se consultaron todas las solicitudes del departamendo {depto.Id} {depto.Descripcion}", session.nombre);
