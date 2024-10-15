@@ -23,8 +23,8 @@
                 <div class="d-flex justify-content-center ">
                      @if (PermissionHelper.HasPermission("SolicitudesAusencias.Autorizar"))
                     {
-                        <button class="alert-danger mb-4 me-8 me-md-2" onclick="DenegateSoli()"><strong>Denegar</strong></button>
-                        <button class="alert-success mb-4 me-8 me-md-2" onclick="AutoriceSoli()"><strong>Autorizar</strong></button>
+                        <button class="alert-danger mb-4 me-8 me-md-2" onclick="DenegateSoli()" id="denegateID"><strong>Denegar</strong></button>
+                        <button class="alert-success mb-4 me-8 me-md-2" onclick="AutoriceSoli()" id="autoriceID"><strong>Autorizar</strong></button>
                     }
                 </div>
             </div>

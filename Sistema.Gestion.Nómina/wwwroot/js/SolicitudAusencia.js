@@ -28,6 +28,8 @@
                         var handler = document.getElementById("ausenciaHandle");
                         var Pautorizado = document.getElementById("PausenciaJefe");
                         var PfechaAuto = document.getElementById("PausenciaAutori");
+                        var btnDenegate = document.getElementById("denegateID");
+                        var btnAutorice = document.getElementById("autoriceID");
 
                         // Limpiar clases previas
                         estado.classList.remove('alert-success', 'alert-warning', 'alert-danger');
@@ -41,12 +43,15 @@
                             Pautorizado.hidden = false; // Mostrar si está autorizado
                             fechaAuto.innerText = (data.fechaAut && data.fechaAut !== "0001-01-01") ? data.fechaAut : 'No disponible';
                             PfechaAuto.hidden = false;
+                            btnAutorice.hidden = true;
                         } else if (data.estado === ESTADO_PENDIENTE) {
                             estado.innerText = "Pendiente";
                             estado.classList.add("alert-warning");
                             Pautorizado.hidden = true; // Ocultar si está pendiente
                             PfechaAuto.hidden = true;
                             handler.hidden = true;
+                            btnAutorice.hidden = false;
+                            btnDenegate.hidden = false;
                         } else if (data.estado === ESTADO_DENEGADO) {
                             handler.innerText = "Denegación";
                             estado.innerText = "Denegado";
@@ -54,12 +59,15 @@
                             Pautorizado.hidden = true; // Ocultar si está denegado
                             PfechaAuto.hidden = true;
                             handler.hidden = false;
+                            btnDenegate.hidden = true;
                         } else {
                             estado.innerText = "Estado desconocido";
                             estado.classList.add("alert-secondary");
                             Pautorizado.hidden = true; // Ocultar por defecto
                             PfechaAuto.hidden = true;
                             handler.hidden = true;
+                            btnAutorice.hidden = true;
+                            btnDenegate.hidden = true;
                         }
 
                         const TIPO_DEDUCIBLE = 1;
