@@ -4,7 +4,11 @@
     height: 100vh;
     background-color: rgb(20, 83, 154);
     transition: all 0.3s;
-    
+    position: sticky;
+    z-index: 1001;
+    top: 0;
+    box-shadow: 1px 0px 20px -5px black;
+
 }
 
 .sidebar .nav-link {
@@ -14,7 +18,13 @@
     background-color: rgb(20, 83, 154);
     font-weight: bold;
 }
-
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0px 0px 25px -12px black;
+    margin-bottom: 10px
+}
     .sidebar .nav-link:hover {
         background-color: rgb(24, 67, 117);
     }
@@ -85,10 +95,14 @@
 #page-content-wrapper {
     width: 100%;
     transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 #wrapper.toggled #sidebar-wrapper {
     margin-left: -250px;
+    box-shadow : none
 }
 #menu-toggle {
     /*position: absolute;*/
@@ -118,3 +132,5 @@ html, body {
     margin: 0;
     font-family: Arial, sans-serif;
 }
+
+
