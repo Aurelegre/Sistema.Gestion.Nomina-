@@ -182,7 +182,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                         IdEmpleado = session.idEmpleado,
                         FechaSolicitud = DateTime.Now.Date,
                         FechaInicio = fechaInicio,
-                        FechaFin = fechaInicio,
+                        FechaFin = fechafin,
                         TotalDias = (fechafin - fechaInicio).Days,
                         Detalle = request.Detalle,
                         Autorizado = 2,
