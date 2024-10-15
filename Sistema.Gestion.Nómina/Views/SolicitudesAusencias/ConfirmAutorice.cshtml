@@ -1,0 +1,26 @@
+﻿<!-- Modal de Confirmación de Autorización -->
+<div class="modal fade" id="autoriceConfirmationModal" tabindex="-1" aria-labelledby="autoriceConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="autoriceConfirmationModalLabel">Confirmar Denegación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="SolicitudesAusencias" asp-action="Update" method="post" id="formAutorice">
+                <div class="modal-body alert alert-warning">
+                    <strong>Seleccione el Tipo de Ausencia</strong>
+                    <select class="form-select form-select-sm actions-dropdown" name="Tipo">
+                        <option value="1">Deducible</option>
+                        <option value="3">No Deducible</option>
+                    </select>
+                </div>
+                <div class="modal-footer ">
+                        <input id="Estado" name="Estado" value="1" hidden />
+                        <input id="IDaut" name="Id" hidden />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="confirmDeleteBtn" class="btn btn-success">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -94,6 +94,15 @@
                                 {
                                     <option value="detalle" data-id="@item.Id">Ver Detalle</option>
                                 }
+                                @if (PermissionHelper.HasPermission("Empleados.Ver")&&(item.Estado == 3 || item.Estado == 2))
+                                {
+                                    <option value="autorice" data-id="@item.Id">Autorizar</option>
+                                }
+                                @if (PermissionHelper.HasPermission("Empleados.Ver") && (item.Estado == 1 || item.Estado == 2))
+                                {
+                                    <option value="denegate" data-id="@item.Id">Denegar</option>
+                                }
+
                             </select>
                         </td>
                     </tr>
@@ -126,5 +135,7 @@ else
     <p>No hay Solicitudes registradas.</p>
 }
 
-
-<script src="/js/Ausencias.js" asp-append-version="true"></script>
+<partial name="Details" />
+<partial name="ConfirmDenegate" />
+<partial name="ConfirmAutorice" />
+<script src="/js/SolicitudAusencia.js" asp-append-version="true"></script>

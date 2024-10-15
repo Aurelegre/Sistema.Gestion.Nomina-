@@ -1,0 +1,24 @@
+﻿<!-- Modal de Confirmación de Denegación -->
+<div class="modal fade" id="denegateConfirmationModal" tabindex="-1" aria-labelledby="denegateConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="denegateConfirmationModalLabel">Confirmar Denegación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body alert alert-danger">
+                <strong>¿Está seguro de denegar esta Solicitud?</strong>
+            </div>
+            <div class="modal-footer ">
+                <form asp-controller="SolicitudesAusencias" asp-action="Update" method="post" id="formDenegate">
+                    <input id="Estado" name="Estado" value="3" hidden />
+                    <input id="Tipo" name="Tipo" value="3" hidden />
+                    <input id="IDsoli" name="Id" hidden />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="confirmDeleteBtn" class="btn btn-danger">Denegar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

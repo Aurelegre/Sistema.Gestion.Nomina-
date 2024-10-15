@@ -1,0 +1,35 @@
+﻿<!-- Modal para mostrar los detalles de Ausencia -->
+<div class="modal fade" id="solicitudAusenciaDetailModal" tabindex="-1" aria-labelledby="solicitudAusenciaDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="solicitudAusenciaDetailModalLabel">Detalle de Ausencia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>ID:</strong> <span id="ausenciaId"></span></p>
+                <p><strong>Empleado:</strong> <span id="ausenciaEmpleado"></span></p>
+                <p><strong>Detalle:</strong> <span id="ausenciaDetalle"></span></p>
+                <p><strong>Fecha de Solicitud:</strong> <span id="ausenciaSoli"></span></p>
+                <p><strong>Fecha Inicio:</strong> <span id="ausenciaInicio"></span></p>
+                <p><strong>Fecha Fin:</strong> <span id="ausenciaFin"></span></p>
+                <p><strong>Dias ausente:</strong> <span id="ausenciaDias"></span></p>
+                <p><strong>Estado:</strong> <span id="ausenciaEstado"></span></p>
+                <p id="PausenciaJefe"><strong>Autorizado por:</strong> <span id="ausenciaJefe"></span></p>
+                <p id="PausenciaAutori"><strong>Fecha de <span id="ausenciaHandle"></span></strong> <span id="ausenciaAutori"></span></p>
+                <p><strong>Tipo:</strong> <span id="ausenciaTipo"></span></p>
+                <p id="PausenciaDesc"><strong>Descuento:</strong> <span id="ausenciaDesc"></span></p>
+                <div class="d-flex justify-content-center ">
+
+                    <button class="alert-danger mb-4 me-8 me-md-2" onclick="DenegateSoli()"><strong>Denegar</strong></button>
+
+                    
+                    <button class="alert-success mb-4 me-8 me-md-2" onclick="AutoriceSoli()"><strong>Autorizar</strong></button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Salir</button>
+            </div>
+        </div>
+    </div>
+</div>
