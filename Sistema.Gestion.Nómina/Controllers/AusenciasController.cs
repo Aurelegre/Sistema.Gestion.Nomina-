@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +12,12 @@ using Sistema.Gestion.Nómina.Services.Nomina;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Authorize]
+    [Controller]
     public class AusenciasController (SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
+        [HttpGet]
+        [Authorize(Policy = "Ausencias.Listar")]
         // GET: AusenciasController
         public async Task<ActionResult> Index(GetAusenciasDTO request)
         {
@@ -84,6 +89,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
         // GET: AusenciasController/Details/5
         [HttpGet]
+        [Authorize(Policy = "Ausencias.Ver")]
         public async Task<ActionResult> Details(int id)
         {
             try
@@ -140,12 +146,10 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Ausencias");
             }
         }
-        
-
-
 
         // POST: AusenciasController/Create
         [HttpPost]
+        [Authorize(Policy = "Ausencias.Crear")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(CreateAusenciaDTO request)
         {
@@ -207,6 +211,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
         // POST: AusenciasController/Edit/5
         [HttpPost]
+        [Authorize(Policy = "Ausencias.Actualizar")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(EditAusenciaDTO request)
         {
@@ -244,11 +249,10 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-
-
         // POST: AusenciasController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Ausencias.Eliminar")]
         public async Task<ActionResult> Delete(int id)
         {
             try
