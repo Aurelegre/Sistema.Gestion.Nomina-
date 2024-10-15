@@ -1,4 +1,5 @@
 ﻿<!-- Modal para mostrar los detalles de Ausencia -->
+@using Sistema.Gestion.Nómina.Helpers
 <div class="modal fade" id="solicitudAusenciaDetailModal" tabindex="-1" aria-labelledby="solicitudAusenciaDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -20,11 +21,11 @@
                 <p><strong>Tipo:</strong> <span id="ausenciaTipo"></span></p>
                 <p id="PausenciaDesc"><strong>Descuento:</strong> <span id="ausenciaDesc"></span></p>
                 <div class="d-flex justify-content-center ">
-
-                    <button class="alert-danger mb-4 me-8 me-md-2" onclick="DenegateSoli()"><strong>Denegar</strong></button>
-
-                    
-                    <button class="alert-success mb-4 me-8 me-md-2" onclick="AutoriceSoli()"><strong>Autorizar</strong></button>
+                     @if (PermissionHelper.HasPermission("SolicitudesAusencias.Autorizar"))
+                    {
+                        <button class="alert-danger mb-4 me-8 me-md-2" onclick="DenegateSoli()"><strong>Denegar</strong></button>
+                        <button class="alert-success mb-4 me-8 me-md-2" onclick="AutoriceSoli()"><strong>Autorizar</strong></button>
+                    }
                 </div>
             </div>
             <div class="modal-footer">

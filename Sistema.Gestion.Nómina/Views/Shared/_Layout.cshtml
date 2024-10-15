@@ -60,7 +60,7 @@
 
                     <li class="nav-item">
                         <!-- Accordion for Administración Empresa -->
-                        <div class="accordion" id="accordionExample">
+                        <div class="accordion" id="accordion1">
                             <!-- Heading of Administración Empresa -->
                             <div id="headingOne">
                                 <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
@@ -69,7 +69,7 @@
                                 </button>
                             </div>
                             <!-- Collapsible content (Roles link) -->
-                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion1">
                                 <div class="accordion-body">
                                     @if (PermissionHelper.HasPermission( "Roles.Listar"))
                                     {
@@ -90,12 +90,43 @@
                         </div>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission("Ausencias.Listar"))
+                @if (PermissionHelper.HasPermission("Ausencia.Listar") ||
+                PermissionHelper.HasPermission("SolicitudesAusencias.Listar") ||
+                PermissionHelper.HasPermission("SolicitudesAusencias.Historial"))
                 {
+
                     <li class="nav-item">
-                        <a class="nav-link text-light" asp-area="" asp-controller="Ausencias" asp-action="Index">
-                            <i class="bi bi-calendar-x-fill"></i> Ausencias
-                        </a>
+                        <!-- Accordion for Administración Empresa -->
+                        <div class="accordion" id="accordion2">
+                            <!-- Heading of Administración Empresa -->
+                            <div id="heading2">
+                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                    <i class="bi bi-calendar-x-fill"></i>
+                                    Ausencias Laborales
+                                </button>
+                            </div>
+                            <!-- Collapsible content (Roles link) -->
+                            <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2" data-bs-parent="#accordion2">
+                                <div class="accordion-body">
+                                    @if (PermissionHelper.HasPermission("Ausencias.Listar"))
+                                    {
+                                        <a class="nav-link text-light" asp-area="" asp-controller="Ausencias" asp-action="Index">
+                                             Mis Ausencias
+                                        </a>
+                                    }
+                                    @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
+                                    {
+                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="SolicitudesAusencias" asp-action="Index">
+                                            Solicitudes Ausencias
+                                        </a>
+                                    }
+                                    @if (PermissionHelper.HasPermission("Puesto.Listar"))
+                                    {
+                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="Puesto" asp-action="Index">Puesto</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
                     </li>
                 }
             </ul>

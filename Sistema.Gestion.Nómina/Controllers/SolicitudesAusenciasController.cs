@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina.DTOs.Ausencias;
@@ -11,9 +12,12 @@ using Sistema.Gestion.Nómina.Services.Nomina;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Authorize]
+    [Controller]
     public class SolicitudesAusenciasController (SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
         [HttpGet]
+        [Authorize(Policy = "SolicitudesAusencias.Listar")]
         public async Task<ActionResult> Index(GetSolicitudesDTO request)
         {
             var session = logger.GetSessionData();
@@ -74,6 +78,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "SolicitudesAusencias.Ver")]
         public async Task<ActionResult> Details (int id)
         {
             try
@@ -131,6 +136,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "SolicitudesAusencias.Autorizar")]
         public async Task<ActionResult> Update(AuthorizeDTO request)
         {
             var session = logger.GetSessionData();
