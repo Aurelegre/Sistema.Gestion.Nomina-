@@ -114,13 +114,13 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             try
             {
-                var existe = context.Roles.AnyAsync(r=> r.Descripcion == request.Descripcion);
-                if(existe != null)
+                var session = logger.GetSessionData();
+                var existe = await context.Roles.AnyAsync(r=> r.Descripcion == request.Descripcion && r.IdEmpresa == session.company);
+                if(existe)
                 {
                     TempData["Error"] = "Ya Existe un Rol con este Nombre";
                     return RedirectToAction("Index", "Rol");
                 }
-                var session = logger.GetSessionData();
                 Role rol = new Role
                 {
                     Descripcion = request.Descripcion,
