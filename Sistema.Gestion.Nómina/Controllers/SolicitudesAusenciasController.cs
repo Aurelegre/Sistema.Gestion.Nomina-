@@ -1,14 +1,17 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina.DTOs.Ausencias;
+using Sistema.Gestion.Nómina.DTOs.Departamentos;
 using Sistema.Gestion.Nómina.DTOs.SolicitudesAusencia;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Empresa;
 using Sistema.Gestion.Nómina.Services.Logs;
 using Sistema.Gestion.Nómina.Services.Nomina;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
@@ -143,6 +146,71 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<ActionResult> HistoryAusencia(HistorialSolicitudesDTO request)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                var Depto = await context.Empleados.Where(e => e.Id == session.idEmpleado).AsNoTracking().Select(e=> new
+                {
+                    Id = e.IdDepartamento,
+                    Nombre = e.IdDepartamentoNavigation.Descripcion
+                }).FirstOrDefaultAsync();
+                var querys = await context.Set<HistorialSolicitudesModel>()
+                                            .FromSqlRaw("EXEC sp_GetHistorialAusencias @IdDepartamento",
+                                                        new SqlParameter("@IdDepartamento", Depto.Id))
+                                            .ToListAsync();
+
+                if (!string.IsNullOrEmpty(request.Empleado))
+                {
+                    querys = querys.Where(e=> e.NombreEmpleado.Contains(request.Empleado)).ToList();
+                }
+                if (request.Fecha.HasValue)
+                {
+                    querys = querys.Where(a => DateOnly.FromDateTime(a.Fecha) == request.Fecha.Value).ToList();
+                }
+                if (!string.IsNullOrEmpty(request.Estado))
+                {
+                    querys = querys.Where(q => q.Descripcion.Contains(request.Estado)).ToList();
+                }
+                var totalItems = querys.Count();
+                var historial = querys
+                                .Skip((request.page - 1) * request.pageSize)
+                                .Take(request.pageSize)
+                                .Select(d => new HistorialSolicitudesResponse
+                                {
+                                    NombreJefe = d.NombreJefe,
+                                    Fecha = DateOnly.FromDateTime(d.Fecha),
+                                    Descripcion = d.Descripcion,
+                                    NombreEmpleado = d.NombreEmpleado,
+                                    IdAusencia = d.IdAusencia,
+                                });
+                var paginatedResult = new PaginatedResult<HistorialSolicitudesResponse>
+                {
+                    Items = historial,
+                    CurrentPage = request.page,
+                    PageSize = request.pageSize,
+                    TotalItems = totalItems
+                };
+
+                ViewBag.Depto = Depto.Nombre;
+                ViewBag.Empleado = request.Empleado;
+                ViewBag.Fecha = request.Fecha;
+                ViewBag.Estado = request.Estado;
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "SolicitudesAusencias.HistoryAusencia", $"Se consultó Historial de solicitudes de ausencia del departamento: {Depto.Id} ", session.nombre);
+
+                return View(paginatedResult);
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "SolicitudesAusencias.Details", $"Error al consulta querys de solicitudes ausencias", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo obtener el Hitorial del Departamento, vuelva a intentar";
+                return RedirectToAction("Index", "SolicitudesAusencias");
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "SolicitudesAusencias.Autorizar")]
@@ -168,7 +236,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 string accion = request.Estado == 1 ? "Autorizada" : request.Estado == 3 ? "Denegada" : "Error";
 
                 //registrar bitácora
-                await logger.LogTransaction(session.idEmpleado, session.company, "SolicitudesAusencias.Update", $"Fue {accion} la ausencia del empleado id: {ausencia.IdEmpleado}, por parte de el empleado: {request.Id}", session.nombre);
+                await logger.LogTransaction(session.idEmpleado, session.company, "SolicitudesAusencias.Update", $"Fue {accion} la ausencia del empleado id: {ausencia.IdEmpleado}, Ausencia con Id: {request.Id}", session.nombre);
 
                 TempData["Message"] = $"Ausencia {accion} con éxito";
                 return RedirectToAction("Index", "SolicitudesAusencias");

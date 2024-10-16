@@ -19,9 +19,12 @@
 
         @if (ViewBag.IsJefe)
         {
-            <button type="button" class="btn btn-secondary mb-2 me-1 me-md-2" onclick="fetchEmployeeData(0)">
-                Historial del Departamento
-            </button>
+            @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
+            {
+                <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="HistoryAusencia" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+                    Historial del Departamento
+                </a>
+            }
             @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
             {
                 <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="btn btn-warning mb-2  me-1 me-md-2 ">

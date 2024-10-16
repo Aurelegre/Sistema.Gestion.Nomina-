@@ -3,6 +3,7 @@
         dropdown.addEventListener('change', function () {
             var action = this.value;
             var id = this.options[this.selectedIndex].getAttribute('data-id');
+            var handleDetails = this.options[this.selectedIndex].getAttribute('handleDetails');
 
             if (action === "detalle") {
                 // Hacer la petición para obtener los detalles del empleado
@@ -98,6 +99,11 @@
                             tipo.innerText = "Estado desconocido";
                             tipo.classList.add("alert-secondary");
                             Pdesc.hidden = true; // Ocultar por defecto
+                        }
+
+                        if (handleDetails == 1) {
+                            btnAutorice.hidden = true;
+                            btnDenegate.hidden = true;
                         }
 
                         // Mostrar el modal

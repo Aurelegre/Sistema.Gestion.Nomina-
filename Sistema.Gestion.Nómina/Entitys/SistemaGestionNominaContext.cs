@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Sistema.Gestion.Nómina.DTOs.SolicitudesAusencia;
 
 namespace Sistema.Gestion.Nómina.Entitys;
 
@@ -54,6 +55,7 @@ public partial class SistemaGestionNominaContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<HistorialSolicitudesModel>().HasNoKey();
         modelBuilder.Entity<Ausencia>(entity =>
         {
             entity.Property(e => e.Detalle).IsUnicode(false);
