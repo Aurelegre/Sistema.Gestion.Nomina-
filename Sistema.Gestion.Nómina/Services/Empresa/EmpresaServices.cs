@@ -52,7 +52,7 @@ namespace Sistema.Gestion.Nómina.Services.Empresa
                 try{
                     Role roladmin = new Role
                     {
-                        Descripcion = "Administrador",
+                        Descripcion = "CEO",
                         IdEmpresa = idEmpresa,
                         activo = 1,
                     };
