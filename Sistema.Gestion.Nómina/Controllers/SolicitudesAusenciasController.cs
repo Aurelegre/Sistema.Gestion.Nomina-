@@ -11,6 +11,7 @@ using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Empresa;
 using Sistema.Gestion.Nómina.Services.Logs;
 using Sistema.Gestion.Nómina.Services.Nomina;
+using System.Transactions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Sistema.Gestion.Nómina.Controllers
@@ -26,10 +27,22 @@ namespace Sistema.Gestion.Nómina.Controllers
             var session = logger.GetSessionData();
             try
             {
-                //traer el departamento del que es JEFE
-                var depto = await context.Departamentos.SingleAsync(d => d.IdJefe == session.idEmpleado);
-                //traer todas las solicitudes de los departamentos menos la de el jefe
-                var query = context.Ausencias.Where(a => a.IdEmpleadoNavigation.IdDepartamento == depto.Id /*&& a.IdEmpleado != session.idEmpleado*/);
+                string depto = string.Empty;
+                var query = context.Ausencias.Where(a =>  a.IdEmpleado != session.idEmpleado);
+                if (session.rol.Equals("CEO"))
+                {
+                    depto = "Jefes";
+                    //traer las solicitudes de los usuarios jefe de deptos
+                    query = query.Where(a => context.Departamentos.Any(d => d.IdJefe == a.IdEmpleado));
+                }
+                else
+                {
+                    //traer el departamento del que es JEFE
+                    var deptos = await context.Departamentos.SingleAsync(d => d.IdJefe == session.idEmpleado);
+                    depto = deptos.Descripcion;
+                    //traer todas las solicitudes de los departamentos menos la de el jefe
+                    query = query.Where(a => a.IdEmpleadoNavigation.IdDepartamento == deptos.Id);
+                }
                 //aplicar filtros
                 if (!string.IsNullOrEmpty(request.Empleado))
                 {
@@ -73,11 +86,11 @@ namespace Sistema.Gestion.Nómina.Controllers
                 // Pasar filtros a la vista
                 ViewBag.Empleado = request.Empleado;
                 ViewBag.Fecha = request.fechaSoli;
-                ViewBag.Depto = depto.Descripcion;
+                ViewBag.Depto = depto;
                 ViewBag.Estado = request.Estado;
 
                 // Registrar en bitácora
-                await logger.LogTransaction(session.idEmpleado, session.company, "SolicitudesAusencias.Index", $"Se consultaron todas las solicitudes del departamendo {depto.Id} {depto.Descripcion}", session.nombre);
+                await logger.LogTransaction(session.idEmpleado, session.company, "SolicitudesAusencias.Index", $"Se consultaron todas las solicitudes del departamendo {depto}", session.nombre);
 
                 return View(paginatedResult);
             }

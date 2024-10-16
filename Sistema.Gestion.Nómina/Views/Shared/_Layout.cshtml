@@ -108,7 +108,7 @@
                             <!-- Collapsible content (Roles link) -->
                             <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2" data-bs-parent="#accordion2">
                                 <div class="accordion-body">
-                                    @if (PermissionHelper.HasPermission("Ausencias.Listar"))
+                                    @if (PermissionHelper.HasPermission("Ausencias.Listar") && !PermissionHelper.HasRole("CEO"))
                                     {
                                         <a class="nav-link text-light" asp-area="" asp-controller="Ausencias" asp-action="Index">
                                              Mis Ausencias
@@ -120,7 +120,7 @@
                                             Solicitudes Ausencias
                                         </a>
                                     }
-                                    @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
+                                    @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar") && !PermissionHelper.HasRole("CEO"))
                                     {
                                         <a class="nav-link text-light ps-3" asp-area="" asp-controller="SolicitudesAusencias" asp-action="HistoryAusencia">Historial de Departamento</a>
                                     }
