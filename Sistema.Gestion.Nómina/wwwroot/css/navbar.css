@@ -8,9 +8,10 @@
     z-index: 1001;
     top: 0;
     box-shadow: 1px 0px 20px -5px black;
-    
-    /*scrollbar-width: thin;*/ /* Para Firefox */
-    /*scrollbar-color: rgb(3, 53, 98) rgb(24, 67, 117);*/ /* Colores de la barra en Firefox (pista, pulgar) */
+    overflow-y :auto;
+    overflow-x: hidden;
+    scrollbar-width: thin; /* Para Firefox */
+    scrollbar-color: rgb(3, 53, 98) rgb(24, 67, 117); /* Colores de la barra en Firefox (pista, pulgar) */
 }
 
 .sidebar .nav-link {
