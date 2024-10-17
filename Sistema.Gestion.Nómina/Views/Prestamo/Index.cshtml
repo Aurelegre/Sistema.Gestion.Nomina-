@@ -111,7 +111,7 @@
                                 <option selected>Seleccionar</option>
                                 @if (PermissionHelper.HasPermission("Ausencias.Ver"))
                                 {
-                                    <option value="detalle" data-id="@item.Id">Historial</option>
+                                    <option value="historial" data-id="@item.Id">Historial</option>
                                 }
                             </select>
                         </td>
@@ -146,6 +146,7 @@ else
 }
 
 <partial name="Create" />
+<partial name="Details" />
 <partial name="ConfirmCreate" />
 
 

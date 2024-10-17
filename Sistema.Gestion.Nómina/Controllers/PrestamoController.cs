@@ -73,9 +73,57 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         // GET: PrestamoController/Details/5
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
-            return View();
+            var session = logger.GetSessionData();
+            try
+            {
+                var prestamo = await context.Prestamos.Where(e => e.Id == id)
+                                                      .AsNoTracking()
+                                                      .Select(e => new
+                                                      {
+                                                          Id = e.Id,
+                                                          cuotasP = e.CuotasPendientes,
+                                                          TotalP = e.TotalPendiente
+                                                      })
+                                                      .FirstOrDefaultAsync();
+                if (prestamo == null)
+                {
+                    TempData["Error"] = "Error al consultar Prestamo";
+                    return RedirectToAction("Index", "Prestamo");
+                }
+                var historial = await context.HistorialPagos.Where(h => h.IdPrestamo == id)
+                                                            .AsNoTracking()
+                                                            .Select(e => new GetHistorialDTO
+                                                            {
+                                                                fecha = DateOnly.FromDateTime(e.FechaPago),
+                                                                totalPagado = e.TotalPagado,
+                                                                totalPediente = e.TotalPendiente
+                                                            }).ToListAsync();
+                if(historial == null)
+                {
+                    TempData["Error"] = "No se han registrado pagos";
+                    return RedirectToAction("Index", "Prestamo");
+                }
+                
+                GetHistorialResponse historialResponse = new GetHistorialResponse
+                {
+                    Id = prestamo.Id,
+                    CPendientes = prestamo.cuotasP,
+                    TotalPediente = prestamo.TotalP,
+                    Pagos = historial
+                };
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "Prestamo.Details", $"Se consultó detalle de pagos del prestamo: {id}", session.nombre);
+
+                return Json(historialResponse);
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Prestamo.Details", $"Error al consultar detalle de pagos del prestamo: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar detalles de Prestamo";
+                return RedirectToAction("Index", "Prestamo");
+            }
         }
 
 
