@@ -33,11 +33,15 @@
                 <h4 class="mb-0" style="margin-top:-20px">USUARIO</h4>
                 <p class="mb-0" style="color:rgb(13, 30, 58);">ejemplo@correo.com</p>
             </div>
+
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door-fill"></i> Home</a>
+                    <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-house-door-fill"></i> Home
+                    </a>
                 </li>
-                @if (PermissionHelper.HasRole( "SuperRol"))
+
+                @if (PermissionHelper.HasRole("SuperRol"))
                 {
                     <li class="nav-item">
                         <a class="nav-link text-light" asp-area="" asp-controller="Empresa" asp-action="Index">
@@ -45,7 +49,8 @@
                         </a>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission( "Empleados.Listar"))
+
+                @if (PermissionHelper.HasPermission("Empleados.Listar"))
                 {
                     <li class="nav-item">
                         <a class="nav-link text-light" asp-area="" asp-controller="Employees" asp-action="Index">
@@ -53,72 +58,60 @@
                         </a>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission( "Departamento.Listar") ||
-                        PermissionHelper.HasPermission( "Roles.Listar") ||
-                        PermissionHelper.HasPermission( "Puesto.Listar"))
-                {
 
+                @if (PermissionHelper.HasPermission("Departamento.Listar") ||
+                PermissionHelper.HasPermission("Roles.Listar") ||
+                PermissionHelper.HasPermission("Puesto.Listar"))
+                {
                     <li class="nav-item">
                         <!-- Accordion for Administración Empresa -->
-                        <div class="accordion" id="accordion1">
-                            <!-- Heading of Administración Empresa -->
+                        <div class="accordion" id="accordionExample">
                             <div id="headingOne">
                                 <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                    <i class="bi bi-building-fill-gear"></i>
-                                    Administración Empresa
+                                    <i class="bi bi-building-fill-gear"></i> Administración Empresa
                                 </button>
                             </div>
-                            <!-- Collapsible content (Roles link) -->
-                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordion1">
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    @if (PermissionHelper.HasPermission( "Roles.Listar"))
+                                    @if (PermissionHelper.HasPermission("Roles.Listar"))
                                     {
                                         <a class="nav-link text-light ps-3" asp-area="" asp-controller="Rol" asp-action="Index">Roles</a>
                                     }
-                                    @if (PermissionHelper.HasPermission( "Departamento.Listar"))
+                                    @if (PermissionHelper.HasPermission("Departamento.Listar"))
                                     {
                                         <a class="nav-link text-light ps-3" asp-area="" asp-controller="Departamento" asp-action="Index">Departamentos</a>
-
                                     }
-                                    @if (PermissionHelper.HasPermission( "Puesto.Listar"))
+                                    @if (PermissionHelper.HasPermission("Puesto.Listar"))
                                     {
-                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="Puesto" asp-action="Index">Puesto</a>
-
+                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="Puesto" asp-action="Index">Puestos</a>
                                     }
                                 </div>
                             </div>
                         </div>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission("Ausencia.Listar") ||
+
+                @if (PermissionHelper.HasPermission("Ausencias.Listar") ||
                 PermissionHelper.HasPermission("SolicitudesAusencias.Listar") ||
                 PermissionHelper.HasPermission("SolicitudesAusencias.Historial"))
                 {
-
                     <li class="nav-item">
-                        <!-- Accordion for Administración Empresa -->
-                        <div class="accordion" id="accordion2">
-                            <!-- Heading of Administración Empresa -->
-                            <div id="heading2">
-                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
-                                    <i class="bi bi-calendar-x-fill"></i>
-                                    Ausencias Laborales
+                        <!-- Accordion for Ausencias Laborales -->
+                        <div class="accordion" id="accordionExample2">
+                            <div id="headingTwo">
+                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    <i class="bi bi-calendar-x-fill"></i> Ausencias Laborales
                                 </button>
                             </div>
-                            <!-- Collapsible content (Roles link) -->
-                            <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2" data-bs-parent="#accordion2">
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
                                     @if (PermissionHelper.HasPermission("Ausencias.Listar") && !PermissionHelper.HasRole("CEO"))
                                     {
-                                        <a class="nav-link text-light" asp-area="" asp-controller="Ausencias" asp-action="Index">
-                                             Mis Ausencias
-                                        </a>
+                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="Ausencias" asp-action="Index">Mis Ausencias</a>
                                     }
                                     @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
                                     {
-                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="SolicitudesAusencias" asp-action="Index">
-                                            Solicitudes Ausencias
-                                        </a>
+                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="SolicitudesAusencias" asp-action="Index">Solicitudes Ausencias</a>
                                     }
                                     @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar") && !PermissionHelper.HasRole("CEO"))
                                     {
@@ -130,6 +123,7 @@
                     </li>
                 }
             </ul>
+
         </div>
         <!-- /#sidebar-wrapper -->
         <!-- Page Content -->
