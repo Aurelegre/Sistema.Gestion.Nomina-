@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol;
@@ -11,8 +12,12 @@ using Sistema.Gestion.Nómina.Services.Nomina;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Authorize]
+    [Controller]
     public class PrestamoController(SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
+        [HttpGet]
+        [Authorize(Policy = "Prestamos.Listar")]
         // GET: PrestamoController
         public async Task<ActionResult> Index(GetPrestamosDTO request)
         {
@@ -72,7 +77,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
-
+        [HttpGet]
+        [Authorize(Policy = "Prestamos.Ver")]
         // GET: PrestamoController/Details/5
         public async Task<ActionResult> Details(int id)
         {
@@ -126,6 +132,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Prestamo");
             }
         }
+        [HttpGet]
+        [Authorize(Policy = "Prestamos.Ver")]
         public async Task<ActionResult> HistoryActive()
         {
             var session = logger.GetSessionData();
@@ -178,6 +186,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: PrestamoController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Prestamos.Crear")]
         public async Task<ActionResult> Create(CreatePrestamoDTO request)
         {
             using (var transaction = await context.Database.BeginTransactionAsync())
@@ -222,32 +231,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
-        // GET: PrestamoController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: PrestamoController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: PrestamoController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+       
 
         // POST: PrestamoController/Delete/5
         [HttpPost]

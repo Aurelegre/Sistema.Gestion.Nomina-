@@ -18,13 +18,13 @@
     <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
 
         
-            @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
+            @if (PermissionHelper.HasPermission("Prestamos.Ver"))
             {
                 <a type="button" method="get" asp-controller="Prestamo" asp-action="HistoryActive" class="btn btn-secondary mb-2  me-1 me-md-2 ">
                     Prestamos Activos
                 </a>
             }
-            @if (PermissionHelper.HasPermission("Ausencias.Crear"))
+            @if (PermissionHelper.HasPermission("Prestamos.Crear"))
             {
                 <button type="button" class="btn btn-primary mb-2" onclick="createPrestamo()">
                     Registrar Prestamo
@@ -109,7 +109,7 @@
                         <td>
                             <select class="form-select form-select-sm actions-dropdown">
                                 <option selected>Seleccionar</option>
-                                @if (PermissionHelper.HasPermission("Ausencias.Ver"))
+                                @if (PermissionHelper.HasPermission("Prestamos.Ver"))
                                 {
                                     <option value="historial" data-id="@item.Id">Historial</option>
                                 }

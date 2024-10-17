@@ -136,17 +136,13 @@
                             </div>
                             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
-                                    @if (PermissionHelper.HasPermission("Ausencias.Listar") && !PermissionHelper.HasRole("CEO"))
+                                    @if (PermissionHelper.HasPermission("Prestamos.Listar") && !PermissionHelper.HasRole("CEO"))
                                     {
                                         <a class="nav-link text-light ps-3" asp-area="" asp-controller="Prestamo" asp-action="Index">Mis Prestamos</a>
                                     }
                                     @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
                                     {
-                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="SolicitudesAusencias" asp-action="Index">Solicitudes Ausencias</a>
-                                    }
-                                    @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar") && !PermissionHelper.HasRole("CEO"))
-                                    {
-                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="SolicitudesAusencias" asp-action="HistoryAusencia">Historial de Departamento</a>
+                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="Prestamo" asp-action="HistoryActive">Mis Créditos</a>
                                     }
                                 </div>
                             </div>
