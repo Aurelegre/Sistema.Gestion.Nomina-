@@ -1,0 +1,189 @@
+﻿@using Sistema.Gestion.Nómina.DTOs.Ausencias 
+@using Sistema.Gestion.Nómina.Helpers
+
+@model PaginatedResult<GetAusenciasResponse>
+
+@{
+    ViewData["Title"] = "Ausencias";
+}
+
+<partial name="Messages" />
+
+
+<div class="row align-items-center">
+    <div class="col-12 col-md-auto">
+        <h1 class="my-3 text-center text-md-start">Historial Solicitudes</h1>
+    </div>
+
+    <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
+
+        @if (ViewBag.IsJefe)
+        {
+            @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
+            {
+                <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="HistoryAusencia" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+                    Historial del Departamento
+                </a>
+            }
+        }
+            @if (PermissionHelper.HasPermission("SolicitudesAusencias.Listar"))
+            {
+                <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="btn btn-warning mb-2  me-1 me-md-2 ">
+                Solicitudes Ausencias
+                </a>
+            }
+        
+        @if (ViewBag.IsJefe)
+        {
+            @if (PermissionHelper.HasPermission("Ausencias.Crear"))
+            {
+                <button type="button" class="btn btn-primary mb-2" onclick="createAusencia()">
+                    Solicitar Ausencia
+                </button>
+            }
+        }
+        
+    </div>
+</div>
+<!-- Filtros de Búsqueda -->
+<!-- Filtros de Búsqueda -->
+<form method="get" asp-controller="Ausencias" asp-action="Index" class="mb-4">
+    <div class="row">
+        <div class="col-md-3">
+            <label for="Tipo">Tipo</label>
+            <select name="Tipo" class="form-control" id="Tipo" value="@ViewBag.Tipo">
+                <option value="0">Todos</option>
+                <option value="1">Deducible</option>
+                <option value="2">Pendiente</option>
+                <option value="3">No Deducible</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="Estado">Estado</label>
+            <select value="@ViewBag.Estado" name="Estado" class="form-control" id="Estado">
+                <option value=0>Todos</option>
+                <option value=1>Autorizado</option>
+                <option value=2>Pendiente</option>
+                <option value=3>Denegados</option>
+            </select>
+        </div>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <a method="get" asp-controller="Ausencias" asp-action="Index" class="btn btn-secondary">Limpiar</a>
+    </div>
+</form>
+
+
+@if (Model.Items.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" style="overflow : visible; position:relative">
+            <thead class="thead-dark">
+                <tr>
+                    <td>No.</td>
+                    <td>Detalle</td>
+                    <td>Fecha de Solicitud</td>
+                    <td>Fecha de Incio</td>
+                    <td>Fecha de Fin</td>
+                    <td>Estado</td>
+                    <td>Tipo</td>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int counter = 1; // Inicializa el contador
+                }
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@counter</td> <!-- Muestra el número secuencial -->
+                        <td>@item.Detalle</td>
+                        <td>@item.FechaSolicitud</td>
+                        <td>@item.FechaInicio</td>
+                        <td>@item.FechaFin</td>
+                        @if (item.Estado == 1)
+                        {
+                            <td><label class="alert-success" style="padding:2px"><strong>Autorizado</strong></label></td>
+                        }
+                        else if (item.Estado == 3)
+                        {
+                            <td><label class="alert-danger" style="padding:2px"><strong>Denegado</strong></label></td>
+
+                        }
+                        else if (item.Estado == 2)
+                        {
+                            <td><label class="alert-warning" style="padding:2px"><strong>Pendiente</strong></label></td>
+
+                        }
+                        @if(item.Deducible == 2)
+                        {
+                            <td><label class="alert-warning" style="padding:2px"><strong>Pendiente</strong></label></td>
+                        }
+                        else if(item.Deducible == 1)
+                        {
+                            <td><label class="alert-success" style="padding:2px"><strong>Deducible</strong></label></td>
+                        }
+                        else if (item.Deducible == 3)
+                        {
+                            <td><label class="alert-success" style="padding:2px"><strong>No Deducible</strong></label></td>
+                        }
+
+                        <td>
+                            <select class="form-select form-select-sm actions-dropdown">
+                                <option selected>Seleccionar</option>
+                                @if (PermissionHelper.HasPermission("Ausencias.Ver"))
+                                {
+                                    <option value="detalle" data-id="@item.Id">Ver Detalle</option>
+
+                                }
+                                @if (PermissionHelper.HasPermission("Ausencias.Actualizar") && item.Estado == 2)
+                                {
+                                    <option value="editar" data-id="@item.Id">Editar</option>
+
+                                }
+                                @if (PermissionHelper.HasPermission("Ausencias.Eliminar") && item.Estado == 2)
+                                {
+                                    <option value="eliminar" data-id="@item.Id">Eliminar</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+
+                    counter++; // Incrementa el contador
+
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new GetAusenciasDTO { page = i, Estado = ViewBag.Estado, Tipo = ViewBag.Tipo })">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+}
+else
+{
+    <p>No hay ausencias registradas.</p>
+}
+
+
+<partial name="Create" />
+<partial name="Details" />
+<partial name="Edit" />
+<partial name="Delete" />
+
+
+
+<script src="/js/Ausencias.js" asp-append-version="true"></script>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Sistema.Gestion.Nómina.DTOs.SolicitudesAusencia;
 
 namespace Sistema.Gestion.Nómina.Entitys;
 
@@ -54,16 +55,21 @@ public partial class SistemaGestionNominaContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<HistorialSolicitudesModel>().HasNoKey();
         modelBuilder.Entity<Ausencia>(entity =>
         {
             entity.Property(e => e.Detalle).IsUnicode(false);
             entity.Property(e => e.FechaFin).HasColumnType("datetime");
             entity.Property(e => e.FechaInicio).HasColumnType("datetime");
             entity.Property(e => e.FechaSolicitud).HasColumnType("datetime");
+            entity.Property(e => e.FechaAutorizado).HasColumnType("datetime");
 
             entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Ausencia)
                 .HasForeignKey(d => d.IdEmpleado)
                 .HasConstraintName("FK_Ausencias_Empleados");
+            entity.HasOne(d => d.idJefeNavigation).WithMany(p => p.AusenciaJefe)
+                .HasForeignKey(d => d.idJefe)
+                .HasConstraintName("FK_Ausencias_Jefe");
         });
 
         modelBuilder.Entity<Departamento>(entity =>

@@ -1,0 +1,150 @@
+﻿@using Sistema.Gestion.Nómina.DTOs.SolicitudesAusencia
+@using Sistema.Gestion.Nómina.Helpers
+
+@model PaginatedResult<GetSolicitudesResponse>
+
+@{
+    ViewData["Title"] = "Solicitudes";
+}
+
+<partial name="Messages" />
+
+
+<div class="d-block justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="my-3">Solicitudes de Ausencia</h1>
+        <a method="get" asp-controller="Ausencias" asp-action="Index" class="btn btn-primary" style="font-size: 20px"><i class="bi bi-box-arrow-in-left"></i></a>
+    </div>
+
+    <h3 class="my-4" style="margin-top:-40px">Departamento: <strong>@ViewBag.Depto</strong></h3>
+</div>
+
+<!-- Filtros de Búsqueda -->
+<!-- Filtros de Búsqueda -->
+<form method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="mb-4">
+    <div class="row">
+        <div class="col-md-3">
+            <label for="Empleado">Nombre</label>
+            <input type="text" class="form-control" id="Empleado" name="Empleado" value="@ViewBag.Empleado" placeholder="Filtrar por Nombre">
+        </div>
+        <div class="col-md-3">
+            <label for="Estado">Fecha de Solicitud</label>
+            @{
+                var fechaPorDefecto = ViewBag.Fecha != null
+                ? ((DateTime)ViewBag.Fecha).ToString("yyyy-MM-dd")
+                : ""; // Deja vacío si no hay fecha
+            }
+
+            <input type="date" class="form-control" id="fechaSoli" name="fechaSoli" value="@fechaPorDefecto" placeholder="Seleccione Fecha" />
+        </div>
+        <div class="col-md-3">
+            <label for="Estado">Estado</label>
+            <select value="@ViewBag.Estado" name="Estado" class="form-control" id="Estado">
+                <option value=0>Todos</option>
+                <option value=1>Autorizado</option>
+                <option value=2>Pendiente</option>
+                <option value=3>Denegados</option>
+            </select>
+        </div>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <a method="get" asp-controller="SolicitudesAusencias" asp-action="Index" class="btn btn-secondary">Limpiar</a>
+    </div>
+</form>
+
+
+@if (Model.Items.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" style="overflow : visible; position:relative">
+            <thead class="thead-dark">
+                <tr>
+                    <td>No.</td>
+                    <td>Empleado</td>
+                    <td>Fecha de Solicitud</td>
+                    <td>Fecha de Incio</td>
+                    <td>Fecha de Fin</td>
+                    <td>Estado</td>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int counter = 1; // Inicializa el contador
+                }
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@counter</td> <!-- Muestra el número secuencial -->
+                        <td>@item.Nombre</td>
+                        <td>@item.FechaSolicitud</td>
+                        <td>@item.FechaInicio</td>
+                        <td>@item.FechaFin</td>
+                        @if (item.Estado == 1)
+                        {
+                            <td><label class="alert-success" style="padding:2px"><strong>Autorizado</strong></label></td>
+                        }
+                        else if (item.Estado == 3)
+                        {
+                            <td><label class="alert-danger" style="padding:2px"><strong>Denegado</strong></label></td>
+
+                        }
+                        else if (item.Estado == 2)
+                        {
+                            <td><label class="alert-warning" style="padding:2px"><strong>Pendiente</strong></label></td>
+
+                        }
+
+
+                        <td>
+                            <select class="form-select form-select-sm actions-dropdown">
+                                <option selected>Seleccionar</option>
+                                @if (PermissionHelper.HasPermission("SolicitudesAusencias.Ver"))
+                                {
+                                    <option value="detalle" data-id="@item.Id">Ver Detalle</option>
+                                }
+                                @if (PermissionHelper.HasPermission("SolicitudesAusencias.Autorizar") && (item.Estado == 3 || item.Estado == 2))
+                                {
+                                    <option value="autorice" data-id="@item.Id">Autorizar</option>
+                                }
+                                @if (PermissionHelper.HasPermission("SolicitudesAusencias.Autorizar") && (item.Estado == 1 || item.Estado == 2))
+                                {
+                                    <option value="denegate" data-id="@item.Id">Denegar</option>
+                                }
+
+                            </select>
+                        </td>
+                    </tr>
+
+                    counter++; // Incrementa el contador
+
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new GetSolicitudesDTO { page = i, Empleado = ViewBag.Empleado, fechaSoli = ViewBag.Fecha })">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+}
+else
+{
+    <p>No hay Solicitudes registradas.</p>
+}
+
+<partial name="Details" />
+<partial name="ConfirmDenegate" />
+<partial name="ConfirmAutorice" />
+<script src="/js/SolicitudAusencia.js" asp-append-version="true"></script>

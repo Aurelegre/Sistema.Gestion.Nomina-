@@ -4,17 +4,29 @@
     height: 100vh;
     background-color: rgb(20, 83, 154);
     transition: all 0.3s;
+    position: sticky;
+    z-index: 1001;
+    top: 0;
+    box-shadow: 1px 0px 20px -5px black;
     
+    /*scrollbar-width: thin;*/ /* Para Firefox */
+    /*scrollbar-color: rgb(3, 53, 98) rgb(24, 67, 117);*/ /* Colores de la barra en Firefox (pista, pulgar) */
 }
 
 .sidebar .nav-link {
     color: white;
-    padding: 15px;
+    padding: 10px 0px 15px 15px;
     transition: background-color 0.3s;
     background-color: rgb(20, 83, 154);
     font-weight: bold;
 }
-
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0px 0px 25px -12px black;
+    margin-bottom: 10px
+}
     .sidebar .nav-link:hover {
         background-color: rgb(24, 67, 117);
     }
@@ -85,10 +97,14 @@
 #page-content-wrapper {
     width: 100%;
     transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 #wrapper.toggled #sidebar-wrapper {
     margin-left: -250px;
+    box-shadow : none
 }
 #menu-toggle {
     /*position: absolute;*/
@@ -104,7 +120,17 @@
     #wrapper.toggled #sidebar-wrapper {
         margin-left: 0;
     }
-
+    li {
+        font-size: 0.9rem; /* Smaller font size */
+    }
+    .nav-link i {
+        font-size: 15px;
+        margin-right: 5px;
+    }
+    .nav-link {
+        padding: 10px 0px 15px 5px;
+        margin: 0px;
+    }
     #menu-toggle {
         /*position: absolute;*/
         top: 10px;
@@ -118,3 +144,5 @@ html, body {
     margin: 0;
     font-family: Arial, sans-serif;
 }
+
+

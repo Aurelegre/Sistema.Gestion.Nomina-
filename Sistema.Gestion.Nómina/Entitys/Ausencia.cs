@@ -9,11 +9,15 @@ public partial class Ausencia
 
     public int? IdEmpleado { get; set; }
 
-    public DateTime? FechaSolicitud { get; set; }
+    public int? idJefe { get; set; }
 
-    public DateTime? FechaInicio { get; set; }
+    public DateTime FechaSolicitud { get; set; }
 
-    public DateTime? FechaFin { get; set; }
+    public DateTime FechaInicio { get; set; }
+
+    public DateTime FechaFin { get; set; }
+
+    public DateTime? FechaAutorizado { get; set; }
 
     public int? TotalDias { get; set; }
 
@@ -23,4 +27,5 @@ public partial class Ausencia
     public string? Detalle { get; set; }
 
     public virtual Empleado? IdEmpleadoNavigation { get; set; }
+    public virtual Empleado? idJefeNavigation { get; set; }
 }
