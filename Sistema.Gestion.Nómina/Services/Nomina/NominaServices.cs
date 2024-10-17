@@ -14,7 +14,7 @@
 
                 // Cálculo del descuento
                 decimal? diario = amount / 30;
-                decimal? descuento = diario * days;
+                decimal? descuento = Math.Round(diario.Value * days.Value, 2);
 
                 return descuento;
             }
