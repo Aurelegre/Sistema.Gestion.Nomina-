@@ -162,3 +162,13 @@ function createPrestamo() {
     var modal = new bootstrap.Modal(document.getElementById('createPrestamoModal'));
     modal.show();
 }
+function confirmCreate(idForm, idForm2) {
+    const form = document.getElementById(idForm);
+    const form2 = document.getElementById(idForm2);
+    var modal = new bootstrap.Modal(document.getElementById('createConfirmationModal'));
+    modal.show();
+    form2.addEventListener('submit', function (event) {
+        event.preventDefault();
+        form.submit();
+    });
+}
