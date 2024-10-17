@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol;
 using Sistema.Gestion.Nómina.DTOs.Prestamos;
 using Sistema.Gestion.Nómina.DTOs.SolicitudesAusencia;
 using Sistema.Gestion.Nómina.Entitys;
@@ -77,24 +78,51 @@ namespace Sistema.Gestion.Nómina.Controllers
             return View();
         }
 
-        // GET: PrestamoController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
 
         // POST: PrestamoController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(CreatePrestamoDTO request)
         {
-            try
+            using (var transaction = await context.Database.BeginTransactionAsync())
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
+                var session = logger.GetSessionData();
+                try
+                {
+                    var count = await context.Prestamos.CountAsync(e => e.IdEmpleado == session.idEmpleado);
+                    if (count == 2)
+                    {
+                        TempData["Error"] = "Máximo número de prestamos activos alcanzado";
+                        return RedirectToAction("Index", "Prestamo");
+                    }
+                    Prestamo prestamo = new Prestamo
+                    {
+                        IdEmpleado = session.idEmpleado,
+                        Total = request.Total,
+                        Cuotas = request.Cuotas,
+                        FechaPrestamo = DateTime.Now.Date,
+                        Pagado = 1,
+                        IdTipo = 1,
+                        TotalPendiente = request.Total,
+                        CuotasPendientes = request.Cuotas
+                    };
+                    context.Prestamos.Add(prestamo);
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    // Guardar bitácora
+                    await logger.LogTransaction(session.idEmpleado, session.company, "Prestamo.Create", $"Se registró prestamo con id {prestamo.Id}, empleado: {session.idEmpleado}", session.nombre);
+
+                    TempData["Message"] = "Prestamo registrado con éxito";
+                    return RedirectToAction("Index", "Prestamo");
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    await logger.LogError(session.idEmpleado, session.company, "Prestamo.Create", "Error al registrar prestamo", ex.Message, ex.StackTrace);
+                    TempData["Error"] = "No se pudo registrar Prestamo";
+                    return RedirectToAction("Index", "Prestamo");
+                }
             }
         }
 
