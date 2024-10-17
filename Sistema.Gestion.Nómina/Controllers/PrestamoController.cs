@@ -48,6 +48,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                         Total = u.Total,
                         TotalPendiente = u.TotalPendiente
                     })
+                    .OrderByDescending(e=> e.Fecha)
                     .ToListAsync();
 
                 var paginatedResult = new PaginatedResult<GetPrestamosResponse>
@@ -68,7 +69,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 await logger.LogError(session.idEmpleado, session.company, "Prestamos.Index",$"Error al consultar los prestamos del empleado {session.idEmpleado}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Prestamos";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -121,6 +122,53 @@ namespace Sistema.Gestion.Nómina.Controllers
             catch (Exception ex)
             {
                 await logger.LogError(session.idEmpleado, session.company, "Prestamo.Details", $"Error al consultar detalle de pagos del prestamo: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar detalles de Prestamo";
+                return RedirectToAction("Index", "Prestamo");
+            }
+        }
+        public async Task<ActionResult> HistoryActive()
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                //trear los prestamos activos del empleado 
+                var prestamo = await context.Prestamos.Where(e => e.IdEmpleado == session.idEmpleado && e.Pagado == 1)
+                                                      .AsNoTracking()
+                                                      .Select(e => new GetActiveHistorialDTO
+                                                      {
+                                                          Id = e.Id,
+                                                          CPendientes = e.CuotasPendientes,
+                                                          TotalPediente = e.TotalPendiente,
+                                                          fecha = DateOnly.FromDateTime(e.FechaPrestamo),
+                                                          Pagos =  context.HistorialPagos.Where(h => h.IdPrestamo == e.Id)
+                                                                                        .AsNoTracking()
+                                                                                        .Select(e => new GetHistorialDTO
+                                                                                        {
+                                                                                            fecha = DateOnly.FromDateTime(e.FechaPago),
+                                                                                            totalPagado = e.TotalPagado,
+                                                                                            totalPediente = e.TotalPendiente
+                                                                                        }).ToList()
+                                                       })
+                                                      .OrderByDescending(e=> e.fecha)
+                                                      .ToListAsync();
+                if (prestamo == null)
+                {
+                    TempData["Error"] = "Error al Historial de Prestamos activos";
+                    return RedirectToAction("Index", "Prestamo");
+                }
+
+                GetActiveHistorialResponse historialResponse = new GetActiveHistorialResponse
+                {
+                    Historials = prestamo
+                };
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "Prestamo.HistoryActive", $"Se consultó Historial de prestamos activos", session.nombre);
+
+                return View(historialResponse);
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Prestamo.HistoryActive", $"Error al consultar Historial de prestamos activos", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar detalles de Prestamo";
                 return RedirectToAction("Index", "Prestamo");
             }
