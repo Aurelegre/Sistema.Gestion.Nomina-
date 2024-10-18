@@ -1,4 +1,4 @@
-﻿namespace Sistema.Gestion.Nómina.Views.Credito
+﻿namespace Sistema.Gestion.Nómina.DTOs.Creditos
 {
     public class GetCreditoHistorialDTO
     {

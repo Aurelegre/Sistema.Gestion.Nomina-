@@ -5,7 +5,6 @@ using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Logs;
 using Sistema.Gestion.Nómina.Services.Nomina;
-using Sistema.Gestion.Nómina.Views.Credito;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
@@ -120,6 +119,54 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 await logger.LogError(session.idEmpleado, session.company, "Credito.Details", $"Error al consultar detalle de pagos del Credito: {id}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar detalles de Credito";
+                return RedirectToAction("Index", "Credito");
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> HistoryActive()
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                //traer los créditos activos del usuario
+                var creditos = await context.Prestamos.Where(e => e.IdEmpleado == session.idEmpleado && e.Pagado == 1 && e.IdTipo == 2)
+                                                      .AsNoTracking()
+                                                      .Select(e => new GetActiveCreditHistorialDTO
+                                                      {
+                                                          Id = e.Id,
+                                                          CPendientes = e.CuotasPendientes,
+                                                          TotalPediente = e.TotalPendiente,
+                                                          fecha = DateOnly.FromDateTime(e.FechaPrestamo),
+                                                          Pagos = context.HistorialPagos.Where(h => h.IdPrestamo == e.Id)
+                                                                                        .AsNoTracking()
+                                                                                        .Select(e => new GetCreditoHistorialDTO
+                                                                                        {
+                                                                                            fecha = DateOnly.FromDateTime(e.FechaPago),
+                                                                                            totalPagado = e.TotalPagado,
+                                                                                            totalPediente = e.TotalPendiente
+                                                                                        }).ToList()
+                                                      })
+                                                      .OrderByDescending(e => e.fecha)
+                                                      .ToListAsync();
+                if(creditos == null)
+                {
+                    TempData["Error"] = "Error al Historial de Créditos activos";
+                    return RedirectToAction("Index", "Credito");
+                }
+
+                GetActiveCreditHistorialResponse getActiveCreditHistorialDTO = new GetActiveCreditHistorialResponse
+                {
+                    Historials = creditos
+                };
+                await logger.LogTransaction(session.idEmpleado, session.company, "Credito.HistoryActive", $"Se consultó Historial de créditos activos", session.nombre);
+
+                return View(getActiveCreditHistorialDTO);
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Credito.HistoryActive", $"Error al consultar Historial de créditos activos", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar detalles de Crédito";
                 return RedirectToAction("Index", "Credito");
             }
         }
