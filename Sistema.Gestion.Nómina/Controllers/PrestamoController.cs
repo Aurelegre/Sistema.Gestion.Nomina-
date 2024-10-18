@@ -236,6 +236,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: PrestamoController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Prestamos.Eliminar")]
         public async Task<ActionResult> Delete(int id)
         {
             var session = logger.GetSessionData();
