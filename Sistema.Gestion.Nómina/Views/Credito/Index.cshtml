@@ -18,13 +18,13 @@
     <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
 
 
-        @if (PermissionHelper.HasPermission("Prestamos.Ver"))
+        @if (PermissionHelper.HasPermission("Creditos.Ver"))
         {
             <a type="button" method="get" asp-controller="Credito" asp-action="HistoryActive" class="btn btn-secondary mb-2  me-1 me-md-2 ">
                 Créditos Activos
             </a>
         }
-        @if (PermissionHelper.HasPermission("Prestamos.Crear"))
+        @if (PermissionHelper.HasPermission("Creditos.Crear"))
         {
             <button type="button" class="btn btn-primary mb-2" onclick="createCredito()">
                 Registrar Crédito
@@ -109,11 +109,11 @@
                         <td>
                             <select class="form-select form-select-sm actions-dropdown">
                                 <option selected>Seleccionar</option>
-                                @if (PermissionHelper.HasPermission("Prestamos.Ver"))
+                                @if (PermissionHelper.HasPermission("Creditos.Ver"))
                                 {
                                     <option value="historial" data-id="@item.Id">Historial</option>
                                 }
-                                @if (PermissionHelper.HasPermission("Prestamos.Eliminar"))
+                                @if (PermissionHelper.HasPermission("Creditos.Eliminar"))
                                 {
                                     <option value="eliminar" data-id="@item.Id">Eliminar</option>
                                 }
@@ -153,9 +153,7 @@ else
 <partial name="ConfirmCreate" />
 <partial name="Details" />
 <partial name="Delete" />
-@* 
-<partial name="Delete" />
-<partial name="ConfirmCreate" /> *@
+
 
 
 <script src="/js/Creditos.js" asp-append-version="true"></script>

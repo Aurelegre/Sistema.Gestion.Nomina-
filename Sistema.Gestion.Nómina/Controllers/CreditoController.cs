@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina.DTOs.Creditos;
 using Sistema.Gestion.Nómina.Entitys;
@@ -8,9 +9,12 @@ using Sistema.Gestion.Nómina.Services.Nomina;
 
 namespace Sistema.Gestion.Nómina.Controllers
 {
+    [Authorize]
+    [Controller]
     public class CreditoController(SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
         [HttpGet]
+        [Authorize(Policy = "Creditos.Listar")]
         public async Task<ActionResult> Index(GetCreditosDTO request)
         {
             var session = logger.GetSessionData();
@@ -70,6 +74,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "Creditos.Ver")]
         public async Task<ActionResult> Details (int id)
         {
             var session = logger.GetSessionData();
@@ -124,6 +129,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "Creditos.Ver")]
         public async Task<ActionResult> HistoryActive()
         {
             var session = logger.GetSessionData();
@@ -172,6 +178,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "Creditos.Crear")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(CreateCreditoDTO request)
         {
@@ -224,6 +231,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "Creditos.Eliminar")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Delete(int id)
         {
