@@ -26,7 +26,7 @@
         }
         @if (PermissionHelper.HasPermission("Prestamos.Crear"))
         {
-            <button type="button" class="btn btn-primary mb-2" onclick="createPrestamo()">
+            <button type="button" class="btn btn-primary mb-2" onclick="createCredito()">
                 Registrar Crédito
             </button>
         }
@@ -149,10 +149,13 @@ else
     <p>No hay Creditos registrados.</p>
 }
 
-@* <partial name="Create" />
+<partial name="Create" />
+<partial name="ConfirmCreate" />
 <partial name="Details" />
+<partial name="Delete" />
+@* 
 <partial name="Delete" />
 <partial name="ConfirmCreate" /> *@
 
 
-<script src="/js/Prestamos.js" asp-append-version="true"></script>
+<script src="/js/Creditos.js" asp-append-version="true"></script>

@@ -194,7 +194,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 try
                 {
-                    var count = await context.Prestamos.CountAsync(e => e.IdEmpleado == session.idEmpleado);
+                    var count = await context.Prestamos.CountAsync(e => e.IdEmpleado == session.idEmpleado && e.IdTipo == 1);
                     if (count == 2)
                     {
                         TempData["Error"] = "Máximo número de prestamos activos alcanzado";
