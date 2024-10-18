@@ -57,6 +57,17 @@ function createPrestamo() {
     var modal = new bootstrap.Modal(document.getElementById('createPrestamoModal'));
     modal.show();
 }
+function validateAndConfirmCreate(idForm, idForm2) {
+    var form = document.getElementById(idForm);
+    // Verifica si el formulario es válido
+    if (form.checkValidity()) {
+        // Si es válido, llama a la función confirmCreate
+        confirmCreate(idForm, idForm2);
+    } else {
+        // Si no es válido, muestra los errores nativos de HTML5
+        form.reportValidity();
+    }
+}
 function confirmCreate(idForm, idForm2) {
     const form = document.getElementById(idForm);
     const form2 = document.getElementById(idForm2);
