@@ -90,7 +90,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Employees.Index", "Error al realizar el Get de todos los empleados activos", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Empleados";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
 
