@@ -140,7 +140,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             try
             {
                 //trear los prestamos activos del empleado 
-                var prestamo = await context.Prestamos.Where(e => e.IdEmpleado == session.idEmpleado && e.Pagado == 1)
+                var prestamo = await context.Prestamos.Where(e => e.IdEmpleado == session.idEmpleado && e.Pagado == 1 && e.IdTipo == 2)
                                                       .AsNoTracking()
                                                       .Select(e => new GetActiveHistorialDTO
                                                       {
