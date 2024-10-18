@@ -67,13 +67,18 @@
                         <td>
                             <select class="form-select form-select-sm actions-dropdown">
                                 <option selected>Seleccionar</option>
+                                @if (PermissionHelper.HasPermission("Empleados.Ver"))
+                                {
+                                    <option value="detalle" data-id="@item.Id">Ver Detalle</option>
+                                }
                                 @if (PermissionHelper.HasPermission("Empleados.Actualizar"))
                                 {
-                                    <option value="editar" data-id="@item.Id">Horas Extras</option>
+                                    <option value="extras" data-id="@item.Id">Horas Extras</option>
 
-                                }@if (PermissionHelper.HasPermission("Empleados.Eliminar"))
+                                }
+                                @if (PermissionHelper.HasPermission("Empleados.Eliminar"))
                                 {
-                                    <option value="eliminar" data-id="@item.Id">Comisiones</option>
+                                    <option value="comisiones" data-id="@item.Id">Comisiones</option>
                                 }
                             </select>
                         </td>
@@ -107,10 +112,12 @@ else
     <p>No hay empleados disponibles.</p>
 }
 
+<partial name="Details" />
+<script src="/js/EmployeeDepto.js" asp-append-version="true"></script>
 @* <partial name="Create" />
 <partial name="Update" />
-<partial name="Details" />
+
 <partial name="Delete" />
 <partial name="UnlockUser" />
 
-<script src="/js/Employees.js" asp-append-version="true"></script> *@
+ *@

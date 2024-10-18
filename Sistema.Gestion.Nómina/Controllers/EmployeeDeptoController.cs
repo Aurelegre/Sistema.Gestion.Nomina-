@@ -1,7 +1,6 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Sistema.Gestion.Nómina.DTOs.Empleados;
 using Sistema.Gestion.Nómina.DTOs.EmployeeDepto;
 using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
@@ -12,6 +11,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 {
     public class EmployeeDeptoController(SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
+        [HttpGet]
         public async Task<ActionResult> Index(GetEmployeesDeptoDTO request)
         {
             var session = logger.GetSessionData();
@@ -80,6 +80,45 @@ namespace Sistema.Gestion.Nómina.Controllers
                 await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.Index", "Error al realizar el Get de todos los empleados de un departamento", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Empleados del Departamento";
                 return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> Details(int id)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                var empleado = await context.Empleados
+                                           .Where(u => u.Id == id)
+                                           .AsNoTracking()
+                                           .Select(u => new GetEmployeeDeptoDTO
+                                           {
+                                               Id = u.Id,
+                                               Nombre = u.Nombre,
+                                               Apellidos = u.Apellidos,
+                                               Puesto = u.IdPuestoNavigation.Descripcion,
+                                               Departamento = u.IdDepartamentoNavigation.Descripcion,
+                                               DPI = u.Dpi,
+                                               Sueldo = u.Sueldo,
+                                               FechaContratado = DateOnly.FromDateTime(u.FechaContratado),
+                                           }).FirstOrDefaultAsync();
+
+                if (empleado == null)
+                {
+                    TempData["Error"] = "Error al obtener detalle de Empleado";
+                    return RedirectToAction("Index", "EmployeeDepto");
+                }
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "EmployeeDepto.Details", $"Se consultaron detalles del empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+
+                return Json(empleado);
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.Details", $"Error al consultar detalles del empleado con id: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar detalles de Empleado";
+                return RedirectToAction("Index", "EmployeeDepto");
             }
         }
     }
