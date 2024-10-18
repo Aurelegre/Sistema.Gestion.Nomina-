@@ -1,0 +1,158 @@
+﻿@using Sistema.Gestion.Nómina.DTOs.Creditos
+@using Sistema.Gestion.Nómina.Helpers
+
+@model PaginatedResult<GetCreditosResponse>
+
+@{
+    ViewData["Title"] = "Creditos";
+}
+
+<partial name="Messages" />
+
+
+<div class="row align-items-center">
+    <div class="col-12 col-md-auto">
+        <h1 class="my-3 text-center text-md-start">Creditos</h1>
+    </div>
+
+    <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
+
+
+        @if (PermissionHelper.HasPermission("Prestamos.Ver"))
+        {
+            <a type="button" method="get" asp-controller="Prestamo" asp-action="HistoryActive" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+                Créditos Activos
+            </a>
+        }
+        @if (PermissionHelper.HasPermission("Prestamos.Crear"))
+        {
+            <button type="button" class="btn btn-primary mb-2" onclick="createPrestamo()">
+                Registrar Crédito
+            </button>
+        }
+
+
+    </div>
+</div>
+<!-- Filtros de Búsqueda -->
+<!-- Filtros de Búsqueda -->
+<form method="get" asp-controller="Credito" asp-action="Index" class="mb-4">
+    <div class="row">
+        <div class="col-md-3">
+            <label for="Estado">Estado</label>
+            <select value="@ViewBag.Estado" name="Estado" class="form-control" id="Estado">
+                <option value=0>Todos</option>
+                <option value=1>Activos</option>
+                <option value=2>Pagados</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="FechaResgistro">Fecha</label>
+            @{
+                var fechaPorDefecto = ViewBag.Fecha != null
+                ? ((DateOnly)ViewBag.Fecha).ToString("yyyy-MM-dd")
+                : ""; // Deja vacío si no hay fecha
+            }
+
+            <input type="date" class="form-control" id="FechaResgistro" name="Fecha" value="@fechaPorDefecto" placeholder="Seleccione Fecha" />
+        </div>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <a method="get" asp-controller="Prestamo" asp-action="Index" class="btn btn-secondary">Limpiar</a>
+    </div>
+</form>
+
+
+@if (Model.Items.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" style="overflow : visible; position:relative">
+            <thead class="thead-dark">
+                <tr>
+                    <td>No.</td>
+                    <td>Estado</td>
+                    <td>Cuotas</td>
+                    <td>Total</td>
+                    <td>Cuotas Pendientes</td>
+                    <td>Total Pendiente</td>
+                    <td>Fecha Registro</td>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int counter = 1; // Inicializa el contador
+                }
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@counter</td> <!-- Muestra el número secuencial -->
+                        @if (item.Estado == 2)
+                        {
+                            <td><label class="alert-success" style="padding:2px"><strong>Pagado</strong></label></td>
+                        }
+                        else if (item.Estado == 1)
+                        {
+                            <td><label class="alert-danger" style="padding:2px"><strong>Activo</strong></label></td>
+
+                        }
+                        else
+                        {
+                            <td><label class="alert-warning" style="padding:2px"><strong>Sin Asignar</strong></label></td>
+
+                        }
+                        <td>@item.Cuotas</td>
+                        <td>@item.Total</td>
+                        <td>@item.CPendientes</td>
+                        <td>@item.TotalPendiente</td>
+
+                        <td>
+                            <select class="form-select form-select-sm actions-dropdown">
+                                <option selected>Seleccionar</option>
+                                @if (PermissionHelper.HasPermission("Prestamos.Ver"))
+                                {
+                                    <option value="historial" data-id="@item.Id">Historial</option>
+                                }
+                                @if (PermissionHelper.HasPermission("Prestamos.Eliminar"))
+                                {
+                                    <option value="eliminar" data-id="@item.Id">Eliminar</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+
+                    counter++; // Incrementa el contador
+
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new GetCreditosDTO { page = i, Estado = ViewBag.Estado, Fecha = ViewBag.Fecha })">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+}
+else
+{
+    <p>No hay Creditos registrados.</p>
+}
+
+@* <partial name="Create" />
+<partial name="Details" />
+<partial name="Delete" />
+<partial name="ConfirmCreate" /> *@
+
+
+<script src="/js/Prestamos.js" asp-append-version="true"></script>
