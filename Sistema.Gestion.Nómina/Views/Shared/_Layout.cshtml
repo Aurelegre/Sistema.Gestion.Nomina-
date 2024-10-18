@@ -67,7 +67,7 @@
                         <!-- Accordion for Administración Empresa -->
                         <div class="accordion" id="accordionExample">
                             <div id="headingOne">
-                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne" onclick="closeOtherAccordions('collapseOne')">
                                     <i class="bi bi-building-fill-gear"></i> Administración Empresa
                                 </button>
                             </div>
@@ -99,11 +99,11 @@
                         <!-- Accordion for Ausencias Laborales -->
                         <div class="accordion" id="accordionExample">
                             <div id="headingTwo">
-                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" onclick="closeOtherAccordions('collapseTwo')">
                                     <i class="bi bi-calendar-x-fill"></i> Ausencias Laborales
                                 </button>
                             </div>
-                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample" >
                                 <div class="accordion-body">
                                     @if (PermissionHelper.HasPermission("Ausencias.Listar") && !PermissionHelper.HasRole("CEO"))
                                     {
@@ -130,8 +130,8 @@
                         <!-- Accordion for Ausencias Laborales -->
                         <div class="accordion" id="accordionExample">
                             <div id="headingThree">
-                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                    <i class="bi bi-bank"></i> Prestamos / Creditos
+                                <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree" onclick="closeOtherAccordions('collapseThree')">
+                                    <i class="bi bi-bank"></i> Prestamos / Créditos
                                 </button>
                             </div>
                             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
