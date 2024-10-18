@@ -38,6 +38,14 @@
                         console.error('Error al obtener los detalles del empleado:', error);
                     });
 
+            } else if (action === "eliminar") {
+                document.getElementById("deleteId").value = id;
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                modal.show();
+
+                // Restablecer el valor del combobox a la opción predeterminada
+                dropdown.value = "Seleccionar";
             }
             
         });

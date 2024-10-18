@@ -113,6 +113,10 @@
                                 {
                                     <option value="historial" data-id="@item.Id">Historial</option>
                                 }
+                                @if (PermissionHelper.HasPermission("Prestamos.Ver"))
+                                {
+                                    <option value="eliminar" data-id="@item.Id">Eliminar</option>
+                                }
                             </select>
                         </td>
                     </tr>
@@ -147,6 +151,7 @@ else
 
 <partial name="Create" />
 <partial name="Details" />
+<partial name="Delete" />
 <partial name="ConfirmCreate" />
 
 

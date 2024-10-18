@@ -236,15 +236,37 @@ namespace Sistema.Gestion.Nómina.Controllers
         // POST: PrestamoController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id)
         {
+            var session = logger.GetSessionData();
             try
             {
-                return RedirectToAction(nameof(Index));
+                var prestamo = await context.Prestamos.Where(e => e.Id == id).AsNoTracking().FirstOrDefaultAsync();
+                if(prestamo == null)
+                {
+                    TempData["Error"] = "El prestamo a eliminar no existe";
+                    return RedirectToAction("Index", "Prestamo");
+                }
+                //validar si tiene pagos registrados
+                var pagos = await context.HistorialPagos.AsNoTracking().AnyAsync(e => e.IdPrestamo == prestamo.Id);
+                if (pagos)
+                {
+                    TempData["Error"] = "El prestamo posee pagos registrados";
+                    return RedirectToAction("Index", "Prestamo");
+                }
+                context.Remove(prestamo);
+                await context.SaveChangesAsync();
+                // Guardar bitácora
+                await logger.LogTransaction(session.idEmpleado, session.company, "Prestamo.Delete", $"Se eliminó prestamo con id {prestamo.Id}, empleado: {session.idEmpleado}", session.nombre);
+
+                TempData["Message"] = "Prestamo eliminado con éxito";
+                return RedirectToAction("Index", "Prestamo");
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                await logger.LogError(session.idEmpleado, session.company, "Prestamo.Delete", "Error al eliminó prestamo", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo eliminar Prestamo";
+                return RedirectToAction("Index", "Prestamo");
             }
         }
     }
