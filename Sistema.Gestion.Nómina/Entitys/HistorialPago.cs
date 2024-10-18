@@ -10,7 +10,7 @@
 
         public decimal? TotalPagado { get; set; }
 
-        public DateTime? FechaPago { get; set; }
+        public DateTime FechaPago { get; set; }
 
         public decimal? TotalPendiente { get; set; }
 

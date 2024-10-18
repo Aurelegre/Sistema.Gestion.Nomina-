@@ -19,7 +19,7 @@ public partial class Prestamo
 
     public int? Pagado { get; set; }
 
-    public DateTime? FechaPrestamo { get; set; }
+    public DateTime FechaPrestamo { get; set; }
 
     public int? IdTipo { get; set; }
 

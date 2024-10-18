@@ -1,0 +1,38 @@
+﻿<!-- Modal para crear un credito -->
+<div class="modal fade" id="createCreditoModal" tabindex="-1" aria-labelledby="createCreditoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <!-- Aumenté el tamaño del modal -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createCreditoModalLabel">Registrar Credito</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createCreditoForm" asp-controller="Credito" asp-action="Create" method="post">
+                <div class="modal-body">
+                    <!-- Datos del Prestamo -->
+                    <div class="mb-3">
+                        <label for="Total" class="form-label">Cantidad del Crédito</label>
+                        <input type="number" class="form-control" id="Total" name="Total" required min="0" step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="Cuotas" class="form-label">Cuotas</label>
+                        <select class="form-select" id="Cuotas" name="Cuotas" required">
+                            <option value="">Seleccione Cuotas</option>
+                            <option value=1>1 mes</option>
+                            <option value=2>2 meses</option>
+                            <option value=3>3 meses</option>
+                            <option value=4>4 meses</option>
+                            <option value=5>5 messe</option>
+                            <option value=6>6 meses</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button onclick="validateAndConfirmCreate('createCreditoForm','createConfirmationModal')" class="btn btn-primary">Registrar</button>
+            </div>
+           
+        </div>
+    </div>
+</div>
