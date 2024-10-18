@@ -1,6 +1,7 @@
 ﻿/* Sidebar styling */
 #sidebar-wrapper {
-    width: 250px;
+    max-width: 16rem;
+    min-width: 13rem;
     height: 100vh;
     background-color: rgb(20, 83, 154);
     transition: all 0.3s;
@@ -104,7 +105,7 @@
 }
 
 #wrapper.toggled #sidebar-wrapper {
-    margin-left: -250px;
+    margin-left: -16rem;
     box-shadow : none
 }
 #menu-toggle {
@@ -115,11 +116,14 @@
 }
 @media (max-width: 768px) {
     #sidebar-wrapper {
-        margin-left: -250px;
+        margin-left: -16rem;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     #wrapper.toggled #sidebar-wrapper {
         margin-left: 0;
+        box-shadow: 1px 0px 20px -5px black;
     }
     li {
         font-size: 0.9rem; /* Smaller font size */
@@ -141,7 +145,7 @@
 }
 
 html, body {
-    height: 100%;
+    height: 100vh;
     margin: 0;
     font-family: Arial, sans-serif;
 }

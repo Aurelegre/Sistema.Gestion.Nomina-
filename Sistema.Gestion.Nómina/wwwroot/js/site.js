@@ -3,9 +3,9 @@
     const wrapper = document.getElementById('wrapper');
 
     // Get the state from local storage and apply it
-    if (localStorage.getItem('sidebarToggled') === 'true') {
-        wrapper.classList.add('toggled');
-    }
+    //if (localStorage.getItem('sidebarToggled') === 'true') {
+    //    wrapper.classList.add('toggled');
+    //}
 
     toggleButton.addEventListener('click', function () {
         wrapper.classList.toggle('toggled');
