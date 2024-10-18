@@ -97,6 +97,17 @@ function ConfirmPassword(idform, password, confirmpass,error) {
         }
 }
 
+function validateAndConfirmEdit(idForm, idModal, idForm2) {
+    var form = document.getElementById(idForm);
+    // Verifica si el formulario es válido
+    if (form.checkValidity()) {
+        // Si es válido, llama a la función confirmCreate
+        confirmEdit(idForm, idModal, idForm2);
+    } else {
+        // Si no es válido, muestra los errores nativos de HTML5
+        form.reportValidity();
+    }
+}
 function confirmEdit(idForm,idModal, idForm2) {
     const form = document.getElementById(idForm);
     const form2 = document.getElementById(idForm2);
