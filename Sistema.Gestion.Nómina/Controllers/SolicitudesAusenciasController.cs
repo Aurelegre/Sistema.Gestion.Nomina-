@@ -39,6 +39,11 @@ namespace Sistema.Gestion.Nómina.Controllers
                 {
                     //traer el departamento del que es JEFE
                     var deptos = await context.Departamentos.SingleAsync(d => d.IdJefe == session.idEmpleado);
+                    if(deptos == null)
+                    {
+                        TempData["Error"] = "Error el Empleado no es un Jefe de Departamento";
+                        return RedirectToAction("Index", "Home");
+                    }
                     depto = deptos.Descripcion;
                     //traer todas las solicitudes de los departamentos menos la de el jefe
                     query = query.Where(a => a.IdEmpleadoNavigation.IdDepartamento == deptos.Id);
