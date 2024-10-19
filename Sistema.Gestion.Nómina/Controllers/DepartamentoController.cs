@@ -71,7 +71,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Departamento.Index", "Error al realizar el Get de todos los Departamentos", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Departamento";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
 

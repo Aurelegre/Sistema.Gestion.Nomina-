@@ -67,7 +67,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Rol.Index", "Error al realizar el Get de todos los Roles activos", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Roles";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
         [HttpGet]

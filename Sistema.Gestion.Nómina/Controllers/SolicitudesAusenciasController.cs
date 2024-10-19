@@ -98,7 +98,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 await logger.LogError(session.idEmpleado, session.company, "SolicitudesAusencias.Index", "Error al consultar las solicitudes pendientes.", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar solicitudes";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
 
