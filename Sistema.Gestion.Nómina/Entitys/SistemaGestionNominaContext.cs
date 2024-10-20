@@ -78,24 +78,7 @@ public partial class SistemaGestionNominaContext : DbContext
                 .HasForeignKey(d => d.IdTipo)
                 .HasConstraintName("FK_Aumentos_TipoAumento");
         });
-        modelBuilder.Entity<Descuento>(entity =>
-        {
-            // Configuración de las columnas
-            entity.Property(e => e.Fecha).HasColumnType("datetime");
-            entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
-
-            // Relación con la tabla Empleados
-            entity.HasOne(d => d.IdEmpleadoNavigation)
-                .WithMany(p => p.Descuento)
-                .HasForeignKey(d => d.IdEmpleado)
-                .HasConstraintName("FK_Descuento_TipoAumento");
-
-            // Relación con la tabla TipoAumento
-            entity.HasOne(d => d.IdTipoNavigation)
-                .WithMany(p => p.Descuento)
-                .HasForeignKey(d => d.IdTipo)
-                .HasConstraintName("FK_Descuento_TipoAumento");
-        });
+        
         modelBuilder.Entity<Ausencia>(entity =>
         {
             entity.Property(e => e.Detalle).IsUnicode(false);
@@ -153,6 +136,24 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.Property(e => e.Teléfono)
                 .HasMaxLength(50)
                 .HasColumnName("teléfono");
+        });
+        modelBuilder.Entity<Descuento>(entity =>
+        {
+            // Configuración de las columnas
+            entity.Property(e => e.Fecha).HasColumnType("datetime");
+            entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
+
+            // Relación con la tabla Empleados
+            entity.HasOne(d => d.IdEmpleadoNavigation)
+                .WithMany(p => p.Descuento)
+                .HasForeignKey(d => d.IdEmpleado)
+                .HasConstraintName("FK_Descuento_Empleados");
+
+            // Relación con la tabla TipoAumento
+            entity.HasOne(d => d.IdTipoNavigation)
+                .WithMany(p => p.Descuento)
+                .HasForeignKey(d => d.IdTipo)
+                .HasConstraintName("FK_Descuento_TipoDescuento");
         });
 
         modelBuilder.Entity<Familia>(entity =>
