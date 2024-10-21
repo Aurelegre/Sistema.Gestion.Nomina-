@@ -35,9 +35,42 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
             }
             catch (Exception ex)
             {
-                throw new Exception("ERROR al calcular Adelanto", ex);
+                throw new Exception($"ERROR al calcular Adelanto: {ex.Message}", ex);
             }
         }
+
+        public decimal? CalcularComisionVenta(decimal? sueldo, int idEmpleado, decimal? Total)
+        {
+            try
+            {
+                decimal? comision = 0;
+
+                // Calcular la comisión en función del rango de ventas
+                if (Total >= 0 && Total <= 100000)
+                {
+                    comision = 0.0m; // 0.0%
+                }
+                else if (Total >= 100001 && Total <= 200000)
+                {
+                    comision = Total * 0.025m; // 2.5%
+                }
+                else if (Total >= 200001 && Total <= 400000)
+                {
+                    comision = Total * 0.035m; // 3.5%
+                }
+                else if (Total > 400000)
+                {
+                    comision = Total * 0.045m; // 4.5%
+                }
+
+                return comision;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al calcular la comisión para el empleado {idEmpleado}: {ex.Message}", ex);
+            }
+        }
+
 
     }
 }
