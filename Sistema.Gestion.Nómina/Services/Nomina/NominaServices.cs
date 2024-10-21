@@ -114,6 +114,23 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
             }
         }
 
+        public decimal? CalcularComisionDiafestivo(decimal? salario, decimal totalHoras)
+        {
+            try
+            {
+                // Obtener el salario por hora (dividiendo el salario mensual entre 30 días y luego entre 8 horas por día)
+                var salarioHora = (salario / 30) / 8;
+
+                // Calcular el pago de horas extras (1.5 veces el salario por hora)
+                var totalAumento = salarioHora * 2 * totalHoras;
+
+                return totalAumento;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al calcular comision por dias festivos: {ex.Message}", ex);
+            }
+        }
 
     }
 }
