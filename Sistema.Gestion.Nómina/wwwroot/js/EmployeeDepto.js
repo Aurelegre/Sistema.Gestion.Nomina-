@@ -18,7 +18,24 @@
                         document.getElementById("employeeDepartamento").innerText = data.departamento || data.Departamento;
                         document.getElementById("employeeSueldo").innerText = data.sueldo || data.Sueldo;
                         document.getElementById("employeeFechaContratado").innerText = data.fechaContratado || data.FechaContratado;
+                        var horaa = document.getElementById("employeeHoras");
+                        horaa.innerText = data.horasExtra || 'No registradas';
+                        var aumentohoras = document.getElementById("employeeAumentoHoras");
+                        if (data.horasExtra) {
 
+                            aumentohoras.innerText = data.comisionHorasExtra || 'ERROR'
+                        }
+
+                        var festivo = document.getElementById("employeeFestivo");
+                        festivo.innerText = data.horasDiaFestivo || 'No registradas';
+                        var aumentofestivo = document.getElementById("employeeAumentoFestivo");
+                        if (data.comisionHorasExtra) {
+
+                            aumentofestivo.innerText = data.comisionDiaFestivo || '0.00'
+                        } 
+                        document.getElementById("employeeAumentoVenta").innerText = data.comisionVentas || 'No Aplica';
+                        document.getElementById("employeeAumentoProd").innerText =  data.comisionProd || 'No Aplica';
+                        document.getElementById("employeeAnti").innerText = data.anticipo || 'No Aplica';
 
                         // Mostrar el modal
                         var modal = new bootstrap.Modal(document.getElementById('employeeDeptoDetailModal'));

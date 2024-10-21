@@ -92,7 +92,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var empleado = await context.Empleados
                                            .Where(u => u.Id == id)
                                            .AsNoTracking()
-                                           .Select(u => new GetEmployeeDeptoDTO
+                                           .Select( u => new GetEmployeeDeptoDTO
                                            {
                                                Id = u.Id,
                                                Nombre = u.Nombre,
@@ -101,14 +101,22 @@ namespace Sistema.Gestion.Nómina.Controllers
                                                Departamento = u.IdDepartamentoNavigation.Descripcion,
                                                DPI = u.Dpi,
                                                Sueldo = u.Sueldo,
-                                               FechaContratado = DateOnly.FromDateTime(u.FechaContratado),
+                                               FechaContratado = DateOnly.FromDateTime(u.FechaContratado)
                                            }).FirstOrDefaultAsync();
-
+               
                 if (empleado == null)
                 {
                     TempData["Error"] = "Error al obtener detalle de Empleado";
                     return RedirectToAction("Index", "EmployeeDepto");
                 }
+
+                empleado.HorasExtra = await ObtenerTotales(id,1);
+                empleado.ComisionHorasExtra = await ObtenerComisionHorasExtras(id, empleado.Sueldo);
+                empleado.HorasDiaFestivo = await ObtenerTotales(id, 2);
+                empleado.ComisionDiaFestivo = await ObtenerComisionDiasFestivos(id,empleado.Sueldo);
+                empleado.ComisionVentas = await ObtenerComisionVentas(id,empleado.Sueldo);
+                empleado.ComisionProd = await ObtenerComisionProd(id,empleado.Sueldo);
+                empleado.Anticipo = await ObtenerAnticipo(id);
 
                 await logger.LogTransaction(session.idEmpleado, session.company, "EmployeeDepto.Details", $"Se consultaron detalles del empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
 
@@ -167,11 +175,11 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 handle = "Anticipo";
             }
-            else if (request.Tipo == 4)
+            else if (request.Tipo == 5)
             {
                 handle = "Comisión por Producción";
             }
-            else if (request.Tipo == 5)
+            else if (request.Tipo == 4)
             {
                 handle = "Comisión por Venta";
             }
@@ -216,6 +224,135 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
 
+        private async Task<decimal?> ObtenerTotales(int? Idempleado, int tipo)
+        {
+            try
+            {
+                var Horas = await context.Aumento.Where(e => e.IdEmpleado == Idempleado && e.IdTipo == tipo && e.Fecha.Month == DateTime.Now.Month).AsNoTracking().Select(e=> e.Total).ToListAsync();
+                if(Horas.Count == 0)
+                {
+                    return 0;
+                }
+                decimal? totalHoras = Horas.Sum();
+                return totalHoras;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.ObtenerTotales", $"Error al consultar total tipo {tipo} del empleado. {Idempleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
+        }
+        private async Task<decimal?> ObtenerComisionHorasExtras(int? IdEmpleado, decimal? salario)
+        {
+            try
+            {
+                var horas = await ObtenerTotales(IdEmpleado,1);
+                if (horas == null)
+                {
+                    return null;
+                }
+                var totalExtra = nominaServices.CalcularHorasExtras(salario, horas);
+                return totalExtra;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.ObtenerComisionHorasExtras", $"Error al consultar horas extras del empleado. {IdEmpleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+        }
        
+        private async Task<decimal?> ObtenerComisionDiasFestivos(int? IdEmpleado, decimal? salario)
+        {
+            try
+            {
+                var horas = await ObtenerTotales(IdEmpleado, 2);
+                if (horas == null)
+                {
+                    return null;
+                }
+                var totalExtra = nominaServices.CalcularComisionDiafestivo(salario, horas);
+                return totalExtra;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.ObtenerComisionDiasFestivos", $"Error al calcular comision por dias festivos del empleado. {IdEmpleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+        }
+        
+        private async Task<decimal?> ObtenerComisionVentas(int IdEmpleado, decimal? salario)
+        {
+            try
+            {
+                var ventas = await ObtenerTotales(IdEmpleado, 4);
+                if (ventas == null)
+                {
+                    return null;
+                }
+                if (ventas <= 100000)
+                {
+                    return null;
+                }
+                var totalComi = nominaServices.CalcularComisionVenta(IdEmpleado,ventas);
+                return totalComi;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.ObtenerComisionVentas", $"Error al calcular comision por ventas del empleado. {IdEmpleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+        }
+        private async Task<decimal?> ObtenerComisionProd(int IdEmpleado, decimal? salario)
+        {
+            try
+            {
+                var producido = await ObtenerTotales(IdEmpleado, 5);
+                if (producido == null)
+                {
+                    return null;
+                }
+                var totalComi = nominaServices.CalcularComisionProd(IdEmpleado, producido);
+                return totalComi;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.ObtenerComisionProd", $"Error al calcular comision por producción del empleado. {IdEmpleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+        }
+        private async Task<string?> ObtenerAnticipo(int? IdEmpleado)
+        {
+            try
+            {
+
+                var exist = await context.Aumento.AsNoTracking().AnyAsync(e => e.IdEmpleado == IdEmpleado && e.IdTipo == 3 && e.Fecha.Month == DateTime.Now.Month);
+                string res = string.Empty;
+                if (exist)
+                {
+                    res = "Entregado";
+                }
+                else
+                {
+                    res = "No solicitado";
+                }
+                return res;
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.ObtenerAnticipo", $"Error al consultar anticipo del empleado. {IdEmpleado}", ex.Message, ex.StackTrace);
+                return null;
+            }
+
+        }
     }
 }
