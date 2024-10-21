@@ -130,9 +130,8 @@
                         </div>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission("Ausencias.Listar") ||
-                PermissionHelper.HasPermission("SolicitudesAusencias.Listar") ||
-                PermissionHelper.HasPermission("SolicitudesAusencias.Historial"))
+                @if (PermissionHelper.HasPermission("Prestamos.Listar") ||
+                PermissionHelper.HasPermission("Creditos.Listar") )
                 {
                     <li class="nav-item">
                         <!-- Accordion for Ausencias Laborales -->
