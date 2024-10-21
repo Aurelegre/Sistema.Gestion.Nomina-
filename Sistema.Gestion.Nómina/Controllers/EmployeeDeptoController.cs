@@ -159,7 +159,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Aumentos(CreateAumentosDTO request)
+        public async Task<ActionResult> AumentoComisiones(CreateAumentosDTO request)
         {
             var session = logger.GetSessionData();
             string handle = string.Empty;
