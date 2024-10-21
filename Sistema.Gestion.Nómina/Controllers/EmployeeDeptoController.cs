@@ -157,5 +157,44 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "EmployeeDepto");
             }
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Aumentos(CreateAumentosDTO request)
+        {
+            var session = logger.GetSessionData();
+            string handle = string.Empty;
+            if (request.Tipo == 3)
+            {
+                handle = "Adelanto";
+            }
+            else
+            {
+                handle = "Comisión";
+            }
+            try
+            {
+
+                Aumento horasExtras = new Aumento
+                {
+                    Fecha = DateTime.Now,
+                    IdEmpleado = request.IdEmpleado,
+                    IdTipo = request.Tipo,
+                    Total = request.Total
+                };
+                context.Aumento.Add(horasExtras);
+                await context.SaveChangesAsync();
+                
+                await logger.LogTransaction(session.idEmpleado, session.company, "EmployeeDepto.Aumentos", $"Se registró {handle} de tipo {request.Tipo} al empleado {request.IdEmpleado} por: {request.Total}", session.nombre);
+
+                TempData["Message"] = $"Se registró {handle} con éxito";
+                return RedirectToAction("Index", "EmployeeDepto");
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.Aumentos", $"Error al registrar {handle} al empleado con id: {request.IdEmpleado}", ex.Message, ex.StackTrace);
+                TempData["Error"] = $"Error al registrar {handle}";
+                return RedirectToAction("Index", "EmployeeDepto");
+            }
+        }
     }
 }

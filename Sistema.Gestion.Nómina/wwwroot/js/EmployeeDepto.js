@@ -38,7 +38,19 @@
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
 
-            } else if (action === "eliminar") {
+            }
+            else if (action === "comisiones") {
+
+                document.getElementById("employeeComiId").value = id;
+
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('createComisionModal'));
+                modal.show();
+                // Restablecer el valor del combobox a la opción predeterminada
+                dropdown.value = "Seleccionar";
+
+            }
+            else if (action === "eliminar") {
                 document.getElementById("deleteId").value = id;
                 // Mostrar el modal
                 var modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
