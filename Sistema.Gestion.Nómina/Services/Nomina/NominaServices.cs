@@ -1,4 +1,7 @@
-﻿namespace Sistema.Gestion.Nómina.Services.Nomina
+﻿using Microsoft.DotNet.Scaffolding.Shared.Messaging;
+using Sistema.Gestion.Nómina.Entitys;
+
+namespace Sistema.Gestion.Nómina.Services.Nomina
 {
     public class NominaServices : INominaServices
     {
@@ -23,5 +26,18 @@
                 throw new InvalidOperationException($"Error al calcular el descuento por ausencias: {ex.Message}", ex);
             }
         }
+        public decimal? CalcularAdelanto(decimal? sueldo)
+        {
+            try
+            {
+                var adelanto = sueldo * 0.45m;
+                return adelanto;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("ERROR al calcular Adelanto", ex);
+            }
+        }
+
     }
 }
