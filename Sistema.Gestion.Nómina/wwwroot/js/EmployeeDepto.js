@@ -50,6 +50,17 @@
                 dropdown.value = "Seleccionar";
 
             }
+            else if (action === "anticipo") {
+
+                document.getElementById("employeeAdelantoId").value = id;
+
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('editConfirmationAdelantoModal'));
+                modal.show();
+                // Restablecer el valor del combobox a la opción predeterminada
+                dropdown.value = "Seleccionar";
+
+            }
             else if (action === "eliminar") {
                 document.getElementById("deleteId").value = id;
                 // Mostrar el modal

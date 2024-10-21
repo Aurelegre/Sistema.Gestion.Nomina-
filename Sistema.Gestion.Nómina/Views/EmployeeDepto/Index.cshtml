@@ -80,6 +80,10 @@
                                 {
                                     <option value="comisiones" data-id="@item.Id">Comisiones</option>
                                 }
+                                @if (PermissionHelper.HasPermission("Empleados.Eliminar"))
+                                {
+                                    <option value="anticipo" data-id="@item.Id">Anticipo</option>
+                                }
                             </select>
                         </td>
                     </tr>
@@ -115,6 +119,7 @@ else
 <partial name="Details" />
 <partial name="HorasExtras" />
 <partial name="Comisiones" />
+<partial name="ConfirmAnticipo" />
 <script src="/js/EmployeeDepto.js" asp-append-version="true"></script>
 @* <partial name="Create" />
 <partial name="Update" />

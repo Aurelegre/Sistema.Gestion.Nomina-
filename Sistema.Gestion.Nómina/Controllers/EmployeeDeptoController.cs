@@ -159,21 +159,40 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> AumentoComisiones(CreateAumentosDTO request)
+        public async Task<ActionResult> Aumentos(CreateAumentosDTO request)
         {
             var session = logger.GetSessionData();
             string handle = string.Empty;
             if (request.Tipo == 3)
             {
-                handle = "Adelanto";
+                handle = "Anticipo";
             }
-            else
+            else if (request.Tipo == 4)
             {
-                handle = "Comisión";
+                handle = "Comisión por Producción";
+            }
+            else if (request.Tipo == 5)
+            {
+                handle = "Comisión por Venta";
             }
             try
             {
-
+                if(request.Tipo == 3)
+                {
+                    if (DateTime.Now.Day > 15)
+                    {
+                        TempData["Error"] = $"Solo se Pueden Registrar Anticipos en la Primera quincena del mes";
+                        return RedirectToAction("Index", "EmployeeDepto");
+                    }
+                    var lastAnticipo = await context.Aumento.Where(e=> e.IdTipo == 3 && e.IdEmpleado == request.IdEmpleado)
+                                                            .AsNoTracking()
+                                                            .FirstOrDefaultAsync();
+                    if(lastAnticipo!= null && lastAnticipo.Fecha.Month == DateTime.Now.Month)
+                    {
+                        TempData["Error"] = $"El Empleado ya posee un anticipo en este Mes";
+                        return RedirectToAction("Index", "EmployeeDepto");
+                    }
+                }
                 Aumento horasExtras = new Aumento
                 {
                     Fecha = DateTime.Now,
@@ -196,5 +215,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "EmployeeDepto");
             }
         }
+
+       
     }
 }
