@@ -83,7 +83,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Ausencias.Index", $"Error al realizar el Get de todas las ausencias del empleado: {session.idEmpleado}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Ausencias";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
 

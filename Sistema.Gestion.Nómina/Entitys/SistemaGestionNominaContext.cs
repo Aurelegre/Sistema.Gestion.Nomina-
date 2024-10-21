@@ -16,9 +16,11 @@ public partial class SistemaGestionNominaContext : DbContext
     {
     }
 
+    public virtual DbSet<Aumento> Aumento { get; set; }
     public virtual DbSet<Ausencia> Ausencias { get; set; }
 
     public virtual DbSet<Departamento> Departamentos { get; set; }
+    public virtual DbSet<Descuento> Descuento { get; set; }
 
     public virtual DbSet<Empleado> Empleados { get; set; }
 
@@ -47,6 +49,8 @@ public partial class SistemaGestionNominaContext : DbContext
     public virtual DbSet<RolesPermiso> RolesPermisos { get; set; }
 
     public virtual DbSet<TiposPrestamo> TiposPrestamos { get; set; }
+    public virtual DbSet<TipoDescuento> TipoDescuento { get; set; }
+    public virtual DbSet<TipoAumento> TipoAumento { get; set; }
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
@@ -56,6 +60,25 @@ public partial class SistemaGestionNominaContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<HistorialSolicitudesModel>().HasNoKey();
+        modelBuilder.Entity<Aumento>(entity =>
+        {
+            // Configuración de las columnas
+            entity.Property(e => e.Fecha).HasColumnType("datetime");
+            entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
+
+            // Relación con la tabla Empleados
+            entity.HasOne(d => d.IdEmpleadoNavigation)
+                .WithMany(p => p.Aumento)
+                .HasForeignKey(d => d.IdEmpleado)
+                .HasConstraintName("FK_Aumentos_Empleados");
+
+            // Relación con la tabla TipoAumento
+            entity.HasOne(d => d.IdTipoNavigation)
+                .WithMany(p => p.Aumento)
+                .HasForeignKey(d => d.IdTipo)
+                .HasConstraintName("FK_Aumentos_TipoAumento");
+        });
+        
         modelBuilder.Entity<Ausencia>(entity =>
         {
             entity.Property(e => e.Detalle).IsUnicode(false);
@@ -113,6 +136,24 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.Property(e => e.Teléfono)
                 .HasMaxLength(50)
                 .HasColumnName("teléfono");
+        });
+        modelBuilder.Entity<Descuento>(entity =>
+        {
+            // Configuración de las columnas
+            entity.Property(e => e.Fecha).HasColumnType("datetime");
+            entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
+
+            // Relación con la tabla Empleados
+            entity.HasOne(d => d.IdEmpleadoNavigation)
+                .WithMany(p => p.Descuento)
+                .HasForeignKey(d => d.IdEmpleado)
+                .HasConstraintName("FK_Descuento_Empleados");
+
+            // Relación con la tabla TipoAumento
+            entity.HasOne(d => d.IdTipoNavigation)
+                .WithMany(p => p.Descuento)
+                .HasForeignKey(d => d.IdTipo)
+                .HasConstraintName("FK_Descuento_TipoDescuento");
         });
 
         modelBuilder.Entity<Familia>(entity =>
@@ -264,6 +305,18 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.ToTable("TiposPrestamo");
 
             entity.Property(e => e.Descripcion).HasMaxLength(50);
+        });
+        modelBuilder.Entity<TipoAumento>(entity =>
+        {
+            entity.ToTable("TipoAumento");
+
+            entity.Property(e => e.Descripcion).HasMaxLength(100);
+        });
+        modelBuilder.Entity<TipoDescuento>(entity =>
+        {
+            entity.ToTable("TipoDescuento");
+
+            entity.Property(e => e.Descripcion).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Usuario>(entity =>

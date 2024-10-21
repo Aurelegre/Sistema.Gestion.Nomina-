@@ -50,5 +50,7 @@ public partial class Empleado
     public virtual ICollection<Nomina> Nominas { get; set; } = new List<Nomina>();
 
     public virtual ICollection<Prestamo> Prestamos { get; set; } = new List<Prestamo>();
+    public virtual ICollection<Aumento> Aumento { get; set; } = new List<Aumento>();
+    public virtual ICollection<Descuento> Descuento { get; set; } = new List<Descuento>();
     public virtual ICollection<Departamento> Departamentos { get; set; } = new List<Departamento>();
 }

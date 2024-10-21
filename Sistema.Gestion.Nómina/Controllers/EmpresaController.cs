@@ -69,7 +69,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Empresa.Index", "Error al realizar el Get de todos las Empresas", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Empresas";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
 

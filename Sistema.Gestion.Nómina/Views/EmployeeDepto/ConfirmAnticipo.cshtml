@@ -1,0 +1,24 @@
+﻿<!-- Modal de Confirmación de Adelanto -->
+<div class="modal fade" id="editConfirmationAdelantoModal" tabindex="-1" aria-labelledby="editConfirmationAdelantoModal" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editConfirmationAdelantoModal">Confirmar Anticipo de Empleado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body alert alert-warning">
+                <strong>¿Está seguro de registrar el Aumento del Empleado?</strong>
+            </div>
+            <div class="modal-footer ">
+                <form id="createHorasForm" asp-controller="EmployeeDepto" asp-action="Aumentos" method="post">
+                    <input id="employeeAdelantoId" name="IdEmpleado" type="hidden" />
+                    <input id="IdTotalAdelanto" name="Total" type="hidden" value="0.01"/>
+                    <input id="Idtipoadelanto" name="Tipo" type="hidden" value="3" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="confirmEditBtn" class="btn btn-warning">Registrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

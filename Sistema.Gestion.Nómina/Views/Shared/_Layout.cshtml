@@ -58,6 +58,14 @@
                         </a>
                     </li>
                 }
+                @if (PermissionHelper.HasPermission("Empleados.Listar"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-light" asp-area="" asp-controller="EmployeeDepto" asp-action="Index">
+                            <i class="bi bi-people-fill"></i>Mi Departamento
+                        </a>
+                    </li>
+                }
 
                 @if (PermissionHelper.HasPermission("Departamento.Listar") ||
                 PermissionHelper.HasPermission("Roles.Listar") ||

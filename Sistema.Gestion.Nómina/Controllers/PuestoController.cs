@@ -70,7 +70,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var session = logger.GetSessionData();
                 await logger.LogError(session.idEmpleado, session.company, "Puesto.Index", "Error al realizar el Get de todos los Puestos", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Puestos";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
 
