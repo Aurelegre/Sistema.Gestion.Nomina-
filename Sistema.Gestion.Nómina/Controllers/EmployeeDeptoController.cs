@@ -15,7 +15,7 @@ namespace Sistema.Gestion.Nómina.Controllers
     public class EmployeeDeptoController(SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
         [HttpGet]
-        [Authorize(Policy = "EmpleadosDepTo.Listar")]
+        [Authorize(Policy = "EmpleadosDepto.Listar")]
         public async Task<ActionResult> Index(GetEmployeesDeptoDTO request)
         {
             var session = logger.GetSessionData();
@@ -88,7 +88,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "EmpleadosDepTo.Ver")]
+        [Authorize(Policy = "EmpleadosDepto.Ver")]
         public async Task<ActionResult> Details(int id)
         {
             var session = logger.GetSessionData();
@@ -137,7 +137,7 @@ namespace Sistema.Gestion.Nómina.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "EmpleadosDepTo.Actualizar")]
+        [Authorize(Policy = "EmpleadosDepto.Actualizar")]
         public async Task<ActionResult> AumentoHoras(CreateHorasExtrasDTO request)
         {
             var session = logger.GetSessionData();
@@ -173,7 +173,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "EmpleadosDepTo.Actualizar")]
+        [Authorize(Policy = "EmpleadosDepto.Actualizar")]
         public async Task<ActionResult> Aumentos(CreateAumentosDTO request)
         {
             var session = logger.GetSessionData();

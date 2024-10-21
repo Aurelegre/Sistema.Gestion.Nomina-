@@ -24,7 +24,7 @@
 <!-- Filtros de Búsqueda -->
 <form method="get" asp-controller="Employees" asp-action="Index" class="mb-5">
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label for="DPI">DPI</label>
             <input type="text" class="form-control" id="DPI" name="DPI" value="@ViewBag.DPI" placeholder="Filtrar por DPI">
         </div>
@@ -32,7 +32,7 @@
             <label for="Nombre">Nombre</label>
             <input type="text" class="form-control" id="Nombre" name="Nombre" value="@ViewBag.Nombre" placeholder="Filtrar por Nombre">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label for="Puesto">Puesto</label>
             <input type="text" class="form-control" id="Puesto" name="Puesto" value="@ViewBag.Puesto" placeholder="Filtrar por Puesto">
         </div>
@@ -40,7 +40,7 @@
             <label for="Departamento">Departamento</label>
             <input type="text" class="form-control" id="Departamento" name="Departamento" value="@ViewBag.Departamento" placeholder="Filtrar por Departamento">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label for="estado">Estado</label>
             <select value="@ViewBag.Estado" name="estado" class="form-control" id="estado">
                 <option value=1>Activos</option>

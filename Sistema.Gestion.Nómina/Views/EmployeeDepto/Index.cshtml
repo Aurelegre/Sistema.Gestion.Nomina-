@@ -67,20 +67,20 @@
                         <td>
                             <select class="form-select form-select-sm actions-dropdown">
                                 <option selected>Seleccionar</option>
-                                @if (PermissionHelper.HasPermission("EmpleadosDepTo.Ver"))
+                                @if (PermissionHelper.HasPermission("EmpleadosDepto.Ver"))
                                 {
                                     <option value="detalle" data-id="@item.Id">Ver Detalle</option>
                                 }
-                                @if (PermissionHelper.HasPermission("EmpleadosDepTo.Actualizar"))
+                                @if (PermissionHelper.HasPermission("EmpleadosDepto.Actualizar"))
                                 {
                                     <option value="extras" data-id="@item.Id">Horas Extras</option>
 
                                 }
-                                @if (PermissionHelper.HasPermission("EmpleadosDepTo.Actualizar"))
+                                @if (PermissionHelper.HasPermission("EmpleadosDepto.Actualizar"))
                                 {
                                     <option value="comisiones" data-id="@item.Id">Comisiones</option>
                                 }
-                                @if (PermissionHelper.HasPermission("EmpleadosDepTo.Actualizar"))
+                                @if (PermissionHelper.HasPermission("EmpleadosDepto.Actualizar"))
                                 {
                                     <option value="anticipo" data-id="@item.Id">Anticipo</option>
                                 }
