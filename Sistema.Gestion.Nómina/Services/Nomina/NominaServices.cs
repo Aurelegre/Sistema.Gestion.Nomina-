@@ -39,7 +39,7 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
             }
         }
 
-        public decimal? CalcularComisionVenta(decimal? sueldo, int idEmpleado, decimal? Total)
+        public decimal? CalcularComisionVenta(int idEmpleado, decimal? Total)
         {
             try
             {
@@ -68,6 +68,25 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Error al calcular la comisión para el empleado {idEmpleado}: {ex.Message}", ex);
+            }
+        }
+
+        public decimal? CalcularComisionProd(int idEmpleado, decimal? TotalPiezas)
+        {
+            try
+            {
+                // Validar que el total de piezas no sea nulo ni menor a 0
+                if (TotalPiezas == null || TotalPiezas < 0)
+                    throw new ArgumentException("El total de piezas debe ser un valor válido y mayor o igual a 0.");
+
+                // Cada pieza otorga 0.01 (un centavo)
+                decimal? comision = TotalPiezas * 0.01m;
+
+                return comision;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al calcular la comisión de producción para el empleado {idEmpleado}: {ex.Message}", ex);
             }
         }
 
