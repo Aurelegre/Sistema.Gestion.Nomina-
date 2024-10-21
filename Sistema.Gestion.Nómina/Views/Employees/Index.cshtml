@@ -109,7 +109,9 @@
                                 }@if (PermissionHelper.HasPermission("Empleados.Actualizar") && item.estado == 0)
                                 {
                                     <option value="desbloquear" data-id="@item.idUser">Desbloquear</option>
-
+                                }@if (PermissionHelper.HasPermission("Empleados.Ver"))
+                                {
+                                    <option value="historial" data-id="@item.Id">Historial de Salarios</option>
                                 }
                             </select>
                         </td>
@@ -148,5 +150,6 @@ else
 <partial name="Details" />
 <partial name="Delete" />
 <partial name="UnlockUser" />
+<partial name="HistorySueldo" />
 
 <script src="/js/Employees.js" asp-append-version="true"></script>

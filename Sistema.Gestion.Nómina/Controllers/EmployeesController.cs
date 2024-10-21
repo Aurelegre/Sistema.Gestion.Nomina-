@@ -237,7 +237,48 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
+        [HttpGet]
+        [Authorize(Policy = "Empleados.Ver")]
+        public async Task<ActionResult> HistorySueldo (int id)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                var historial = await context.HistorialSueldos.Where(e => e.IdEmpleado == id)
+                                                               .AsNoTracking()
+                                                              .Select(e=> new GetHistorySueldoModal 
+                                                              {
+                                                                  Nuevo = e.NuevoSalario,
+                                                                  Anterior = e.AnteriorSalario,
+                                                                  Fecha = DateOnly.FromDateTime(e.Fecha.Value)
+                                                              })
+                                                              .OrderByDescending(e => e.Fecha).ToListAsync();
+                if (historial == null)
+                {
+                    TempData["Error"] = "Error al obtener Historial de Salarios";
+                    return RedirectToAction("Index", "Employees");
+                }
+                var nombre = await context.Empleados.Where(e => e.Id == id)
+                                                    .AsNoTracking().Select(u => new
+                                                    {
+                                                        Nombre = u.Nombre.Substring(0, u.Nombre.IndexOf(" ") != -1 ? u.Nombre.IndexOf(" ") : u.Nombre.Length) + " " + u.Apellidos.Substring(0, u.Apellidos.IndexOf(" ") != -1 ? u.Apellidos.IndexOf(" ") : u.Apellidos.Length),
+                                                    }).FirstOrDefaultAsync();
+                GetHistorySueldoResponse history = new GetHistorySueldoResponse
+                {
+                    Nombre = nombre.Nombre,
+                    History = historial
+                };
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.HistorySueldo", $"Se consultó Historial de Sueldos de empleado con id: {id}", session.nombre);
 
+                return Json(history);
+            }
+            catch (Exception ex)
+            { 
+                await logger.LogError(session.idEmpleado, session.company, "Employees.HistorySueldo", $"Error al consultar Historial de Sueldos de empleado con id: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar Historial de Salarios";
+                return RedirectToAction("Index", "Employees");
+            }
+        }
         //actualizar empleado
         [HttpPost]
         [Authorize(Policy = "Empleados.Actualizar")]
@@ -253,24 +294,29 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
                 empleado.Nombre = request.Nombre;
                 empleado.Apellidos = request.Apellidos;
-                empleado.Sueldo = request.Sueldo;
+                if(empleado.Sueldo != request.Sueldo)
+                {
+                    //si se cambia el sueldo guardar en el historial
+                    await CreateHistorialSueldo(empleado.Id,empleado.Sueldo,request.Sueldo);
+                    empleado.Sueldo = request.Sueldo;
+                }
+                
                 var puesto = await context.Puestos.SingleAsync(p => p.Id == request.IdPuesto);
                 if (puesto.Descripcion.Equals("Jefe")&& empleado.IdPuesto != puesto.Id)
                 {
-                    var asignedEmployee = await context.Empleados.CountAsync(e => e.IdPuesto == puesto.Id);//buscar si un empleado tiene ese puesto
-                    if(asignedEmployee > 0)
+                    var asignedEmployee = await context.Empleados.SingleAsync(e => e.IdPuesto == puesto.Id);//buscar si un empleado tiene ese puesto JEFE
+                    if(asignedEmployee!=null)
                     {
-                        TempData["Error"] = "Ya existe un jefe en el departamento";
-                        return RedirectToAction("Index", "Employees");
+                        //dejar sin puesto asignado
+                        asignedEmployee.IdPuesto = null;
+                        context.Empleados.Update(asignedEmployee);
                     }
-                    else
-                    {
-                        var depto = await context.Departamentos.SingleAsync(d => d.Id == request.IdDepartamento);//buscar el departamento asignado
-                        depto.IdJefe = empleado.Id;//asigno el jefe al dpto
-                        //actualizar Depto
-                        context.Departamentos.Update(depto);
-                        empleado.IdPuesto = request.IdPuesto;//asigno el puesto jefe
-                    }
+                    //asignar como nuevo jefe en del depto
+                    var depto = await context.Departamentos.SingleAsync(d => d.Id == request.IdDepartamento);//buscar el departamento asignado
+                    depto.IdJefe = empleado.Id;//asigno el jefe al dpto
+                    //actualizar Depto
+                    context.Departamentos.Update(depto);
+                    empleado.IdPuesto = request.IdPuesto;//asigno el puesto jefe al nuevo usuario
                 }
                 else
                 {
@@ -422,11 +468,23 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                     // Obtener el ID del empleado recién creado
                     int idEmpleado = empleado.Id;
-
+                    //crear historial de Sueldo
+                    await CreateHistorialSueldo(idEmpleado, 0.00m, empleado.Sueldo);
                     //si el puesto asignado es Jefe, actualizar Departamento
                     if (puesto.Descripcion.Equals("Jefe"))
                     {
                         var depto = await context.Departamentos.AsNoTracking().SingleAsync(d => d.Id == request.IdDepartamento);
+                        //si el departamento ya tiene un jefe, dejar sin puesto
+                        if (depto.IdJefe != null)
+                        {
+                            var anteriorJefe = await context.Empleados.SingleAsync(e => e.Id == depto.IdJefe && e.IdEmpresa == session.company);
+                            if(anteriorJefe != null)
+                            {
+                               //dejar sin puesto asignado
+                                anteriorJefe.IdPuesto = null;
+                                context.Empleados.Update(anteriorJefe);
+                            }
+                        }
                         depto.IdJefe = idEmpleado;
                         context.Departamentos.Update(depto);
                     }
@@ -624,6 +682,30 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return null;
             }
 
+        }
+        private async Task<bool> CreateHistorialSueldo (int? idEmpleado, decimal? anteriorSalario, decimal? nuevoSalario)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                HistorialSueldo newsueldo = new HistorialSueldo
+                {
+                    AnteriorSalario = anteriorSalario,
+                    NuevoSalario = nuevoSalario,
+                    Fecha = DateTime.Now.Date,
+                    IdEmpleado = idEmpleado,
+                };
+                await context.HistorialSueldos.AddAsync(newsueldo);
+                await context.SaveChangesAsync();
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.CreateHistorialSueldo", $"Se agregó Historial de sueldo del empleado {idEmpleado}", session.nombre);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Employees.CreateHistorialSueldo", $"Error al agregar Historial de sueldo del empleado {idEmpleado}", ex.Message, ex.StackTrace);
+                return false;
+            }
         }
     }
 }

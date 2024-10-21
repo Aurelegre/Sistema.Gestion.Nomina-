@@ -82,7 +82,7 @@
                         data.roles.forEach(function (rol) {
                             editRol.append(new Option(rol.descripcion, rol.id, data.idRol === rol.id, data.idRol === rol.id));
                         });
-                        
+
                         // Mostrar el modal
                         var modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
                         modal.show();
@@ -95,7 +95,7 @@
                 // Mostrar el modal
                 var modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
                 modal.show();
-                
+
 
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
@@ -109,10 +109,39 @@
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
             }
+            else if (action === "historial")
+            {
+                // Hacer la petición para obtener los detalles del empleado
+                fetch('/Employees/HistorySueldo/' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mostrar los detalles del empleado en el modal
+                        document.getElementById("idNombre").innerText = data.nombre;
+
+                        //llenar el body de tabla con id bodytable
+                        var body = document.getElementById("bodytableSueldos");
+                        var conter = 1;
+                        body.innerHTML = '';
+                        data.history.forEach(function (pago) {
+
+                            body.innerHTML += `  <td>${conter}</td>
+                                                <td>${pago.anterior}</td>
+                                                <td>${pago.nuevo}</td>
+                                                <td>${pago.fecha}</td>`
+                                ;
+                            conter++;
+                        });
+
+                        // Mostrar el modal
+                        var modal = new bootstrap.Modal(document.getElementById('sueldosDetailModal'));
+                        modal.show();
+
+                        // Restablecer el valor del combobox a la opción predeterminada
+                        dropdown.value = "Seleccionar";
+                    });
+            }
         });
     });
-
-    
 });
 
 function fetchEmployeeData() {
