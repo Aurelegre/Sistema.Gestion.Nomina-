@@ -1,0 +1,23 @@
+﻿<!-- Modal de Confirmación de Recontrato -->
+<div class="modal fade" id="editConfirmationRecontratoModal" tabindex="-1" aria-labelledby="editConfirmationRecontratoModal" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editConfirmationRecontratoModal">Confirmar Recontrato de Empleado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body alert alert-warning">
+                <strong>¿Está seguro de Recontratar al Empleado?</strong>
+            </div>
+            <div class="modal-footer ">
+                <form id="createHorasForm" asp-controller="Employees" asp-action="Recontratar" method="post">
+                    <input id="RecontratoId" name="id" type="hidden" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="confirmEditBtn" class="btn btn-warning">Registrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -90,7 +90,8 @@
                         // Restablecer el valor del combobox a la opción predeterminada
                         dropdown.value = "Seleccionar";
                     });
-            } else if (action === "eliminar") {
+            }
+            else if (action === "eliminar") {
                 document.getElementById("deleteId").value = id;
                 // Mostrar el modal
                 var modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
@@ -109,8 +110,7 @@
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
             }
-            else if (action === "historial")
-            {
+            else if (action === "historial") {
                 // Hacer la petición para obtener los detalles del empleado
                 fetch('/Employees/HistorySueldo/' + id)
                     .then(response => response.json())
@@ -139,6 +139,41 @@
                         // Restablecer el valor del combobox a la opción predeterminada
                         dropdown.value = "Seleccionar";
                     });
+            }
+            else if (action === "liquidar")
+            {
+                // Hacer la petición para obtener los detalles del empleado
+                fetch('/Employees/Liquidar/' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mostrar los detalles del empleado en el modal
+                        document.getElementById("employeeId").innerText = data.id;
+                        document.getElementById("IdemployeeName").innerText = data.nombre;
+                        document.getElementById("IdContratado").innerText = data.contratado;
+                        document.getElementById("IdDespedido").innerText = data.despedido;
+                        document.getElementById("IdTrabajado").innerText = data.diferencia;
+                        document.getElementById("IdSueldo").innerText = data.sueldo;
+                        document.getElementById("IdLiquidar").innerText = data.liquidacion;
+
+                        
+
+                        // Mostrar el modal
+                        var modal = new bootstrap.Modal(document.getElementById('LiquiDetailModal'));
+                        modal.show();
+
+                        // Restablecer el valor del combobox a la opción predeterminada
+                        dropdown.value = "Seleccionar";
+                    });
+            }
+            else if (action === "recontratar") {
+                document.getElementById("RecontratoId").value = id;
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('editConfirmationRecontratoModal'));
+                modal.show();
+
+
+                // Restablecer el valor del combobox a la opción predeterminada
+                dropdown.value = "Seleccionar";
             }
         });
     });

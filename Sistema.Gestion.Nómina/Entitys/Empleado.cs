@@ -13,6 +13,7 @@ public partial class Empleado
     public string? Apellidos { get; set; }
 
     public DateTime FechaContratado { get; set; }
+    public DateTime? FechaDespido { get; set; }
 
     public int? IdUsuario { get; set; }
 
