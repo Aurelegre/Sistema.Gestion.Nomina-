@@ -40,6 +40,11 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 PermissionHelper.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
+using (var scope = app.Services.CreateScope())
+{
+    var loginService = scope.ServiceProvider.GetRequiredService<LoginService>();
+    await loginService.ConfigurePermissions();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

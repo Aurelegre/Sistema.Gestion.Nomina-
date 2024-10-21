@@ -79,7 +79,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 //cofigurar permisos
                 var rol = await context.Roles.SingleAsync(r => r.Id == usuario.Usuario.IdRol);
                 var permissions = await _loginService.GetUserPermission(usuario.Usuario.IdRol);
-                await _loginService.ConfigurePermissions();
+                //await _loginService.ConfigurePermissions();
 
                 var claims = new List<Claim>
                 {
