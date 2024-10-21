@@ -121,5 +121,41 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "EmployeeDepto");
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AumentoHoras(CreateHorasExtrasDTO request)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                int horas = request.Tiempo.Hour;
+                int minutos = request.Tiempo.Minute;
+
+                // Convertir a horas decimales
+                decimal horasDecimales = horas + (minutos / 60.00m);
+
+                Aumento horasExtras = new Aumento
+                {
+                    Fecha = DateTime.Now,
+                    IdEmpleado = request.IdEmpleado,
+                    IdTipo = request.Tipo,
+                    Total = horasDecimales
+                };
+                context.Aumento.Add(horasExtras);
+                await context.SaveChangesAsync();
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "EmployeeDepto.AumentoHoras", $"Se registraron {horasDecimales} horas extras de tipo {request.Tipo} al empleado {request.IdEmpleado}", session.nombre);
+
+                TempData["Message"] = "Horas Extras registradas con éxito";
+                return RedirectToAction("Index", "EmployeeDepto");
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "EmployeeDepto.Details", $"Error al registrar horas extras al empleado con id: {request.IdEmpleado}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al registrar Horas Extras";
+                return RedirectToAction("Index", "EmployeeDepto");
+            }
+        }
     }
 }
