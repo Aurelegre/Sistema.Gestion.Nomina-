@@ -8,5 +8,6 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
         public decimal? CalcularAdelanto(decimal? Sueldo);
         public decimal? CalcularComisionVenta( int idEmpleado, decimal? Total);
         public decimal? CalcularComisionProd(int idEmpleado, decimal? TotalPiezas);
+        public decimal? CalcularHorasExtras(decimal? salario, decimal TotalHoras);
     }
 }

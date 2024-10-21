@@ -90,6 +90,30 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
             }
         }
 
+        public decimal? CalcularHorasExtras(decimal? salario, decimal TotalHoras)
+        {
+            try
+            {
+                // Validar parámetros de entrada
+                if (salario == null || salario <= 0)
+                    throw new ArgumentException("El salario debe ser mayor que 0.");
+                if (TotalHoras <= 0)
+                    throw new ArgumentException("Las horas extra deben ser mayores que 0.");
+
+                // Obtener el salario por hora (dividiendo el salario mensual entre 30 días y luego entre 8 horas por día)
+                var salarioHora = (salario / 30) / 8;
+
+                // Calcular el pago de horas extras (1.5 veces el salario por hora)
+                var totalAumento = salarioHora * 1.5m * TotalHoras;
+
+                return totalAumento;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al calcular las horas extras: {ex.Message}", ex);
+            }
+        }
+
 
     }
 }
