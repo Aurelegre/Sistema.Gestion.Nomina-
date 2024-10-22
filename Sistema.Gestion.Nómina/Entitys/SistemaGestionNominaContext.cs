@@ -248,6 +248,9 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Nominas)
                 .HasForeignKey(d => d.IdEmpleado)
                 .HasConstraintName("FK_Nominas_Empleados");
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Nominas)
+                .HasForeignKey(d => d.IdEmpresa)
+                .HasConstraintName("FK_Nominas_Empresa");
         });
 
         modelBuilder.Entity<Permiso>(entity =>

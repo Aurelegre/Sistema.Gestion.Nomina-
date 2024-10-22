@@ -8,6 +8,7 @@ public partial class Nomina
     public int Id { get; set; }
 
     public int? IdEmpleado { get; set; }
+    public int? IdEmpresa { get; set; }
 
     public decimal? Sueldo { get; set; }
     public decimal? SueldoExtra { get; set; }
@@ -36,4 +37,5 @@ public partial class Nomina
     public DateTime Fecha { get; set; }
 
     public virtual Empleado? IdEmpleadoNavigation { get; set; }
+    public virtual Empresa? IdEmpresaNavigation { get; set; }
 }
