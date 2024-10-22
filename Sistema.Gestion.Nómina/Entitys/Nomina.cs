@@ -28,6 +28,7 @@ public partial class Nomina
     public decimal? Isr { get; set; }
 
     public decimal? Prestamos { get; set; }
+    public decimal? Creditos { get; set; }
 
     public decimal? Anticipos { get; set; }
 

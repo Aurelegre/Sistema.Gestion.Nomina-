@@ -236,6 +236,7 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.Property(e => e.OtrosDesc).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.OtrosIngresos).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Prestamos).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Creditos).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.SueldoExtra).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Sueldo).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalDevengado).HasColumnType("decimal(18, 2)");
