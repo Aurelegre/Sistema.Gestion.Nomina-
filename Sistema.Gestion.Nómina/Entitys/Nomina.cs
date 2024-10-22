@@ -32,6 +32,7 @@ public partial class Nomina
     public decimal? Anticipos { get; set; }
 
     public decimal? OtrosDesc { get; set; }
+    public DateTime Fecha { get; set; }
 
     public virtual Empleado? IdEmpleadoNavigation { get; set; }
 }
