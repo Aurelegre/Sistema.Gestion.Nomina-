@@ -241,6 +241,7 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.Property(e => e.TotalDevengado).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalDescuentos).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalLiquido).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.AguinaldoBono).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Nominas)
                 .HasForeignKey(d => d.IdEmpleado)

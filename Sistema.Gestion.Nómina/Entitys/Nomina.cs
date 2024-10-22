@@ -15,6 +15,7 @@ public partial class Nomina
     public decimal? Comisiones { get; set; }
 
     public decimal? Bonificaciones { get; set; }
+    public decimal? AguinaldoBono { get; set; }
 
     public decimal? OtrosIngresos { get; set; }
 
