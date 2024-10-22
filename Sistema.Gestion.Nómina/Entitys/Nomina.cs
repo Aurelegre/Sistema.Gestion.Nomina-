@@ -9,6 +9,7 @@ public partial class Nomina
 
     public int? IdEmpleado { get; set; }
 
+    public decimal? Sueldo { get; set; }
     public decimal? SueldoExtra { get; set; }
 
     public decimal? Comisiones { get; set; }
@@ -16,6 +17,10 @@ public partial class Nomina
     public decimal? Bonificaciones { get; set; }
 
     public decimal? OtrosIngresos { get; set; }
+
+    public decimal? TotalDevengado { get; set; }
+    public decimal? TotalDescuentos { get; set; }
+    public decimal? TotalLiquido { get; set; }
 
     public decimal? Igss { get; set; }
 
