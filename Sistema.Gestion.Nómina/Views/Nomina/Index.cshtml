@@ -9,10 +9,27 @@
 
 <partial name="Messages" />
 
+@{
+    var fechaPorDefecto = ViewBag.Fecha != null
+    ? ((DateOnly)ViewBag.Fecha).ToString("yyyy-MM-dd")
+    : ""; // Deja vacío si no hay fecha
+}
 
-<div class="d-flex justify-content-between align-items-center">
-    <h1 class="my-3">Nomina Del Mes: @ViewBag.fechaletras </h1>
-    <a method="get" asp-controller="Employees" asp-action="Index" class="btn btn-primary" style="font-size: 20px"><i class="bi bi-box-arrow-in-left"></i></a>
+<div class="row align-items-center">
+    <div class="col-12 col-md-auto">
+        <h1 class="my-3">Nomina Del Mes: @ViewBag.fechaletras </h1>
+    </div>
+
+    <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
+        <form method="post" asp-controller="Nomina" asp-action="ExportNomina">
+            <input type="hidden" id="idFecha" name="fecha" value="@fechaPorDefecto" />
+            <button type="submit" class="btn btn-warning mb-2  me-1 me-md-2 ">Exportar Nómina</button>
+        </form>
+            
+        <a type="button" method="get" asp-controller="Employees" asp-action="Index" style="font-size: 20px" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+            <i class="bi bi-box-arrow-in-left"></i>
+        </a>
+    </div>
 </div>
 
 <!-- Filtros de Búsqueda -->
@@ -31,11 +48,7 @@
             <label for="Departamento">Departamento</label>
             <input type="text" class="form-control" id="IdDepartamento" name="Depto" value="@ViewBag.Departamento" placeholder="Filtrar por Departamento">
         </div>
-        @{
-            var fechaPorDefecto = ViewBag.Fecha != null
-            ? ((DateOnly)ViewBag.Fecha).ToString("yyyy-MM-dd")
-            : ""; // Deja vacío si no hay fecha
-        }
+        
         <input type="hidden" id="idFecha" name="fecha" value="@fechaPorDefecto" />
     </div>
     <div class="mt-3">

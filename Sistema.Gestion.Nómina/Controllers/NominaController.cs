@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema.Gestion.Nómina.DTOs.Empleados;
@@ -8,6 +9,7 @@ using Sistema.Gestion.Nómina.Entitys;
 using Sistema.Gestion.Nómina.Models;
 using Sistema.Gestion.Nómina.Services.Logs;
 using Sistema.Gestion.Nómina.Services.Nomina;
+using System.Data;
 using System.Reflection.Metadata;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -123,7 +125,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Nomina");
             }
         }
-        [HttpPost]
+        [HttpGet]
         public async Task<ActionResult> GenerateNomina()
         {
             var session = logger.GetSessionData();
@@ -171,6 +173,146 @@ namespace Sistema.Gestion.Nómina.Controllers
                 TempData["Error"] = $"Error generar Nómina, comuniquese con soporte";
                 return RedirectToAction("Index", "Employees");
             }
+        }
+        [HttpPost]
+        public async Task<ActionResult> ExportNomina(DateOnly fecha)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                var nomina = await ConsultarNomina(fecha);
+                if (nomina == null)
+                {
+                    TempData["Error"] = $"Error al Exportar Nómina, comuniquese con soporte";
+                    return RedirectToAction("Index", "Nomina", new GetNominasDTO { fecha = fecha });
+                }
+                if (nomina.Count() == 0)
+                {
+                    TempData["Error"] = $"No existe Nómina en el mes seleccionado";
+                    return RedirectToAction("Index", "Nomina", new GetNominasDTO { fecha = fecha });
+                }
+                //traer el nombre de la empresa
+                var empresa = await context.Empresas.Where(e => e.Id == session.company).AsNoTracking().Select(e => e.Nombre).FirstOrDefaultAsync();
+                // Convertir la lista a DataTable
+                DataTable dataTableNomina = ConvertirNominaADataTable(nomina);
+
+                using (var libro = new XLWorkbook())
+                {
+                    // Añadir el DataTable directamente a la hoja de cálculo
+                    var hoja = libro.Worksheets.Add(dataTableNomina, "Nómina");
+                    hoja.ColumnsUsed().AdjustToContents();
+
+                    // Aplicar formato de moneda de la columna E a la S, comenzando en la fila 2
+                    var rango = hoja.Range("E2:S" + hoja.LastRowUsed().RowNumber());
+                    rango.Style.NumberFormat.Format = "Q #,##0.00"; // Formato de moneda de Guatemala (Quetzal)
+                    
+                    // Aplicar formato Negrita (Bold) a las columnas K, R y S
+                    var columnaK = hoja.Range("K2:K" + hoja.LastRowUsed().RowNumber());
+                    var columnaR = hoja.Range("R2:R" + hoja.LastRowUsed().RowNumber());
+                    var columnaS = hoja.Range("S2:S" + hoja.LastRowUsed().RowNumber());
+
+                    columnaK.Style.Font.SetBold(true);
+                    columnaR.Style.Font.SetBold(true);
+                    columnaS.Style.Font.SetBold(true);
+
+                    // Aplicar bordes a la última fila con registros
+                    var ultimaFila = hoja.LastRowUsed();
+                    ultimaFila.Style.Font.SetBold(true);
+
+                    using (var memoria = new MemoryStream())
+                    {
+                        libro.SaveAs(memoria);
+                        var nombreExcel = string.Concat(empresa, " Nomina ", fecha.ToString(), ".xlsx");
+
+                        await logger.LogTransaction(session.idEmpleado, session.company, "Nomina.ExportarNómina", $"Se exportó nómina de la empresa {session.company}, {empresa} del mes {fecha}", session.nombre);
+
+                        return File(memoria.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nombreExcel);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Nomina.ExportarNómina", $"ERROR al generar nómina de la empresa {session.company} del mes {fecha}", ex.Message, ex.StackTrace);
+                TempData["Error"] = $"Error exportar Nómina, comuniquese con soporte";
+                return RedirectToAction("Index", "Nomina", new GetNominasDTO { fecha = fecha });
+            }
+
+        }
+        private DataTable ConvertirNominaADataTable(List<GetNominaModel> nomina)
+        {
+            DataTable dataTable = new DataTable();
+
+            // Definir las columnas del DataTable
+            dataTable.Columns.Add("No.", typeof(int));
+            dataTable.Columns.Add("Nombre", typeof(string));
+            dataTable.Columns.Add("Departamento", typeof(string));
+            dataTable.Columns.Add("Puesto", typeof(string));
+            dataTable.Columns.Add("     Sueldo     ", typeof(decimal));
+            dataTable.Columns.Add("Sueldo Extraordinario", typeof(decimal));
+            dataTable.Columns.Add("Comisiones", typeof(decimal));
+            dataTable.Columns.Add("Bonificación", typeof(decimal));
+            dataTable.Columns.Add("Aguinaldo / Bono14", typeof(decimal));
+            dataTable.Columns.Add("Otros Ingresos", typeof(decimal));
+            dataTable.Columns.Add("Total Devengado", typeof(decimal));
+            dataTable.Columns.Add("       IGSS       ", typeof(decimal));
+            dataTable.Columns.Add("      ISR       ", typeof(decimal));
+            dataTable.Columns.Add("Préstamos", typeof(decimal));
+            dataTable.Columns.Add("Créditos", typeof(decimal));
+            dataTable.Columns.Add("Anticipos", typeof(decimal));
+            dataTable.Columns.Add("Otros Descuentos", typeof(decimal));
+            dataTable.Columns.Add("Total Descuentos", typeof(decimal));
+            dataTable.Columns.Add("Total Liquido", typeof(decimal));
+            dataTable.Columns.Add("Firma del Empleado", typeof(string));
+
+            int counter = 1;
+            // Rellenar las filas con los datos de la nómina
+            foreach (var item in nomina)
+            {
+                var row = dataTable.NewRow();
+                row["No."] = counter;
+                row["Nombre"] = item.NombreEmpleado;
+                row["Departamento"] = item.Departamento;
+                row["Puesto"] = item.Puesto;
+                row["     Sueldo     "] = item.Sueldo ?? 0;
+                row["Sueldo Extraordinario"] = item.SueldoExtra ?? 0;
+                row["Comisiones"] = item.Comisiones ?? 0;
+                row["Bonificación"] = item.Bonificaciones ?? 0;
+                row["Aguinaldo / Bono14"] = item.AguinaldoBono ?? 0;
+                row["Otros Ingresos"] = item.OtrosIngresos ?? 0;
+                row["Total Devengado"] = item.TotalDevengado ?? 0;
+                row["       IGSS       "] = item.Igss ?? 0;
+                row["      ISR       "] = item.Isr ?? 0;
+                row["Préstamos"] = item.Prestamos ?? 0;
+                row["Créditos"] = item.Creditos ?? 0;
+                row["Anticipos"] = item.Anticipos ?? 0;
+                row["Otros Descuentos"] = item.OtrosDesc ?? 0;
+                row["Total Descuentos"] = item.TotalDescuentos ?? 0;
+                row["Total Liquido"] = item.TotalLiquido ?? 0;
+                row["Firma del Empleado"] = "";
+
+
+                dataTable.Rows.Add(row);
+                counter++;
+            }
+            var row2 = dataTable.NewRow();
+            row2["Nombre"] = "TOTAL:";
+            row2["     Sueldo     "] = nomina.Sum(e=>e.Sueldo);
+            row2["Sueldo Extraordinario"] = nomina.Sum(e => e.SueldoExtra);
+            row2["Comisiones"] = nomina.Sum(e => e.Comisiones);
+            row2["Bonificación"] = nomina.Sum(e => e.Bonificaciones);
+            row2["Aguinaldo / Bono14"] = nomina.Sum(e => e.AguinaldoBono);
+            row2["Otros Ingresos"] = nomina.Sum(e => e.OtrosIngresos);
+            row2["Total Devengado"] = nomina.Sum(e => e.TotalDevengado);
+            row2["       IGSS       "] = nomina.Sum(e => e.Igss);
+            row2["      ISR       "] = nomina.Sum(e => e.Isr);
+            row2["Préstamos"] = nomina.Sum(e => e.Prestamos);
+            row2["Créditos"] = nomina.Sum(e => e.Creditos);
+            row2["Anticipos"] = nomina.Sum(e => e.Anticipos);
+            row2["Otros Descuentos"] = nomina.Sum(e => e.OtrosDesc);
+            row2["Total Descuentos"] = nomina.Sum(e => e.TotalDescuentos);
+            row2["Total Liquido"] = nomina.Sum(e => e.TotalLiquido);
+            dataTable.Rows.Add(row2);
+            return dataTable;
         }
         private async Task<bool> GenerarNomina (List<GetEmpleadosModel> empleados)
         {
