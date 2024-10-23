@@ -26,4 +26,6 @@ public partial class Empresa
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 
     public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+    public virtual ICollection<Nomina> Nominas { get; set; } = new List<Nomina>();
+
 }

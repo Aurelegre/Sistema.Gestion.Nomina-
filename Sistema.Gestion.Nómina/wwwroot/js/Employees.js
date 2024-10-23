@@ -82,7 +82,7 @@
                         data.roles.forEach(function (rol) {
                             editRol.append(new Option(rol.descripcion, rol.id, data.idRol === rol.id, data.idRol === rol.id));
                         });
-                        
+
                         // Mostrar el modal
                         var modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
                         modal.show();
@@ -90,12 +90,13 @@
                         // Restablecer el valor del combobox a la opción predeterminada
                         dropdown.value = "Seleccionar";
                     });
-            } else if (action === "eliminar") {
+            }
+            else if (action === "eliminar") {
                 document.getElementById("deleteId").value = id;
                 // Mostrar el modal
                 var modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
                 modal.show();
-                
+
 
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
@@ -109,10 +110,73 @@
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
             }
+            else if (action === "historial") {
+                // Hacer la petición para obtener los detalles del empleado
+                fetch('/Employees/HistorySueldo/' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mostrar los detalles del empleado en el modal
+                        document.getElementById("idNombre").innerText = data.nombre;
+
+                        //llenar el body de tabla con id bodytable
+                        var body = document.getElementById("bodytableSueldos");
+                        var conter = 1;
+                        body.innerHTML = '';
+                        data.history.forEach(function (pago) {
+
+                            body.innerHTML += `  <td>${conter}</td>
+                                                <td>${pago.anterior}</td>
+                                                <td>${pago.nuevo}</td>
+                                                <td>${pago.fecha}</td>`
+                                ;
+                            conter++;
+                        });
+
+                        // Mostrar el modal
+                        var modal = new bootstrap.Modal(document.getElementById('sueldosDetailModal'));
+                        modal.show();
+
+                        // Restablecer el valor del combobox a la opción predeterminada
+                        dropdown.value = "Seleccionar";
+                    });
+            }
+            else if (action === "liquidar")
+            {
+                // Hacer la petición para obtener los detalles del empleado
+                fetch('/Employees/Liquidar/' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mostrar los detalles del empleado en el modal
+                        document.getElementById("employeeId").innerText = data.id;
+                        document.getElementById("IdemployeeName").innerText = data.nombre;
+                        document.getElementById("IdContratado").innerText = data.contratado;
+                        document.getElementById("IdDespedido").innerText = data.despedido;
+                        document.getElementById("IdTrabajado").innerText = data.diferencia;
+                        document.getElementById("IdSueldo").innerText = data.sueldo;
+                        document.getElementById("IdLiquidar").innerText = data.liquidacion;
+
+                        
+
+                        // Mostrar el modal
+                        var modal = new bootstrap.Modal(document.getElementById('LiquiDetailModal'));
+                        modal.show();
+
+                        // Restablecer el valor del combobox a la opción predeterminada
+                        dropdown.value = "Seleccionar";
+                    });
+            }
+            else if (action === "recontratar") {
+                document.getElementById("RecontratoId").value = id;
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('editConfirmationRecontratoModal'));
+                modal.show();
+
+
+                // Restablecer el valor del combobox a la opción predeterminada
+                dropdown.value = "Seleccionar";
+            }
         });
     });
-
-    
 });
 
 function fetchEmployeeData() {
@@ -212,4 +276,40 @@ function generarCamposFamiliares() {
         `;
 
     }
+}
+function populateYears(IdyearSelect) {
+    var yearSelect = document.getElementById(IdyearSelect);
+    // tomar este año como un número
+    var date = new Date();
+    var year = date.getFullYear();
+
+    // Hacer que este año y los cien años anteriores estén en el <select>
+    for (var i = 0; i <= 10; i++) {
+        var option = document.createElement("option");
+        option.textContent = year - i;
+        yearSelect.appendChild(option);
+    }
+    // Mostrar el modal
+    var modal = new bootstrap.Modal(document.getElementById('consultNominaModal'));
+    modal.show();
+}
+function asignarFecha(idmes, idanio, idForm) {
+    var form = document.getElementById(idForm);
+    var mes = document.getElementById(idmes).value;
+    var anio = document.getElementById(idanio).value;
+    // Asegurarnos de que el mes sea de dos dígitos (agregar cero si es necesario)
+    let mesFormato = mes < 10 ? '0' + mes : mes;
+
+    // Crear la fecha en formato yyyy/mm/dd
+    let fecha = `${anio}/${mesFormato}/01`;
+
+    // Asignar el valor a la etiqueta con id 'idFecha'
+    document.getElementById("idFecha").value = fecha;
+    form.submit();
+}
+
+function confirmGenerate() {
+    // Mostrar el modal
+    var modal = new bootstrap.Modal(document.getElementById('generateConfirmationNominaModal'));
+    modal.show()
 }

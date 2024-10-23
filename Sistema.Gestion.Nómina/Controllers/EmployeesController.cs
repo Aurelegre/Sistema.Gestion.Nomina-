@@ -29,7 +29,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 var session = logger.GetSessionData();
                 var query = context.Empleados
-                    .Where(e => e.Activo == 1 && e.IdEmpresa == session.company && !e.Dpi.Equals("0") && !e.Apellidos.Equals("Administrador"));
+                    .Where(e => e.IdEmpresa == session.company && !e.Dpi.Equals("0") && !e.Apellidos.Equals("Administrador"));
 
                 // Aplicar filtros
                 if (!string.IsNullOrEmpty(request.DPI))
@@ -48,6 +48,10 @@ namespace Sistema.Gestion.Nómina.Controllers
                 {
                     query = query.Where(e => e.IdPuestoNavigation.Descripcion == request.Puesto);
                 }
+                if (request.estado != 2)
+                {
+                    query = query.Where(e => e.Activo == request.estado);
+                }
 
                 var totalItems = await query.CountAsync();
                 var empleados = await query
@@ -62,7 +66,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                         Departamento = u.IdDepartamentoNavigation.Descripcion,
                         DPI = u.Dpi,
                         estado = u.IdUsuarioNavigation.activo,
-                        idUser = u.IdUsuario
+                        idUser = u.IdUsuario,
+                        despedido = u.FechaDespido.HasValue? true:false,
                     })
                     .ToListAsync();
 
@@ -79,6 +84,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 ViewBag.Nombre = request.Nombre;
                 ViewBag.Departamento = request.Departamento;
                 ViewBag.Puesto = request.Puesto;
+                ViewBag.Estado = request.estado;
 
                 // Registrar en bitácora
                 await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Index", $"Se consultaron todos los empleados activos de la empresa {session.company} y se envió a la vista", session.nombre);
@@ -237,6 +243,127 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
+        [HttpGet]
+        [Authorize(Policy = "Empleados.Ver")]
+        public async Task<ActionResult> HistorySueldo (int id)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                var historial = await context.HistorialSueldos.Where(e => e.IdEmpleado == id)
+                                                               .AsNoTracking()
+                                                              .Select(e=> new GetHistorySueldoModal 
+                                                              {
+                                                                  Nuevo = e.NuevoSalario,
+                                                                  Anterior = e.AnteriorSalario,
+                                                                  Fecha = DateOnly.FromDateTime(e.Fecha.Value)
+                                                              })
+                                                              .OrderByDescending(e => e.Fecha).ToListAsync();
+                if (historial == null)
+                {
+                    TempData["Error"] = "Error al obtener Historial de Salarios";
+                    return RedirectToAction("Index", "Employees");
+                }
+                var nombre = await context.Empleados.Where(e => e.Id == id)
+                                                    .AsNoTracking().Select(u => new
+                                                    {
+                                                        Nombre = u.Nombre.Substring(0, u.Nombre.IndexOf(" ") != -1 ? u.Nombre.IndexOf(" ") : u.Nombre.Length) + " " + u.Apellidos.Substring(0, u.Apellidos.IndexOf(" ") != -1 ? u.Apellidos.IndexOf(" ") : u.Apellidos.Length),
+                                                    }).FirstOrDefaultAsync();
+                GetHistorySueldoResponse history = new GetHistorySueldoResponse
+                {
+                    Nombre = nombre.Nombre,
+                    History = historial
+                };
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.HistorySueldo", $"Se consultó Historial de Sueldos de empleado con id: {id}", session.nombre);
+
+                return Json(history);
+            }
+            catch (Exception ex)
+            { 
+                await logger.LogError(session.idEmpleado, session.company, "Employees.HistorySueldo", $"Error al consultar Historial de Sueldos de empleado con id: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar Historial de Salarios";
+                return RedirectToAction("Index", "Employees");
+            }
+        }
+        [HttpGet]
+        [Authorize(Policy = "Empleados.Liquidar")]
+        public async Task<ActionResult> Liquidar(int id)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                var empleado = await context.Empleados.Where(e => e.Id == id).AsNoTracking().Select(u => new
+                {
+                    Nombre = u.Nombre.Substring(0, u.Nombre.IndexOf(" ") != -1 ? u.Nombre.IndexOf(" ") : u.Nombre.Length) + " " + u.Apellidos.Substring(0, u.Apellidos.IndexOf(" ") != -1 ? u.Apellidos.IndexOf(" ") : u.Apellidos.Length),
+                     u.FechaDespido,
+                     u.FechaContratado,
+                    u.Sueldo,
+                    u.Id
+                }).FirstOrDefaultAsync();
+                if (empleado == null)
+                {
+                    TempData["Error"] = "Empleado no encontrado";
+                    return RedirectToAction("Index", "Employees");
+                }
+                string diferenciaFormateada = string.Empty;
+                if (empleado.FechaDespido.HasValue)
+                {
+                    // Calculamos la diferencia de tiempo entre las dos fechas
+                    TimeSpan diferencia = empleado.FechaDespido.Value.Date - empleado.FechaContratado.Date;
+
+                    // Convertimos la diferencia en días, meses y años
+                    DateTime fechaInicio = empleado.FechaContratado.Date;
+                    DateTime fechaFinal = empleado.FechaDespido.Value.Date;
+
+                    int añosTrabajados = fechaFinal.Year - fechaInicio.Year;
+                    int mesesTrabajados = fechaFinal.Month - fechaInicio.Month;
+                    int diasTrabajados = fechaFinal.Day - fechaInicio.Day;
+
+                    // Si los días trabajados son negativos, ajustamos restando un mes
+                    if (diasTrabajados < 0)
+                    {
+                        mesesTrabajados--;
+                        diasTrabajados += DateTime.DaysInMonth(fechaFinal.Year, fechaFinal.Month == 1 ? 12 : fechaFinal.Month - 1);
+                    }
+
+                    // Si los meses trabajados son negativos, ajustamos restando un año
+                    if (mesesTrabajados < 0)
+                    {
+                        añosTrabajados--;
+                        mesesTrabajados += 12;
+                    }
+
+                    // Formateamos el resultado en dd/MM/yyyy (pero esto sería más para mostrar la fecha de contratación y despido)
+                     diferenciaFormateada = $"{añosTrabajados} años, {mesesTrabajados} meses y {diasTrabajados} días.";
+                }
+                else
+                {
+                    TempData["Error"] = "El Empleado no ha sido Despedido";
+                    return RedirectToAction("Index", "Employees");
+                }
+                var liquidacion = CalcularLiquidacion(empleado.FechaContratado, empleado.Sueldo);
+
+                GetLiquidacionResponse getLiquidacion = new GetLiquidacionResponse
+                {
+                    Id = empleado.Id,
+                    Nombre = empleado.Nombre,
+                    Contratado = DateOnly.FromDateTime(empleado.FechaContratado),
+                    Despedido = DateOnly.FromDateTime(empleado.FechaDespido.Value),
+                    Diferencia = diferenciaFormateada,
+                    Liquidacion = liquidacion,
+                    Sueldo = empleado.Sueldo
+                };
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Liquidar", $"Se consultó liquidación de empleado con id: {id}", session.nombre);
+
+                return Json(getLiquidacion);
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Liquidar", $"Error al calcular liquidación de empleado con id: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al calcular Liquidación";
+                return RedirectToAction("Index", "Employees");
+            }
+        }
 
         //actualizar empleado
         [HttpPost]
@@ -253,24 +380,29 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
                 empleado.Nombre = request.Nombre;
                 empleado.Apellidos = request.Apellidos;
-                empleado.Sueldo = request.Sueldo;
+                if(empleado.Sueldo != request.Sueldo)
+                {
+                    //si se cambia el sueldo guardar en el historial
+                    await CreateHistorialSueldo(empleado.Id,empleado.Sueldo,request.Sueldo);
+                    empleado.Sueldo = request.Sueldo;
+                }
+                
                 var puesto = await context.Puestos.SingleAsync(p => p.Id == request.IdPuesto);
                 if (puesto.Descripcion.Equals("Jefe")&& empleado.IdPuesto != puesto.Id)
                 {
-                    var asignedEmployee = await context.Empleados.CountAsync(e => e.IdPuesto == puesto.Id);//buscar si un empleado tiene ese puesto
-                    if(asignedEmployee > 0)
+                    var asignedEmployee = await context.Empleados.SingleAsync(e => e.IdPuesto == puesto.Id);//buscar si un empleado tiene ese puesto JEFE
+                    if(asignedEmployee!=null)
                     {
-                        TempData["Error"] = "Ya existe un jefe en el departamento";
-                        return RedirectToAction("Index", "Employees");
+                        //dejar sin puesto asignado
+                        asignedEmployee.IdPuesto = null;
+                        context.Empleados.Update(asignedEmployee);
                     }
-                    else
-                    {
-                        var depto = await context.Departamentos.SingleAsync(d => d.Id == request.IdDepartamento);//buscar el departamento asignado
-                        depto.IdJefe = empleado.Id;//asigno el jefe al dpto
-                        //actualizar Depto
-                        context.Departamentos.Update(depto);
-                        empleado.IdPuesto = request.IdPuesto;//asigno el puesto jefe
-                    }
+                    //asignar como nuevo jefe en del depto
+                    var depto = await context.Departamentos.SingleAsync(d => d.Id == request.IdDepartamento);//buscar el departamento asignado
+                    depto.IdJefe = empleado.Id;//asigno el jefe al dpto
+                    //actualizar Depto
+                    context.Departamentos.Update(depto);
+                    empleado.IdPuesto = request.IdPuesto;//asigno el puesto jefe al nuevo usuario
                 }
                 else
                 {
@@ -300,9 +432,9 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-        //eliminar (desactivar) Usuario
+        //eliminar (Despedir) Usuario
         [HttpPost]
-        [Authorize(Policy = "Empleados.Eliminar")]
+        [Authorize(Policy = "Empleados.Despedir")]
         public async Task<ActionResult> Delete (int id)
         {
             try
@@ -317,12 +449,13 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var depto = await context.Departamentos.Where(d => d.IdJefe == empleado.Id).AsNoTracking().FirstOrDefaultAsync();
                 if (depto != null)
                 {
-                    TempData["Error"] = "No se pueden eliminar Empleados jefes de Departamento";
+                    TempData["Error"] = "No se pueden Despedir Empleados jefes de Departamento";
                     return RedirectToAction("Index", "Employees");
                 }
 
                 //desactivar empleado
                 empleado.Activo = 0;
+                empleado.FechaDespido = DateTime.Now.Date;
                 context.Update(empleado);
 
                 var usuario = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync();
@@ -336,16 +469,16 @@ namespace Sistema.Gestion.Nómina.Controllers
                 await context.SaveChangesAsync();
                 //guardar bitácora
                 var session = logger.GetSessionData();
-                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Delete", $"Se eliminó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Delete", $"Se despidió empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
 
-                TempData["Message"] = "Empleado Eliminado con Exito";
+                TempData["Message"] = "Empleado Despedido con Exito";
                 return RedirectToAction("Index", "Employees");
             }
             catch (Exception ex)
             {
                 var session = logger.GetSessionData();
-                await logger.LogError(session.idEmpleado, session.company, "Employees.Delete", $"Error al eliminar empleado con id {id}", ex.Message, ex.StackTrace);
-                TempData["Error"] = "No se pudo eliminar Empleado";
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Delete", $"Error al despedir empleado con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo Despedir Empleado";
                 return RedirectToAction("Index", "Employees");
             }
         }
@@ -422,11 +555,23 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                     // Obtener el ID del empleado recién creado
                     int idEmpleado = empleado.Id;
-
+                    //crear historial de Sueldo
+                    await CreateHistorialSueldo(idEmpleado, 0.00m, empleado.Sueldo);
                     //si el puesto asignado es Jefe, actualizar Departamento
                     if (puesto.Descripcion.Equals("Jefe"))
                     {
                         var depto = await context.Departamentos.AsNoTracking().SingleAsync(d => d.Id == request.IdDepartamento);
+                        //si el departamento ya tiene un jefe, dejar sin puesto
+                        if (depto.IdJefe != null)
+                        {
+                            var anteriorJefe = await context.Empleados.SingleAsync(e => e.Id == depto.IdJefe && e.IdEmpresa == session.company);
+                            if(anteriorJefe != null)
+                            {
+                               //dejar sin puesto asignado
+                                anteriorJefe.IdPuesto = null;
+                                context.Empleados.Update(anteriorJefe);
+                            }
+                        }
                         depto.IdJefe = idEmpleado;
                         context.Departamentos.Update(depto);
                     }
@@ -498,7 +643,50 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Employees");
             }
         }
+        [HttpPost]
+        //recontratar Empleado
+        [Authorize(Policy = "Empleados.Recontratar")]
+        public async Task<ActionResult> Recontratar(int id)
+        {
+            try
+            {
+                var empleado = await context.Empleados.Where(p => p.Id == id).AsNoTracking().FirstOrDefaultAsync();
+                if (empleado == null)
+                {
+                    TempData["Error"] = "El Empleado no existe";
+                    return RedirectToAction("Index", "Employees");
+                }
 
+                //recontratar empleado
+                empleado.Activo = 1;
+                empleado.FechaDespido = null;
+                empleado.FechaContratado = DateTime.Now.Date;
+                context.Update(empleado);
+
+                var usuario = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync();
+                if (usuario != null)
+                {
+                    //activar usuario
+                    usuario.activo = 1;
+                    context.Update(usuario);
+                }
+
+                await context.SaveChangesAsync();
+                //guardar bitácora
+                var session = logger.GetSessionData();
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Recontratar", $"Se Recontrató empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
+
+                TempData["Message"] = "Empleado Recontratado con Exito";
+                return RedirectToAction("Index", "Employees");
+            }
+            catch (Exception ex)
+            {
+                var session = logger.GetSessionData();
+                await logger.LogError(session.idEmpleado, session.company, "Employees.Recontratar", $"Error al Recontratar empleado con id {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "No se pudo Recontratar Empleado";
+                return RedirectToAction("Index", "Employees");
+            }
+        }
         //obtención de datos
         private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
         {
@@ -625,5 +813,67 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
+        private async Task<bool> CreateHistorialSueldo (int? idEmpleado, decimal? anteriorSalario, decimal? nuevoSalario)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                HistorialSueldo newsueldo = new HistorialSueldo
+                {
+                    AnteriorSalario = anteriorSalario,
+                    NuevoSalario = nuevoSalario,
+                    Fecha = DateTime.Now.Date,
+                    IdEmpleado = idEmpleado,
+                };
+                await context.HistorialSueldos.AddAsync(newsueldo);
+                await context.SaveChangesAsync();
+
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.CreateHistorialSueldo", $"Se agregó Historial de sueldo del empleado {idEmpleado}", session.nombre);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Employees.CreateHistorialSueldo", $"Error al agregar Historial de sueldo del empleado {idEmpleado}", ex.Message, ex.StackTrace);
+                return false;
+            }
+        }
+        private double? CalcularLiquidacion(DateTime fechaContratacion, decimal? salario)
+        {
+            try
+            {
+                // Obtener la fecha actual
+                DateTime fechaActual = DateTime.Now;
+
+                // Calcular la diferencia exacta de años, meses y días trabajados
+                int añosTrabajados = fechaActual.Year - fechaContratacion.Year;
+                int mesesTrabajados = fechaActual.Month - fechaContratacion.Month;
+                int diasTrabajados = fechaActual.Day - fechaContratacion.Day;
+
+                // Ajustar si los meses o días son negativos
+                if (diasTrabajados < 0)
+                {
+                    mesesTrabajados--;
+                    diasTrabajados += DateTime.DaysInMonth(fechaActual.Year, fechaActual.Month == 1 ? 12 : fechaActual.Month - 1); // Sumar los días del mes anterior
+                }
+
+                if (mesesTrabajados < 0)
+                {
+                    añosTrabajados--;
+                    mesesTrabajados += 12;
+                }
+
+                // Calcular la liquidación proporcional
+                double salarioAnual = (double)salario;
+                double liquidacion = (añosTrabajados + (mesesTrabajados / 12.0) + (diasTrabajados / 365.0)) * salarioAnual;
+
+                // Retornar el resultado redondeado a 2 decimales
+                return Math.Round(liquidacion, 2);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al calcular la liquidación: {ex.Message}", ex);
+            }
+        }
+
     }
 }

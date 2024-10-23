@@ -58,7 +58,7 @@
                         </a>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission("Empleados.Listar"))
+                @if (PermissionHelper.HasPermission("EmpleadosDepto.Listar"))
                 {
                     <li class="nav-item">
                         <a class="nav-link text-light" asp-area="" asp-controller="EmployeeDepto" asp-action="Index">
@@ -130,9 +130,8 @@
                         </div>
                     </li>
                 }
-                @if (PermissionHelper.HasPermission("Ausencias.Listar") ||
-                PermissionHelper.HasPermission("SolicitudesAusencias.Listar") ||
-                PermissionHelper.HasPermission("SolicitudesAusencias.Historial"))
+                @if (PermissionHelper.HasPermission("Prestamos.Listar") ||
+                PermissionHelper.HasPermission("Creditos.Listar") )
                 {
                     <li class="nav-item">
                         <!-- Accordion for Ausencias Laborales -->

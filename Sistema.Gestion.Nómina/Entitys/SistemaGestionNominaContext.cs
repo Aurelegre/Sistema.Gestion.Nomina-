@@ -236,11 +236,21 @@ public partial class SistemaGestionNominaContext : DbContext
             entity.Property(e => e.OtrosDesc).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.OtrosIngresos).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Prestamos).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Creditos).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.SueldoExtra).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Sueldo).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TotalDevengado).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TotalDescuentos).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TotalLiquido).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.AguinaldoBono).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Fecha).HasColumnType("datetime");
 
             entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Nominas)
                 .HasForeignKey(d => d.IdEmpleado)
                 .HasConstraintName("FK_Nominas_Empleados");
+            entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Nominas)
+                .HasForeignKey(d => d.IdEmpresa)
+                .HasConstraintName("FK_Nominas_Empresa");
         });
 
         modelBuilder.Entity<Permiso>(entity =>

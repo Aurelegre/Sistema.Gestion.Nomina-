@@ -1,0 +1,141 @@
+﻿@using Sistema.Gestion.Nómina.DTOs.Nominas
+@using Sistema.Gestion.Nómina.Helpers
+
+@model PaginatedResult<GetNominaModel>
+
+@{
+    ViewData["Title"] = "Nomina";
+}
+
+<partial name="Messages" />
+
+@{
+    var fechaPorDefecto = ViewBag.Fecha != null
+    ? ((DateOnly)ViewBag.Fecha).ToString("yyyy-MM-dd")
+    : ""; // Deja vacío si no hay fecha
+}
+
+<div class="row align-items-center">
+    <div class="col-12 col-md-auto">
+        <h1 class="my-3">Nomina Del Mes: @ViewBag.fechaletras </h1>
+    </div>
+    
+    <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
+        @if (PermissionHelper.HasPermission("Nominas.Exportar"))
+        {
+            <form method="post" asp-controller="Nomina" asp-action="ExportNomina">
+                <input type="hidden" id="idFecha" name="fecha" value="@fechaPorDefecto" />
+                <button type="submit" class="btn btn-warning mb-2  me-1 me-md-2 ">Exportar Nómina</button>
+            </form>
+        }    
+        <a type="button" method="get" asp-controller="Employees" asp-action="Index" style="font-size: 20px" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+            <i class="bi bi-box-arrow-in-left"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Filtros de Búsqueda -->
+<!-- Filtros de Búsqueda -->
+<form method="get" asp-controller="Nomina" asp-action="Index" class="mb-4" id="Idfiltros">
+    <div class="row">
+        <div class="col-md-3">
+            <label for="Nombre">Nombre</label>
+            <input type="text" class="form-control" id="IdNombre" name="Nombre" value="@ViewBag.Nombre" placeholder="Filtrar por Nombre">
+        </div>
+        <div class="col-md-3">
+            <label for="Puesto">Puesto</label>
+            <input type="text" class="form-control" id="IdPuesto" name="Puesto" value="@ViewBag.Puesto" placeholder="Filtrar por Puesto">
+        </div>
+        <div class="col-md-3">
+            <label for="Departamento">Departamento</label>
+            <input type="text" class="form-control" id="IdDepartamento" name="Depto" value="@ViewBag.Departamento" placeholder="Filtrar por Departamento">
+        </div>
+        
+        <input type="hidden" id="idFecha" name="fecha" value="@fechaPorDefecto" />
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <button onclick="LimpiarFiltros('Idfiltros')" class="btn btn-secondary">Limpiar</button>
+    </div>
+</form>
+
+
+@if (Model.Items.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" style="overflow : visible; position:relative">
+            <thead class="thead-dark">
+                <tr>
+                    <td>No.</td>
+                    <td>Nombre Completo</td>
+                    <td>Departamento</td>
+                    <td>Puesto</td>
+                    <td>Sueldo</td>
+                    <td>Total Devengado</td>
+                    <td>Total de Descuentos</td>
+                    <td>Total Liquido</td>
+
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int counter = 1; // Inicializa el contador
+                }
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@counter</td> <!-- Muestra el número secuencial -->
+                        <td>@item.NombreEmpleado</td>
+                        <td>@item.Departamento</td>
+                        <td>@item.Puesto</td>
+                        <td>@item.Sueldo</td>
+                        <td>@item.TotalDevengado</td>
+                        <td>@item.TotalDescuentos</td>
+                        <td>@item.TotalLiquido</td>
+                        
+
+                        <td>
+                            <select class="form-select form-select-sm actions-dropdown">
+                                <option selected>Seleccionar</option>
+                                @if (PermissionHelper.HasPermission("Nominas.Ver"))
+                                {
+                                    <option value="detalle" data-id="@item.Id">Ver Detalle</option>
+
+                                }
+                            </select>
+                        </td>
+                    </tr>
+
+                    counter++; // Incrementa el contador
+
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new GetNominasDTO { page = i,Nombre = ViewBag.Nombre, Puesto = ViewBag.Puesto, Depto = ViewBag.Departamento, fecha = ViewBag.Fecha})">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+}
+else
+{
+    <p>No hay Nomina disponible.</p>
+}
+
+
+<partial name="Details" />
+
+
+<script src="/js/Nominas.js" asp-append-version="true"></script>

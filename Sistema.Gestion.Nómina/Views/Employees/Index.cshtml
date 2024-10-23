@@ -9,22 +9,41 @@
 
 <partial name="Messages" />
 
+<div class="row align-items-center">
+    <div class="col-12 col-md-auto">
+        <h1 class="my-3 text-center text-md-start">Empleados</h1>
+    </div>
+    <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
 
-<div class="d-flex justify-content-between align-items-center">
-    <h1 class="my-3">Empleados</h1>
-    @if (PermissionHelper.HasPermission("Empleados.Crear"))
-    {
-        <button type="button" class="btn btn-primary" onclick="fetchEmployeeData(0)">
-            Crear Empleado
-        </button>
-    }
+
+        @if (PermissionHelper.HasPermission("Nominas.Listar"))
+        {
+            <button type="button" onclick="populateYears('Idanio')" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+               Consultar Nomina
+            </button>
+        }
+
+        @if (PermissionHelper.HasPermission("Nominas.Generar"))
+        {
+            <button type="button" onclick="confirmGenerate()" class="btn btn-warning mb-2  me-1 me-md-2 ">
+                Generar Nomina del Mes
+            </button>
+        }
+     
+        @if (PermissionHelper.HasPermission("Empleados.Crear"))
+        {
+            <button type="button" class="btn btn-primary mb-2" onclick="fetchEmployeeData(0)">
+                Crear Empleado
+            </button>
+        }
+    </div>
 </div>
 
 <!-- Filtros de Búsqueda -->
 <!-- Filtros de Búsqueda -->
-<form method="get" asp-controller="Employees" asp-action="Index" class="mb-4">
+<form method="get" asp-controller="Employees" asp-action="Index" class="mb-5">
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label for="DPI">DPI</label>
             <input type="text" class="form-control" id="DPI" name="DPI" value="@ViewBag.DPI" placeholder="Filtrar por DPI">
         </div>
@@ -32,13 +51,21 @@
             <label for="Nombre">Nombre</label>
             <input type="text" class="form-control" id="Nombre" name="Nombre" value="@ViewBag.Nombre" placeholder="Filtrar por Nombre">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label for="Puesto">Puesto</label>
             <input type="text" class="form-control" id="Puesto" name="Puesto" value="@ViewBag.Puesto" placeholder="Filtrar por Puesto">
         </div>
         <div class="col-md-3">
             <label for="Departamento">Departamento</label>
             <input type="text" class="form-control" id="Departamento" name="Departamento" value="@ViewBag.Departamento" placeholder="Filtrar por Departamento">
+        </div>
+        <div class="col-md-2">
+            <label for="estado">Estado</label>
+            <select value="@ViewBag.Estado" name="estado" class="form-control" id="estado">
+                <option value=1>Activos</option>
+                <option value=2>Todos</option>
+                <option value=0>Despedidos</option>
+            </select>
         </div>
     </div>
     <div class="mt-3">
@@ -98,18 +125,26 @@
                                 {
                                     <option value="editar" data-id="@item.Id"> Editar</option>
 
-                                }@if (PermissionHelper.HasPermission("Empleados.Eliminar"))
+                                }@if (PermissionHelper.HasPermission("Empleados.Despedir") && !item.despedido)
                                 {
-                                    <option value="eliminar" data-id="@item.Id">Eliminar</option>
+                                    <option value="eliminar" data-id="@item.Id">Despedir</option>
 
                                 }@if (PermissionHelper.HasPermission("Empleados.Ver"))
                                 {
                                     <option value="detalle" data-id="@item.Id">Ver Detalle</option>
 
-                                }@if (PermissionHelper.HasPermission("Empleados.Actualizar") && item.estado == 0)
+                                }@if (PermissionHelper.HasPermission("Empleados.Actualizar") && item.estado == 0 && !item.despedido)
                                 {
                                     <option value="desbloquear" data-id="@item.idUser">Desbloquear</option>
-
+                                }@if (PermissionHelper.HasPermission("Empleados.Ver"))
+                                {
+                                    <option value="historial" data-id="@item.Id">Historial de Salarios</option>
+                                }@if (PermissionHelper.HasPermission("Empleados.Liquidar") && item.estado == 0 && item.despedido)
+                                {
+                                    <option value="liquidar" data-id="@item.Id">Calcular Liquidación</option>
+                                }@if (PermissionHelper.HasPermission("Empleados.Recontratar") && item.estado == 0 && item.despedido)
+                                {
+                                    <option value="recontratar" data-id="@item.Id">Recontratar</option>
                                 }
                             </select>
                         </td>
@@ -129,7 +164,7 @@
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                    <a class="page-link" href="@Url.Action("Index", new { page = i, DPI = ViewBag.DPI, Nombre = ViewBag.Nombre, Puesto = ViewBag.Puesto, Departamento = ViewBag.Departamento })">
+                    <a class="page-link" href="@Url.Action("Index", new GetEmployeesDTO { page = i, DPI = ViewBag.DPI, Nombre = ViewBag.Nombre, Puesto = ViewBag.Puesto, Departamento = ViewBag.Departamento, estado = ViewBag.Estado })">
                         @i
                     </a>
                 </li>
@@ -148,5 +183,10 @@ else
 <partial name="Details" />
 <partial name="Delete" />
 <partial name="UnlockUser" />
+<partial name="HistorySueldo" />
+<partial name="Liquidar" />
+<partial name="ConsultNomina" />
+<partial name="ConfirmRecontrato" />
+<partial name="ConfirmGenerate" />
 
 <script src="/js/Employees.js" asp-append-version="true"></script>
