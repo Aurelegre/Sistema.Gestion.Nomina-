@@ -277,3 +277,33 @@ function generarCamposFamiliares() {
 
     }
 }
+function populateYears(IdyearSelect) {
+    var yearSelect = document.getElementById(IdyearSelect);
+    // tomar este año como un número
+    var date = new Date();
+    var year = date.getFullYear();
+
+    // Hacer que este año y los cien años anteriores estén en el <select>
+    for (var i = 0; i <= 10; i++) {
+        var option = document.createElement("option");
+        option.textContent = year - i;
+        yearSelect.appendChild(option);
+    }
+    // Mostrar el modal
+    var modal = new bootstrap.Modal(document.getElementById('consultNominaModal'));
+    modal.show();
+}
+function asignarFecha(idmes, idanio, idForm) {
+    var form = document.getElementById(idForm);
+    var mes = document.getElementById(idmes).value;
+    var anio = document.getElementById(idanio).value;
+    // Asegurarnos de que el mes sea de dos dígitos (agregar cero si es necesario)
+    let mesFormato = mes < 10 ? '0' + mes : mes;
+
+    // Crear la fecha en formato yyyy/mm/dd
+    let fecha = `${anio}/${mesFormato}/01`;
+
+    // Asignar el valor a la etiqueta con id 'idFecha'
+    document.getElementById("idFecha").value = fecha;
+    form.submit();
+}

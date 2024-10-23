@@ -30,6 +30,11 @@ namespace Sistema.Gestion.Nómina.Controllers
                     TempData["Error"] = $"Error al consultar Nómina, comuniquese con soporte";
                     return RedirectToAction("Index", "Employees");
                 }
+                if (query.Count() == 0)
+                {
+                    TempData["Error"] = $"No existe Nómina en el mes seleccionado";
+                    return RedirectToAction("Index", "Employees");
+                }
                 if (!string.IsNullOrEmpty(request.Nombre))
                 {
                     query = query.Where(e => e.NombreEmpleado.Contains(request.Nombre)).ToList();

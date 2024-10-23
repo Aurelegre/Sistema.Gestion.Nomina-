@@ -1,0 +1,46 @@
+﻿<!-- Modal para consultar nomina -->
+<div class="modal fade" id="consultNominaModal" tabindex="-1" aria-labelledby="consultNominaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <!-- Aumenté el tamaño del modal -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="consultNominaModalLabel">Crear Puesto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="consultNominaForm" asp-controller="Nomina" asp-action="Index" method="get">
+                <div class="modal-body">
+                    <!-- Datos del Puesto -->
+
+                    <div class="mb-6">
+                        <label for="Idmes" class="form-label">Mes</label>
+                        <select class="form-select" id="Idmes" required>
+                            <option value="1" selected>Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                    <div class="mb-6">
+                        <label for="Idanio" class="form-label">Año:</label>
+                        <select class="form-select" id="Idanio" required>
+                        </select>
+                        <input type="hidden" id="idFecha" name="fecha">
+                    </div>
+                </div>
+            </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button onclick="asignarFecha('Idmes','Idanio','consultNominaForm')" class="btn btn-primary">Consultar</button>
+                </div>
+            
+        </div>
+    </div>
+</div>

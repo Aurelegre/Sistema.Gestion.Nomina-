@@ -18,9 +18,9 @@
 
         @if (PermissionHelper.HasPermission("Empleados.Crear"))
         {
-            <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="HistoryAusencia" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+            <button type="button" onclick="populateYears('Idanio')" class="btn btn-secondary mb-2  me-1 me-md-2 ">
                Consultar Nomina
-            </a>
+            </button>
         }
 
         @if (PermissionHelper.HasPermission("Empleados.Crear"))
@@ -185,6 +185,7 @@ else
 <partial name="UnlockUser" />
 <partial name="HistorySueldo" />
 <partial name="Liquidar" />
+<partial name="ConsultNomina" />
 <partial name="ConfirmRecontrato" />
 
 <script src="/js/Employees.js" asp-append-version="true"></script>
