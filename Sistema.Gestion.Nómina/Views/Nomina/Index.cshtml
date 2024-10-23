@@ -19,13 +19,15 @@
     <div class="col-12 col-md-auto">
         <h1 class="my-3">Nomina Del Mes: @ViewBag.fechaletras </h1>
     </div>
-
+    
     <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
-        <form method="post" asp-controller="Nomina" asp-action="ExportNomina">
-            <input type="hidden" id="idFecha" name="fecha" value="@fechaPorDefecto" />
-            <button type="submit" class="btn btn-warning mb-2  me-1 me-md-2 ">Exportar Nómina</button>
-        </form>
-            
+        @if (PermissionHelper.HasPermission("Nominas.Exportar"))
+        {
+            <form method="post" asp-controller="Nomina" asp-action="ExportNomina">
+                <input type="hidden" id="idFecha" name="fecha" value="@fechaPorDefecto" />
+                <button type="submit" class="btn btn-warning mb-2  me-1 me-md-2 ">Exportar Nómina</button>
+            </form>
+        }    
         <a type="button" method="get" asp-controller="Employees" asp-action="Index" style="font-size: 20px" class="btn btn-secondary mb-2  me-1 me-md-2 ">
             <i class="bi bi-box-arrow-in-left"></i>
         </a>
@@ -95,7 +97,7 @@
                         <td>
                             <select class="form-select form-select-sm actions-dropdown">
                                 <option selected>Seleccionar</option>
-                                @if (PermissionHelper.HasPermission("Empleados.Ver"))
+                                @if (PermissionHelper.HasPermission("Nominas.Ver"))
                                 {
                                     <option value="detalle" data-id="@item.Id">Ver Detalle</option>
 

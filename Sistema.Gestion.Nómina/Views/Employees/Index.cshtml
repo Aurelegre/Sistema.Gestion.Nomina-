@@ -16,14 +16,14 @@
     <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
 
 
-        @if (PermissionHelper.HasPermission("Empleados.Crear"))
+        @if (PermissionHelper.HasPermission("Nominas.Listar"))
         {
             <button type="button" onclick="populateYears('Idanio')" class="btn btn-secondary mb-2  me-1 me-md-2 ">
                Consultar Nomina
             </button>
         }
 
-        @if (PermissionHelper.HasPermission("Empleados.Crear"))
+        @if (PermissionHelper.HasPermission("Nominas.Generar"))
          {
             <a type="button" method="get" asp-controller="Nomina" asp-action="GenerateNomina" class="btn btn-warning mb-2  me-1 me-md-2 ">
                Generar Nomina del Mes

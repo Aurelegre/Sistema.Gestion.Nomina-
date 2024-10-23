@@ -20,6 +20,7 @@ namespace Sistema.Gestion.Nómina.Controllers
     public class NominaController(SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
         [HttpGet]
+        [Authorize(Policy = "Nominas.Listar")]
         public async Task<ActionResult> Index(GetNominasDTO request)
         {
             var session = logger.GetSessionData();
@@ -78,6 +79,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
         [HttpGet]
+        [Authorize(Policy = "Nominas.Ver")]
         public async Task<ActionResult>Details(int id)
         {
             var session = logger.GetSessionData();
@@ -126,6 +128,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
         [HttpGet]
+        [Authorize(Policy = "Nominas.Generar")]
         public async Task<ActionResult> GenerateNomina()
         {
             var session = logger.GetSessionData();
@@ -175,6 +178,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
         }
         [HttpPost]
+        [Authorize(Policy = "Nominas.Exportar")]
         public async Task<ActionResult> ExportNomina(DateOnly fecha)
         {
             var session = logger.GetSessionData();
