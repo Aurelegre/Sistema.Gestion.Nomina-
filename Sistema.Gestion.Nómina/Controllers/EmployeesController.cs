@@ -381,7 +381,9 @@ namespace Sistema.Gestion.Nómina.Controllers
                 empleado.Nombre = request.Nombre;
                 empleado.Apellidos = request.Apellidos;
                 string nombreExpediente = string.Concat(empleado.Dpi.ToString(), ".pdf");
+                string nombreImagen = string.Concat(empleado.Dpi.ToString(), ".png");
                 empleado.PathExpediente = nombreExpediente;
+                empleado.PathImagen = nombreImagen;
                 if (empleado.Sueldo != request.Sueldo)
                 {
                     //si se cambia el sueldo guardar en el historial
@@ -423,6 +425,11 @@ namespace Sistema.Gestion.Nómina.Controllers
                 if(request.expedientePDF != null)
                 {
                     await EditarExpediente(request.expedientePDF, nombreExpediente);
+                }
+                //verficar si se cambió la imagen
+                if(request.imagenPNG != null)
+                {
+                    await EditarImagen(request.imagenPNG, nombreImagen);
                 }
 
                 var session = logger.GetSessionData();
@@ -546,7 +553,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     await context.SaveChangesAsync();
 
                     string nombreExpediente = string.Concat(request.Dpi.ToString(), ".pdf");
-                    string nombreImagen = string.Empty;//string.Concat(request.Dpi.ToString(), request.Nombre, ".png");
+                    string nombreImagen = string.Concat(request.Dpi.ToString(), ".png");
                     // Obtener ID del usuario recién creado
                     int idUser = user.Id; // Usar el ID directamente desde el objeto recién agregado
 
@@ -593,24 +600,29 @@ namespace Sistema.Gestion.Nómina.Controllers
                         context.Departamentos.Update(depto);
                     }
 
-                    // Crear familiares
-                    foreach (var familia in request.FamilyEmployeeDTOs)
+                    if(request.FamilyEmployeeDTOs != null)
                     {
-                        if (familia != null)
+                        // Crear familiares
+                        foreach (var familia in request.FamilyEmployeeDTOs)
                         {
-                            var familiar = new Familia
+                            if (familia != null)
                             {
-                                Nombre = familia.Nombre,
-                                Edad = familia.Edad,
-                                Parentesco = familia.Parentesco,
-                                IdEmpleado = idEmpleado
-                            };
-                            context.Familias.Add(familiar);
+                                var familiar = new Familia
+                                {
+                                    Nombre = familia.Nombre,
+                                    Edad = familia.Edad,
+                                    Parentesco = familia.Parentesco,
+                                    IdEmpleado = idEmpleado
+                                };
+                                context.Familias.Add(familiar);
+                            }
                         }
                     }
+                   
                     await context.SaveChangesAsync();
                     await transaction.CommitAsync();
                     await SubirExpediente(request.expedientePDF, nombreExpediente);
+                    await SubirImagen(request.imagenPNG, nombreImagen);
                     // Guardar bitácora
                     await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se creó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
 
@@ -999,7 +1011,70 @@ namespace Sistema.Gestion.Nómina.Controllers
             catch (Exception ex)
             {
                 // Registrar el error en el log y devolver un mensaje de error
-                throw new InvalidOperationException($"Error al subir el expediente: {ex.Message}", ex);
+                throw new InvalidOperationException($"Error al editar el expediente: {ex.Message}", ex);
+            }
+        }
+        public async Task SubirImagen(IFormFile imagenPNG, string nombreArchivo)
+        {
+            try
+            {
+
+                // Ruta de la carpeta 'expedientes' dentro de wwwroot
+                string rutaCarpetaExpedientes = Path.Combine(hostingEnvironment.WebRootPath, "imagenes");
+
+                // Si la carpeta 'expedientes' no existe, crearla
+                if (!Directory.Exists(rutaCarpetaExpedientes))
+                {
+                    Directory.CreateDirectory(rutaCarpetaExpedientes);
+                }
+
+                // Ruta completa del archivo
+                string rutaArchivo = Path.Combine(rutaCarpetaExpedientes, nombreArchivo);
+
+                // Guardar el archivo PDF en la ruta especificada
+                using (var fileStream = new FileStream(rutaArchivo, FileMode.Create))
+                {
+                    await imagenPNG.CopyToAsync(fileStream);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // Registrar el error en el log y devolver un mensaje de error
+                throw new InvalidOperationException($"Error al subir el imagen: {ex.Message}", ex);
+            }
+        }
+        public async Task EditarImagen(IFormFile imagenPNG, string nombreArchivo)
+        {
+            try
+            {
+                // Ruta de la carpeta 'expedientes' dentro de wwwroot
+                string rutaCarpetaExpedientes = Path.Combine(hostingEnvironment.WebRootPath, "imagenes");
+
+                // Si la carpeta 'expedientes' no existe, crearla
+                if (!Directory.Exists(rutaCarpetaExpedientes))
+                {
+                    Directory.CreateDirectory(rutaCarpetaExpedientes);
+                }
+
+                // Ruta completa del archivo
+                string rutaArchivo = Path.Combine(rutaCarpetaExpedientes, nombreArchivo);
+
+                // Si ya existe un archivo con el mismo nombre, eliminarlo
+                if (System.IO.File.Exists(rutaArchivo))
+                {
+                    System.IO.File.Delete(rutaArchivo);
+                }
+                // Guardar el nuevo archivo PDF en la ruta especificada
+                using (var fileStream = new FileStream(rutaArchivo, FileMode.Create))
+                {
+                    await imagenPNG.CopyToAsync(fileStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Registrar el error en el log y devolver un mensaje de error
+                throw new InvalidOperationException($"Error al editar imagen: {ex.Message}", ex);
             }
         }
     }

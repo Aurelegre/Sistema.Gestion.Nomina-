@@ -40,6 +40,7 @@ namespace Sistema.Gestion.Nómina.DTOs.Empleados
         [Required(ErrorMessage = "El rol es obligatorio")]
         public int? IdRol { get; set; }
         public IFormFile expedientePDF { get; set; }
+        public IFormFile imagenPNG { get; set; }
 
         public List<GetFamilyEmployeeDTO> FamilyEmployeeDTOs { get; set; }
     }
