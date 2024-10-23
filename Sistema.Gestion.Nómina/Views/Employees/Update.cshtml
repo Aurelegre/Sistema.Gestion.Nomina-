@@ -7,7 +7,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form asp-controller="Employees" asp-action="Update" method="post" id="editEmployeeForm">
+                <form asp-controller="Employees" asp-action="Update" method="post" id="editEmployeeForm" enctype="multipart/form-data">
                     <input type="hidden" id="editId" name="Id" />
                     <div class="mb-3 form-group">
                         <label for="editNombre" class="form-label">Nombres</label>
@@ -36,6 +36,10 @@
                     <div class="mb-3 form-group">
                         <label for="editUsuario" class="form-label">Usuario</label>
                         <input type="text" class="form-control" id="editUsuario" name="Usuario" disabled />
+                    </div>
+                    <div class="mb-3">
+                        <label for="expedientePDF" class="form-label">Subir expediente PDF</label>
+                        <input type="file" class="form-control" id="expedientePDF" name="expedientePDF" accept="application/pdf" required>
                     </div>
                     <div class="mb-3 form-group modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

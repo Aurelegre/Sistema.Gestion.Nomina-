@@ -145,6 +145,9 @@
                                 }@if (PermissionHelper.HasPermission("Empleados.Recontratar") && item.estado == 0 && item.despedido)
                                 {
                                     <option value="recontratar" data-id="@item.Id">Recontratar</option>
+                                }@if (PermissionHelper.HasPermission("Empleados.Ver"))
+                                {
+                                    <option value="expediente" data-id="@item.Id">Descargar Expediente</option>
                                 }
                             </select>
                         </td>

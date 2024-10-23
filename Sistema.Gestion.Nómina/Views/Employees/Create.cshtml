@@ -7,12 +7,12 @@
                 <h5 class="modal-title" id="createEmployeeModalLabel">Crear Empleado</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="createEmployeeForm" asp-controller="Employees" asp-action="Create" method="post">
+            <form id="createEmployeeForm" asp-controller="Employees" asp-action="Create" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <!-- Datos del empleado -->
                     <div class="mb-3">
                         <label for="Dpi" class="form-label">DPI</label>
-                        <input type="text" class="form-control" id="Dpi" name="Dpi" required maxlength="13">
+                        <input type="text" class="form-control" id="Dpi" name="Dpi" required minlength="13" maxlength=" 13">
                     </div>
                     <div class="mb-3">
                         <label for="Nombre" class="form-label">Nombres</label>
@@ -51,6 +51,10 @@
                         <select class="form-select" id="IdPuesto" name="IdPuesto" required>
                             <option value="">Debe seleccionar un Departamento</option>
                         </select>
+                    </div> 
+                    <div class="mb-3">
+                        <label for="expedientePDF" class="form-label">Subir expediente PDF</label>
+                        <input type="file" class="form-control" id="expedientePDF" name="expedientePDF" accept="application/pdf" required>
                     </div>
 
                     <!-- Número de integrantes de la familia -->

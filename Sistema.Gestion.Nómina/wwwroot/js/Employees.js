@@ -175,6 +175,11 @@
                 // Restablecer el valor del combobox a la opción predeterminada
                 dropdown.value = "Seleccionar";
             }
+            else if (action === "expediente") {
+                window.location.href = '/Employees/DescargarExpediente?id=' + id;  // Redirige al controlador para descargar el archivo
+                // Restablecer el valor del combobox a la opción predeterminada
+                dropdown.value = "Seleccionar";
+            }
         });
     });
 });

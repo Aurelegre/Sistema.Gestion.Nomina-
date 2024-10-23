@@ -18,8 +18,8 @@ using Sistema.Gestion.Nómina.Services.Logs;
 namespace Sistema.Gestion.Nómina.Controllers
 {   [Authorize]
     [Controller]
-    
-    public class EmployeesController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper) : Controller
+
+    public class EmployeesController(SistemaGestionNominaContext context, ILogServices logger, IMapper _mapper, IWebHostEnvironment hostingEnvironment) : Controller
     {
         [HttpGet]
         [Authorize(Policy = "Empleados.Listar")]
@@ -61,13 +61,13 @@ namespace Sistema.Gestion.Nómina.Controllers
                     .Select(u => new GETEmpleadosResponse
                     {
                         Id = u.Id,
-                        Nombre = u.Nombre.Substring(0, u.Nombre.IndexOf(" ") != -1 ? u.Nombre.IndexOf(" ") : u.Nombre.Length) +" "+ u.Apellidos.Substring(0, u.Apellidos.IndexOf(" ") != -1 ? u.Apellidos.IndexOf(" ") : u.Apellidos.Length),
+                        Nombre = u.Nombre.Substring(0, u.Nombre.IndexOf(" ") != -1 ? u.Nombre.IndexOf(" ") : u.Nombre.Length) + " " + u.Apellidos.Substring(0, u.Apellidos.IndexOf(" ") != -1 ? u.Apellidos.IndexOf(" ") : u.Apellidos.Length),
                         Puesto = u.IdPuestoNavigation.Descripcion,
                         Departamento = u.IdDepartamentoNavigation.Descripcion,
                         DPI = u.Dpi,
                         estado = u.IdUsuarioNavigation.activo,
                         idUser = u.IdUsuario,
-                        despedido = u.FechaDespido.HasValue? true:false,
+                        despedido = u.FechaDespido.HasValue ? true : false,
                     })
                     .ToListAsync();
 
@@ -144,9 +144,9 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-		[HttpGet]
+        [HttpGet]
         [Authorize(Policy = "Empleados.Actualizar")]
-        public async Task<ActionResult> Update (int id)
+        public async Task<ActionResult> Update(int id)
         {
             try
             {
@@ -220,7 +220,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         [HttpGet]
         [Authorize(Policy = "Empleados.Ver")]
-        public async Task<ActionResult<List<object>>> GetPuestos (int id)
+        public async Task<ActionResult<List<object>>> GetPuestos(int id)
         {
             try
             {
@@ -245,14 +245,14 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         [HttpGet]
         [Authorize(Policy = "Empleados.Ver")]
-        public async Task<ActionResult> HistorySueldo (int id)
+        public async Task<ActionResult> HistorySueldo(int id)
         {
             var session = logger.GetSessionData();
             try
             {
                 var historial = await context.HistorialSueldos.Where(e => e.IdEmpleado == id)
                                                                .AsNoTracking()
-                                                              .Select(e=> new GetHistorySueldoModal 
+                                                              .Select(e => new GetHistorySueldoModal
                                                               {
                                                                   Nuevo = e.NuevoSalario,
                                                                   Anterior = e.AnteriorSalario,
@@ -279,7 +279,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return Json(history);
             }
             catch (Exception ex)
-            { 
+            {
                 await logger.LogError(session.idEmpleado, session.company, "Employees.HistorySueldo", $"Error al consultar Historial de Sueldos de empleado con id: {id}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar Historial de Salarios";
                 return RedirectToAction("Index", "Employees");
@@ -295,8 +295,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                 var empleado = await context.Empleados.Where(e => e.Id == id).AsNoTracking().Select(u => new
                 {
                     Nombre = u.Nombre.Substring(0, u.Nombre.IndexOf(" ") != -1 ? u.Nombre.IndexOf(" ") : u.Nombre.Length) + " " + u.Apellidos.Substring(0, u.Apellidos.IndexOf(" ") != -1 ? u.Apellidos.IndexOf(" ") : u.Apellidos.Length),
-                     u.FechaDespido,
-                     u.FechaContratado,
+                    u.FechaDespido,
+                    u.FechaContratado,
                     u.Sueldo,
                     u.Id
                 }).FirstOrDefaultAsync();
@@ -334,7 +334,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     }
 
                     // Formateamos el resultado en dd/MM/yyyy (pero esto sería más para mostrar la fecha de contratación y despido)
-                     diferenciaFormateada = $"{añosTrabajados} años, {mesesTrabajados} meses y {diasTrabajados} días.";
+                    diferenciaFormateada = $"{añosTrabajados} años, {mesesTrabajados} meses y {diasTrabajados} días.";
                 }
                 else
                 {
@@ -380,18 +380,20 @@ namespace Sistema.Gestion.Nómina.Controllers
                 }
                 empleado.Nombre = request.Nombre;
                 empleado.Apellidos = request.Apellidos;
-                if(empleado.Sueldo != request.Sueldo)
+                string nombreExpediente = string.Concat(empleado.Dpi.ToString(), ".pdf");
+                empleado.PathExpediente = nombreExpediente;
+                if (empleado.Sueldo != request.Sueldo)
                 {
                     //si se cambia el sueldo guardar en el historial
-                    await CreateHistorialSueldo(empleado.Id,empleado.Sueldo,request.Sueldo);
+                    await CreateHistorialSueldo(empleado.Id, empleado.Sueldo, request.Sueldo);
                     empleado.Sueldo = request.Sueldo;
                 }
-                
+
                 var puesto = await context.Puestos.SingleAsync(p => p.Id == request.IdPuesto);
-                if (puesto.Descripcion.Equals("Jefe")&& empleado.IdPuesto != puesto.Id)
+                if (puesto.Descripcion.Equals("Jefe") && empleado.IdPuesto != puesto.Id)
                 {
                     var asignedEmployee = await context.Empleados.SingleAsync(e => e.IdPuesto == puesto.Id);//buscar si un empleado tiene ese puesto JEFE
-                    if(asignedEmployee!=null)
+                    if (asignedEmployee != null)
                     {
                         //dejar sin puesto asignado
                         asignedEmployee.IdPuesto = null;
@@ -411,11 +413,17 @@ namespace Sistema.Gestion.Nómina.Controllers
                 empleado.IdDepartamento = request.IdDepartamento;
                 context.Update(empleado);
                 //actualizar ROl
-                var user = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync(); 
+                var user = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync();
                 user.IdRol = request?.IdRol;
                 context.Usuarios.Update(user);
                 //Guardar Cambios
                 await context.SaveChangesAsync();
+
+                //verficar si se cambió el expediente
+                if(request.expedientePDF != null)
+                {
+                    await EditarExpediente(request.expedientePDF, nombreExpediente);
+                }
 
                 var session = logger.GetSessionData();
                 await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Update", $"Se actualizó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
@@ -435,7 +443,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         //eliminar (Despedir) Usuario
         [HttpPost]
         [Authorize(Policy = "Empleados.Despedir")]
-        public async Task<ActionResult> Delete (int id)
+        public async Task<ActionResult> Delete(int id)
         {
             try
             {
@@ -459,13 +467,13 @@ namespace Sistema.Gestion.Nómina.Controllers
                 context.Update(empleado);
 
                 var usuario = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync();
-                if(usuario != null)
+                if (usuario != null)
                 {
                     //desactivar usuario
                     usuario.activo = 0;
                     context.Update(usuario);
                 }
-               
+
                 await context.SaveChangesAsync();
                 //guardar bitácora
                 var session = logger.GetSessionData();
@@ -509,6 +517,11 @@ namespace Sistema.Gestion.Nómina.Controllers
                         TempData["Error"] = "El correo ya está asignado a otro empleado";
                         return RedirectToAction("Index", "Employees");
                     }
+                    if (request.expedientePDF == null || request.expedientePDF.Length == 0)
+                    {
+                        TempData["Error"] = "Debe seleccionar un archivo PDF válido.";
+                        return RedirectToAction("Index", "Employees");  // Redirige a la vista correspondiente
+                    }
                     // verificar que si el puesto es Jefe, verificar que no esté asignado a otro empleado
                     var puesto = await context.Puestos.SingleAsync(p => p.Id == request.IdPuesto);
                     if (puesto.Descripcion.Equals("Jefe"))
@@ -532,6 +545,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                     context.Usuarios.Add(user);
                     await context.SaveChangesAsync();
 
+                    string nombreExpediente = string.Concat(request.Dpi.ToString(), ".pdf");
+                    string nombreImagen = string.Empty;//string.Concat(request.Dpi.ToString(), request.Nombre, ".png");
                     // Obtener ID del usuario recién creado
                     int idUser = user.Id; // Usar el ID directamente desde el objeto recién agregado
 
@@ -549,6 +564,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                         FechaContratado = request.FechaContratado.ToDateTime(timeOnly),
                         IdUsuario = idUser,
                         Dpi = request.Dpi,
+                        PathExpediente = nombreExpediente,
+                        PathImagen = nombreImagen,
                     };
                     context.Empleados.Add(empleado);
                     await context.SaveChangesAsync();
@@ -565,9 +582,9 @@ namespace Sistema.Gestion.Nómina.Controllers
                         if (depto.IdJefe != null)
                         {
                             var anteriorJefe = await context.Empleados.SingleAsync(e => e.Id == depto.IdJefe && e.IdEmpresa == session.company);
-                            if(anteriorJefe != null)
+                            if (anteriorJefe != null)
                             {
-                               //dejar sin puesto asignado
+                                //dejar sin puesto asignado
                                 anteriorJefe.IdPuesto = null;
                                 context.Empleados.Update(anteriorJefe);
                             }
@@ -593,9 +610,10 @@ namespace Sistema.Gestion.Nómina.Controllers
                     }
                     await context.SaveChangesAsync();
                     await transaction.CommitAsync();
+                    await SubirExpediente(request.expedientePDF, nombreExpediente);
                     // Guardar bitácora
                     await logger.LogTransaction(session.idEmpleado, session.company, "Employees.Create", $"Se creó empleado con id: {empleado.Id}, Nombre: {empleado.Nombre}", session.nombre);
-                    
+
                     TempData["Message"] = "Empleado creado con éxito";
                     return RedirectToAction("Index", "Employees");
                 }
@@ -687,6 +705,53 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Employees");
             }
         }
+        [HttpGet]
+        [Authorize(Policy = "Empleados.Ver")]
+        public async Task<IActionResult> DescargarExpediente(int id)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                // Nombre del archivo a retornar
+                string nombreArchivo = await context.Empleados
+                                                            .Where(e => e.Id == id)
+                                                            .AsNoTracking()
+                                                            .Select(e => e.PathExpediente)
+                                                            .FirstOrDefaultAsync();
+                if(nombreArchivo == null)
+                {
+                    TempData["Error"] = "El empleado no posee Expediente.";
+                    return RedirectToAction("Index", "Employees");
+                }
+                // Ruta de la carpeta 'expedientes' dentro de wwwroot
+                string rutaCarpetaExpedientes = Path.Combine(hostingEnvironment.WebRootPath, "expedientes");
+
+                
+
+                // Ruta completa del archivo
+                string rutaArchivo = Path.Combine(rutaCarpetaExpedientes, nombreArchivo);
+
+                // Verificar si el archivo existe
+                if (!System.IO.File.Exists(rutaArchivo))
+                {
+                    TempData["Error"] = "El expediente no fue encontrado.";
+                    return RedirectToAction("Index", "Employees");  // Redirige a la vista correspondiente si el archivo no existe
+                }
+
+                // Leer el archivo como bytes
+                var archivoBytes = await System.IO.File.ReadAllBytesAsync(rutaArchivo);
+                await logger.LogTransaction(session.idEmpleado, session.company, "Employees.DescargarExpediente", $"Se descargó expediente de empleado con id {id}", session.nombre);
+                // Devolver el archivo al cliente
+                return File(archivoBytes, "application/pdf", nombreArchivo);
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Employees.DescargarExpediente", $"Error al descargar expediente de empleado:  {id}", ex.Message, ex.StackTrace);
+                // Registrar el error en el log y devolver un mensaje de error
+                TempData["Error"] = $"Error al descargar el expediente: {ex.Message}";
+                return RedirectToAction("Index", "Employees");
+            }
+        }
         //obtención de datos
         private async Task<List<GetPuestoDTO>> ObtenerPuestos(int? idDepartamento)
         {
@@ -710,7 +775,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         private async Task<List<GetDepartamentoDTO>> ObtenerDepartamentos()
         {
-            try 
+            try
             {
                 var session = logger.GetSessionData();
                 var departamentos = await context.Departamentos.Where(d => d.IdEmpresa == session.company).AsNoTracking().ToListAsync();
@@ -731,7 +796,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         }
         private async Task<List<GetUsuariosDTO>> ObtenerUsuariosSinAsignar()
         {
-            try 
+            try
             {
                 var session = logger.GetSessionData();
                 var usuariosNoAsignados = await context.Usuarios
@@ -813,7 +878,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             }
 
         }
-        private async Task<bool> CreateHistorialSueldo (int? idEmpleado, decimal? anteriorSalario, decimal? nuevoSalario)
+        private async Task<bool> CreateHistorialSueldo(int? idEmpleado, decimal? anteriorSalario, decimal? nuevoSalario)
         {
             var session = logger.GetSessionData();
             try
@@ -874,6 +939,68 @@ namespace Sistema.Gestion.Nómina.Controllers
                 throw new InvalidOperationException($"Error al calcular la liquidación: {ex.Message}", ex);
             }
         }
+        public async Task SubirExpediente(IFormFile expedientePDF , string nombreArchivo)
+        {
+            try
+            {
 
+                // Ruta de la carpeta 'expedientes' dentro de wwwroot
+                string rutaCarpetaExpedientes = Path.Combine(hostingEnvironment.WebRootPath, "expedientes");
+
+                // Si la carpeta 'expedientes' no existe, crearla
+                if (!Directory.Exists(rutaCarpetaExpedientes))
+                {
+                    Directory.CreateDirectory(rutaCarpetaExpedientes);
+                }
+
+                // Ruta completa del archivo
+                string rutaArchivo = Path.Combine(rutaCarpetaExpedientes, nombreArchivo);
+
+                // Guardar el archivo PDF en la ruta especificada
+                using (var fileStream = new FileStream(rutaArchivo, FileMode.Create))
+                {
+                    await expedientePDF.CopyToAsync(fileStream);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // Registrar el error en el log y devolver un mensaje de error
+                throw new InvalidOperationException($"Error al subir el expediente: {ex.Message}", ex);
+            }
+        }
+        public async Task EditarExpediente(IFormFile expedientePDF, string nombreArchivo)
+        {
+            try
+            {
+                // Ruta de la carpeta 'expedientes' dentro de wwwroot
+                string rutaCarpetaExpedientes = Path.Combine(hostingEnvironment.WebRootPath, "expedientes");
+
+                // Si la carpeta 'expedientes' no existe, crearla
+                if (!Directory.Exists(rutaCarpetaExpedientes))
+                {
+                    Directory.CreateDirectory(rutaCarpetaExpedientes);
+                }
+
+                // Ruta completa del archivo
+                string rutaArchivo = Path.Combine(rutaCarpetaExpedientes, nombreArchivo);
+
+                // Si ya existe un archivo con el mismo nombre, eliminarlo
+                if (System.IO.File.Exists(rutaArchivo))
+                {
+                    System.IO.File.Delete(rutaArchivo);
+                }
+                // Guardar el nuevo archivo PDF en la ruta especificada
+                using (var fileStream = new FileStream(rutaArchivo, FileMode.Create))
+                {
+                    await expedientePDF.CopyToAsync(fileStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Registrar el error en el log y devolver un mensaje de error
+                throw new InvalidOperationException($"Error al subir el expediente: {ex.Message}", ex);
+            }
+        }
     }
 }
