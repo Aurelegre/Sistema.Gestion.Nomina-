@@ -12,8 +12,7 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
                 // Validar parámetros de entrada
                 if (amount <= 0)
                     throw new ArgumentException("El monto del salario debe ser mayor que 0.");
-                if (days < 0 || days > 30)
-                    throw new ArgumentException("La cantidad de días debe estar entre 0 y 30.");
+               
 
                 // Cálculo del descuento
                 decimal? diario = amount / 30;
@@ -98,8 +97,7 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
                 // Validar parámetros de entrada
                 if (salario == null || salario <= 0)
                     throw new ArgumentException("El salario debe ser mayor que 0.");
-                if (TotalHoras < 0)
-                    throw new ArgumentException("Las horas extra deben ser mayores que 0.");
+                
 
                 // Obtener el salario por hora (dividiendo el salario mensual entre 30 días y luego entre 8 horas por día)
                 var salarioHora = (salario / 30) / 8;
@@ -112,7 +110,7 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
                 }
                 else
                 {
-                    return null;
+                    return 0.00m;
                 }
             }
             catch (Exception ex)
@@ -137,6 +135,108 @@ namespace Sistema.Gestion.Nómina.Services.Nomina
             {
                 throw new InvalidOperationException($"Error al calcular comision por dias festivos: {ex.Message}", ex);
             }
+        }
+
+        public decimal? PagarCuotaPrestamo (int? cuotas, decimal? pendiente)
+        {
+            try
+            {
+                var pagar = Math.Round((pendiente.Value / cuotas.Value), 2); ;
+                return pagar;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error al calcular total a pagar por cuota: {ex.Message}", ex);
+            }
+        }
+        public decimal? CuotaLaboralIGSS(decimal? totalDevengado)
+        {
+            if (totalDevengado == null || totalDevengado <= 0)
+            {
+                throw new ArgumentException("El sueldo debe ser mayor a 0.");
+            }
+
+            // Calcular el 4.87% del sueldo para la cuota laboral
+            decimal? cuotaLaboral = totalDevengado * 0.0487m;
+            return Math.Round(cuotaLaboral.Value, 2); // Limitar a 2 decimales
+        }
+
+        public decimal? CuotaPatronalIGSS(decimal? totalDevengado)
+        {
+            if (totalDevengado == null || totalDevengado <= 0)
+            {
+                throw new ArgumentException("El sueldo debe ser mayor a 0.");
+            }
+
+            // Calcular el 12.67% del sueldo para la cuota patronal
+            decimal? cuotaPatronal = totalDevengado * 0.1267m;
+            return Math.Round(cuotaPatronal.Value, 2); // Limitar a 2 decimales
+        }
+
+        public decimal? CalcularISR(decimal? salarioBruto, decimal? iSRAcumulado, decimal? bonificacion)
+        {
+            if((salarioBruto + bonificacion) <= 4200.00m)
+            {
+                return 0;
+            }
+            decimal? salarioAnual = salarioBruto.Value * 12,
+                    bonificacionAnual = bonificacion.Value * 12,
+                    isr = 0.00m;
+            decimal igssAnual = salarioAnual.Value * 0.0483m;
+            decimal ingresoAnual = salarioAnual.Value + bonificacionAnual.Value;
+            decimal gastosPesonales = (48000m - iSRAcumulado.Value); //descontar el IRS que se ha pagado
+
+            //descuentos anuales
+            decimal? totalDescuentos = igssAnual + gastosPesonales;
+
+            //resta de descuentos anuales y ingresos anuales
+            decimal? baseImponible = ingresoAnual - totalDescuentos;
+
+            //aplicar tipo impositivo del ISR
+            if(baseImponible > 30000m)
+            {
+                //si la base imponible es mas de 30,0000, obtener el exedente
+                baseImponible = baseImponible - 30000m;
+                isr = (1500.00m + (baseImponible * 0.07m));//base imponible de 1,500 + el 7% sobre el exdente de 30,000
+            }
+            else
+            {
+                //si la base imponible es menor a 30,000 aplicar 5% 
+                isr = (baseImponible * 0.05m);
+            }
+            isr = isr / 12; //obtener el isr mensual
+            return Math.Round(isr.Value, 2);
+        }
+
+        public decimal? CalcularAguinaldo(decimal? salarioMensual, DateTime fechaContratacion, DateTime fechaCorte)
+        {
+            // Calcular el número de meses trabajados
+            int mesesTrabajados = ((fechaCorte.Year - fechaContratacion.Year) * 12) + fechaCorte.Month - fechaContratacion.Month;
+
+            // Si la fecha de corte es antes de la fecha de contratación, no calcular aguinaldo
+            if (mesesTrabajados < 0)
+                return 0;
+
+            // Aguinaldo prorrateado
+            decimal aguinaldo = (salarioMensual.Value / 12) * mesesTrabajados;
+
+            return Math.Round(aguinaldo, 2);
+        }
+
+        public decimal? CalcularBono14(decimal? salarioMensual, DateTime fechaContratacion, DateTime fechaCorte)
+        {
+            // Calcular el número de meses trabajados
+            int mesesTrabajados = ((fechaCorte.Year - fechaContratacion.Year) * 12) + fechaCorte.Month - fechaContratacion.Month;
+
+            // Si la fecha de corte es antes de la fecha de contratación, no calcular Bono 14
+            if (mesesTrabajados < 0)
+                return 0;
+
+            // Bono 14 prorrateado
+            decimal bono14 = (salarioMensual.Value / 12) * mesesTrabajados;
+
+            return Math.Round(bono14, 2);
+
         }
 
     }

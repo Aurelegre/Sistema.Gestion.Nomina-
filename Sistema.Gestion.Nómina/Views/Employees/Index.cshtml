@@ -9,15 +9,34 @@
 
 <partial name="Messages" />
 
+<div class="row align-items-center">
+    <div class="col-12 col-md-auto">
+        <h1 class="my-3 text-center text-md-start">Empleados</h1>
+    </div>
+    <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
 
-<div class="d-flex justify-content-between align-items-center">
-    <h1 class="my-3">Empleados</h1>
-    @if (PermissionHelper.HasPermission("Empleados.Crear"))
-    {
-        <button type="button" class="btn btn-primary" onclick="fetchEmployeeData(0)">
-            Crear Empleado
-        </button>
-    }
+
+        @if (PermissionHelper.HasPermission("Empleados.Crear"))
+        {
+            <a type="button" method="get" asp-controller="SolicitudesAusencias" asp-action="HistoryAusencia" class="btn btn-secondary mb-2  me-1 me-md-2 ">
+               Consultar Nomina
+            </a>
+        }
+
+        @if (PermissionHelper.HasPermission("Empleados.Crear"))
+         {
+            <a type="button" method="get" asp-controller="Nomina" asp-action="GenerateNomina" class="btn btn-warning mb-2  me-1 me-md-2 ">
+               Generar Nomina del Mes
+            </a>
+        }
+     
+        @if (PermissionHelper.HasPermission("Empleados.Crear"))
+        {
+            <button type="button" class="btn btn-primary mb-2" onclick="fetchEmployeeData(0)">
+                Crear Empleado
+            </button>
+        }
+    </div>
 </div>
 
 <!-- Filtros de Búsqueda -->
