@@ -17,6 +17,7 @@ namespace Sistema.Gestion.Nómina.Controllers
     [Controller]
     public class NominaController(SistemaGestionNominaContext context, ILogServices logger, INominaServices nominaServices) : Controller
     {
+        [HttpGet]
         public async Task<ActionResult> Index(GetNominasDTO request)
         {
             var session = logger.GetSessionData();
@@ -74,6 +75,55 @@ namespace Sistema.Gestion.Nómina.Controllers
                 return RedirectToAction("Index", "Employees");
             }
         }
+        [HttpGet]
+        public async Task<ActionResult>Details(int id)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                var nomina = await context.Nominas
+                                        .Where(e => e.Id == id)
+                                        .AsNoTracking()
+                                        .Select(e => new GetNominaModel
+                                        {
+                                            Id = e.Id,
+                                            NombreEmpleado = e.IdEmpleadoNavigation.Nombre + " " + e.IdEmpleadoNavigation.Apellidos,
+                                            Departamento = e.IdEmpleadoNavigation.IdDepartamentoNavigation.Descripcion,
+                                            Puesto = e.IdEmpleadoNavigation.IdPuestoNavigation.Descripcion,
+                                            Sueldo = e.Sueldo,
+                                            SueldoExtra = e.SueldoExtra,
+                                            Comisiones = e.Comisiones,
+                                            Bonificaciones = e.Bonificaciones,
+                                            AguinaldoBono = e.AguinaldoBono,
+                                            OtrosIngresos = e.OtrosIngresos,
+                                            TotalDevengado = e.TotalDevengado,
+                                            TotalDescuentos = e.TotalDescuentos,
+                                            TotalLiquido = e.TotalLiquido,
+                                            Igss = e.Igss,
+                                            Isr = e.Isr,
+                                            Prestamos = e.Prestamos,
+                                            Creditos = e.Creditos,
+                                            Anticipos = e.Anticipos,
+                                            OtrosDesc = e.OtrosDesc
+                                        })
+                                        .FirstOrDefaultAsync();
+                if(nomina == null)
+                {
+                    TempData["Error"] = "Error al obtener detalle de Empleado";
+                    return RedirectToAction("Index", "Nomina");
+                }
+                await logger.LogTransaction(session.idEmpleado, session.company, "Nomina.Details", $"Se consultaron detalles de la nomina del empleado con id: {id}, Nombre: {nomina.NombreEmpleado}", session.nombre);
+
+                return Json(nomina);
+            }
+            catch (Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Nomina.Details", $"Error al consultar detalles de la nomina del empleado con id: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al consultar detalles de Empleado";
+                return RedirectToAction("Index", "Nomina");
+            }
+        }
+        [HttpPost]
         public async Task<ActionResult> GenerateNomina()
         {
             var session = logger.GetSessionData();
