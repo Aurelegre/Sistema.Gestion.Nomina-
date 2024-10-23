@@ -381,9 +381,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                 empleado.Nombre = request.Nombre;
                 empleado.Apellidos = request.Apellidos;
                 string nombreExpediente = string.Concat(empleado.Dpi.ToString(), ".pdf");
-                string nombreImagen = string.Concat(empleado.Dpi.ToString(), ".png");
                 empleado.PathExpediente = nombreExpediente;
-                empleado.PathImagen = nombreImagen;
                 if (empleado.Sueldo != request.Sueldo)
                 {
                     //si se cambia el sueldo guardar en el historial
@@ -413,11 +411,14 @@ namespace Sistema.Gestion.Nómina.Controllers
                     empleado.IdPuesto = request.IdPuesto;
                 }
                 empleado.IdDepartamento = request.IdDepartamento;
-                context.Update(empleado);
+                
                 //actualizar ROl
                 var user = await context.Usuarios.Where(e => e.Id == empleado.IdUsuario).AsNoTracking().FirstOrDefaultAsync();
+                string nombreImagen = string.Concat(user.Id.ToString(), ".png");
+                empleado.PathImagen = nombreImagen;
                 user.IdRol = request?.IdRol;
                 context.Usuarios.Update(user);
+                context.Update(empleado);
                 //Guardar Cambios
                 await context.SaveChangesAsync();
 
@@ -553,7 +554,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     await context.SaveChangesAsync();
 
                     string nombreExpediente = string.Concat(request.Dpi.ToString(), ".pdf");
-                    string nombreImagen = string.Concat(request.Dpi.ToString(), ".png");
+                    string nombreImagen = string.Concat(user.Id.ToString(), ".png");
                     // Obtener ID del usuario recién creado
                     int idUser = user.Id; // Usar el ID directamente desde el objeto recién agregado
 
