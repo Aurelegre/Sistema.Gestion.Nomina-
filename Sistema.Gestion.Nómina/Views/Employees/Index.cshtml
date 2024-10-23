@@ -24,10 +24,10 @@
         }
 
         @if (PermissionHelper.HasPermission("Nominas.Generar"))
-         {
-            <a type="button" method="get" asp-controller="Nomina" asp-action="GenerateNomina" class="btn btn-warning mb-2  me-1 me-md-2 ">
-               Generar Nomina del Mes
-            </a>
+        {
+            <button type="button" onclick="confirmGenerate()" class="btn btn-warning mb-2  me-1 me-md-2 ">
+                Generar Nomina del Mes
+            </button>
         }
      
         @if (PermissionHelper.HasPermission("Empleados.Crear"))
@@ -187,5 +187,6 @@ else
 <partial name="Liquidar" />
 <partial name="ConsultNomina" />
 <partial name="ConfirmRecontrato" />
+<partial name="ConfirmGenerate" />
 
 <script src="/js/Employees.js" asp-append-version="true"></script>

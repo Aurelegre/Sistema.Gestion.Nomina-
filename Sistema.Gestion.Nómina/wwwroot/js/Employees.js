@@ -307,3 +307,9 @@ function asignarFecha(idmes, idanio, idForm) {
     document.getElementById("idFecha").value = fecha;
     form.submit();
 }
+
+function confirmGenerate() {
+    // Mostrar el modal
+    var modal = new bootstrap.Modal(document.getElementById('generateConfirmationNominaModal'));
+    modal.show()
+}

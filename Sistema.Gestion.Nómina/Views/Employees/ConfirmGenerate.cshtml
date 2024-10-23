@@ -1,0 +1,20 @@
+﻿<!-- Modal de Confirmación de Generación de Npomina -->
+<div class="modal fade" id="generateConfirmationNominaModal" tabindex="-1" aria-labelledby="generateConfirmationNominaModal" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateConfirmationNominaModal">Confirmar Generación de Nómina</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body alert alert-warning">
+                <strong>¿Está seguro de generar la Nómina del Mes?</strong>
+            </div>
+            <div class="modal-footer ">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a type="button" method="get" asp-controller="Nomina" asp-action="GenerateNomina" class="btn btn-warning">
+                    Generar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
