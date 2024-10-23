@@ -137,11 +137,17 @@ namespace Sistema.Gestion.Nómina.Controllers
                 DateOnly fecha = DateOnly.FromDateTime(DateTime.Now.Date);
                 //verificar que no exista nomina generada en el mes y año actual
                 var exist = await context.Nominas.AnyAsync(e => e.Fecha.Month == fecha.Month && e.Fecha.Year == fecha.Year && e.IdEmpresa == session.company);
-                if (exist)
+                if (fecha.Day < 25)
                 {
-                    TempData["Error"] = $"La nómina de este mes ya fue generada";
+                    TempData["Error"] = $"Solo se puede generar nómina en los ultimos 5 dias del mes";
                     return RedirectToAction("Index", "Employees");
                 }
+                if (exist)
+                {
+                    TempData["Error"] = $"Ya fue generada la nómina de este mes";
+                    return RedirectToAction("Index", "Employees");
+                }
+                
                 //traer la información de los empleados activos de la empresa que no sea el admnistrador general
                 var empleados = await context.Empleados
                                                     .Where(e => e.Activo == 1 && e.IdEmpresa == session.company && !e.Dpi.Equals("0") && !e.Apellidos.Equals("Administrador"))
