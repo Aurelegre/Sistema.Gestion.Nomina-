@@ -11,6 +11,8 @@ public partial class Empleado
 
     public string? Nombre { get; set; }
     public string? Apellidos { get; set; }
+    public string? PathExpediente { get; set; }
+    public string? PathImagen { get; set; }
 
     public DateTime FechaContratado { get; set; }
     public DateTime? FechaDespido { get; set; }
