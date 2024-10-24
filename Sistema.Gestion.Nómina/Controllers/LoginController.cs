@@ -86,7 +86,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                     new Claim(ClaimTypes.Name, usuario.Usuario.Usuario1),
                     new Claim(ClaimTypes.Role, rol.Descripcion),
                     new Claim("Company", usuario.Usuario.IdEmpresa.ToString() ),
-                    new Claim("IdEmployed", usuario.IdEmployee.ToString())
+                    new Claim("IdEmployed", usuario.IdEmployee.ToString()),
+                    new Claim("IdUser", usuario.IdUser.ToString())
                 };
 
                 foreach (var permission in permissions)

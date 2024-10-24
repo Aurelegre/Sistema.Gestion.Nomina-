@@ -14,7 +14,26 @@
     scrollbar-width: thin; /* Para Firefox */
     scrollbar-color: rgb(3, 53, 98) rgb(24, 67, 117); /* Colores de la barra en Firefox (pista, pulgar) */
 }
+.nav-profile-image {
+    width: 120px; /* Ajusta el ancho según sea necesario */
+    height: 150px; /* Ajusta la altura según sea necesario */
+    object-fit: cover; /* Asegura que la imagen cubra el ovalo */
+    border-radius: 50% / 30%; /* Hace que la imagen sea ovalada */
+    display: block; /* Asegura que la imagen no se salga del flujo */
+    margin: auto; /* Centra la imagen dentro del contenedor */
+}
 
+/* Estilos para el ícono cuando no hay imagen */
+.nav-icon-placeholder {
+    font-size: 50px; /* Ajusta el tamaño del ícono */
+    line-height: 70px; /* Ajusta la alineación vertical */
+    text-align: center; /* Centra el ícono */
+    width: 50px; /* Ancho del contenedor para el ícono */
+    height: 70px; /* Altura del contenedor para el ícono */
+    background-color: #e0e0e0; /* Fondo para simular la imagen faltante */
+    border-radius: 50% / 30%; /* Hace el ícono ovalado */
+    margin: auto; /* Centra el ícono dentro del contenedor */
+}
 .sidebar .nav-link {
     color: white;
     padding: 10px 0px 15px 15px;
