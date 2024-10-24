@@ -28,6 +28,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Salir</button>
+                <form asp-action="DescargarReporte" asp-controller="Nomina">
+                    <input type="hidden" id="idnomina" name="id" />
+                    <button type="submit" class="btn btn-primary" >Generar Póliza</button>
+                </form>
             </div>
         </div>
     </div>
