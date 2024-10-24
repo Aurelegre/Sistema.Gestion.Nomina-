@@ -202,7 +202,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     var lastAnticipo = await context.Aumento.Where(e=> e.IdTipo == 3 && e.IdEmpleado == request.IdEmpleado)
                                                             .AsNoTracking()
                                                             .FirstOrDefaultAsync();
-                    if(lastAnticipo!= null && lastAnticipo.Fecha.Month == DateTime.Now.Month)
+                    if(lastAnticipo!= null && lastAnticipo.Fecha.Month == DateTime.Now.Month && lastAnticipo.Fecha.Year == DateTime.Now.Year)
                     {
                         TempData["Error"] = $"El Empleado ya posee un anticipo en este Mes";
                         return RedirectToAction("Index", "EmployeeDepto");
@@ -235,7 +235,7 @@ namespace Sistema.Gestion.Nómina.Controllers
         {
             try
             {
-                var Horas = await context.Aumento.Where(e => e.IdEmpleado == Idempleado && e.IdTipo == tipo && e.Fecha.Month == DateTime.Now.Month).AsNoTracking().Select(e=> e.Total).ToListAsync();
+                var Horas = await context.Aumento.Where(e => e.IdEmpleado == Idempleado && e.IdTipo == tipo && e.Fecha.Month == DateTime.Now.Month && e.Fecha.Year == DateTime.Now.Year).AsNoTracking().Select(e=> e.Total).ToListAsync();
                 if(Horas.Count == 0)
                 {
                     return 0;
@@ -339,7 +339,7 @@ namespace Sistema.Gestion.Nómina.Controllers
             try
             {
 
-                var exist = await context.Aumento.AsNoTracking().AnyAsync(e => e.IdEmpleado == IdEmpleado && e.IdTipo == 3 && e.Fecha.Month == DateTime.Now.Month);
+                var exist = await context.Aumento.AsNoTracking().AnyAsync(e => e.IdEmpleado == IdEmpleado && e.IdTipo == 3 && e.Fecha.Month == DateTime.Now.Month && e.Fecha.Year == DateTime.Now.Year);
                 string res = string.Empty;
                 if (exist)
                 {
