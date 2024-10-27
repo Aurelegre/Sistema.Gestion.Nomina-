@@ -9,5 +9,7 @@
         public int IdDepartamento { get; set; }
         public int IdRol { get; set; }
         public decimal? Sueldo { get; set; }
+        public IFormFile expedientePDF { get; set; }
+        public IFormFile imagenPNG { get; set; }
     }
 }

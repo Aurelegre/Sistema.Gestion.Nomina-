@@ -10,6 +10,7 @@
                     .then(response => response.json())
                     .then(data => {
                         // Mostrar los detalles del empleado en el modal
+                        document.getElementById("idnomina").value = data.id;
                         document.getElementById("employeeName").innerText = data.nombreEmpleado;
                         document.getElementById("employeeDepartamento").innerText = data.departamento;
                         document.getElementById("employeePuesto").innerText = data.puesto;

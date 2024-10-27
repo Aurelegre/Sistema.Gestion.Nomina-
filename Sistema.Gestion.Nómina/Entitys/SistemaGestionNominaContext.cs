@@ -112,6 +112,9 @@ public partial class SistemaGestionNominaContext : DbContext
                 .HasColumnName("DPI");
             entity.Property(e => e.FechaContratado).HasColumnType("datetime");
             entity.Property(e => e.Nombre).HasMaxLength(50);
+            entity.Property(e => e.Apellidos).HasMaxLength(50);
+            entity.Property(e => e.PathExpediente).HasMaxLength(50);
+            entity.Property(e => e.PathImagen).HasMaxLength(50);
             entity.Property(e => e.Sueldo).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.IdEmpresaNavigation).WithMany(p => p.Empleados)

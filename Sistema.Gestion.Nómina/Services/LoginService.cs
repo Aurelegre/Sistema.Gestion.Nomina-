@@ -73,12 +73,14 @@ namespace Sistema.Gestion.Nómina.Services
 
                 // Obtener el id del empleado
                 int idEmployee = empleado.Id;
+                int iduser = empleado.IdUsuario.Value;
 
                 return new LoginModel
                 {
                     Usuario = usuario,
                     isBloqued = false,
-                    IdEmployee = idEmployee
+                    IdEmployee = idEmployee,
+                    IdUser = iduser,
                 };
             }
             catch (Exception ex)

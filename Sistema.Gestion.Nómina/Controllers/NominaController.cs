@@ -1,7 +1,10 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
 using Sistema.Gestion.Nómina.DTOs.Empleados;
 using Sistema.Gestion.Nómina.DTOs.Nominas;
 using Sistema.Gestion.Nómina.DTOs.SolicitudesAusencia;
@@ -11,6 +14,10 @@ using Sistema.Gestion.Nómina.Services.Logs;
 using Sistema.Gestion.Nómina.Services.Nomina;
 using System.Data;
 using System.Reflection.Metadata;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using QuestPDF.Previewer;
+using System;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Sistema.Gestion.Nómina.Controllers
@@ -108,13 +115,14 @@ namespace Sistema.Gestion.Nómina.Controllers
                                             Prestamos = e.Prestamos,
                                             Creditos = e.Creditos,
                                             Anticipos = e.Anticipos,
-                                            OtrosDesc = e.OtrosDesc
+                                            OtrosDesc = e.OtrosDesc,
+                                            fecha = DateOnly.FromDateTime(e.Fecha)
                                         })
                                         .FirstOrDefaultAsync();
                 if(nomina == null)
                 {
                     TempData["Error"] = "Error al obtener detalle de Empleado";
-                    return RedirectToAction("Index", "Nomina");
+                    return RedirectToAction("Index", "Employees");
                 }
                 await logger.LogTransaction(session.idEmpleado, session.company, "Nomina.Details", $"Se consultaron detalles de la nomina del empleado con id: {id}, Nombre: {nomina.NombreEmpleado}", session.nombre);
 
@@ -124,9 +132,62 @@ namespace Sistema.Gestion.Nómina.Controllers
             {
                 await logger.LogError(session.idEmpleado, session.company, "Nomina.Details", $"Error al consultar detalles de la nomina del empleado con id: {id}", ex.Message, ex.StackTrace);
                 TempData["Error"] = "Error al consultar detalles de Empleado";
-                return RedirectToAction("Index", "Nomina");
+                return RedirectToAction("Index", "Employees");
             }
         }
+        [HttpPost]
+        [Authorize(Policy = "Nominas.Ver")]
+        public async Task<IActionResult> DescargarReporte(int id)
+        {
+            var session = logger.GetSessionData();
+            try
+            {
+                var nomina = await context.Nominas
+                                .Where(e => e.Id == id)
+                                .AsNoTracking()
+                                .Select(e => new GetNominaModel
+                                {
+                                    Id = e.Id,
+                                    NombreEmpleado = e.IdEmpleadoNavigation.Nombre + " " + e.IdEmpleadoNavigation.Apellidos,
+                                    Departamento = e.IdEmpleadoNavigation.IdDepartamentoNavigation.Descripcion,
+                                    Puesto = e.IdEmpleadoNavigation.IdPuestoNavigation.Descripcion,
+                                    Sueldo = e.Sueldo,
+                                    SueldoExtra = e.SueldoExtra,
+                                    Comisiones = e.Comisiones,
+                                    Bonificaciones = e.Bonificaciones,
+                                    AguinaldoBono = e.AguinaldoBono,
+                                    OtrosIngresos = e.OtrosIngresos,
+                                    TotalDevengado = e.TotalDevengado,
+                                    TotalDescuentos = e.TotalDescuentos,
+                                    TotalLiquido = e.TotalLiquido,
+                                    Igss = e.Igss,
+                                    Isr = e.Isr,
+                                    Prestamos = e.Prestamos,
+                                    Creditos = e.Creditos,
+                                    Anticipos = e.Anticipos,
+                                    OtrosDesc = e.OtrosDesc
+                                })
+                                .FirstOrDefaultAsync();
+
+                if (nomina == null)
+                {
+                    TempData["Error"] = "Error al obtener Póliza contable Empleado";
+                    return RedirectToAction("Index", "Employees");
+                }
+                await logger.LogTransaction(session.idEmpleado, session.company, "Nomina.DescargarReporte", $"Se generó polizá contable del empleado con id: {id}, Nombre: {nomina.NombreEmpleado}", session.nombre);
+
+                var pdfBytes = GenerarReporteNomina(nomina);
+                return File(pdfBytes, "application/pdf", $"PolizaContable_{nomina.NombreEmpleado}.pdf");
+            }
+            catch(Exception ex)
+            {
+                await logger.LogError(session.idEmpleado, session.company, "Nomina.DescargarReporte", $"Error al generar póliza contable del empleado con id: {id}", ex.Message, ex.StackTrace);
+                TempData["Error"] = "Error al generar póliza contable de Empleado";
+                return RedirectToAction("Index", "Employees");
+            }
+            
+        }
+
         [HttpGet]
         [Authorize(Policy = "Nominas.Generar")]
         public async Task<ActionResult> GenerateNomina()
@@ -413,7 +474,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     //calcular ISR
                     decimal? isr = await ProyectarISR(id, totalDevengado, 250.00m);
                     //verificar si posee anticipos del salario del mes actual
-                    var poseeAnticipo = await context.Aumento.AnyAsync(e => e.IdEmpleado == id && e.IdTipo == 3 && e.Fecha.Month == DateTime.Now.Month);
+                    var poseeAnticipo = await context.Aumento.AnyAsync(e => e.IdEmpleado == id && e.IdTipo == 3 && e.Fecha.Month == DateTime.Now.Month && e.Fecha.Year == DateTime.Now.Year);
                     //inicializar variable con el deducible de anticipo
                     decimal? anticipo = 0.00m;
                     if (poseeAnticipo)
@@ -592,6 +653,79 @@ namespace Sistema.Gestion.Nómina.Controllers
                 await logger.LogError(session.idEmpleado, session.company, "Nomina.PagarCuotaPrestamo", $"ERROR al registrar proyectada de ISR a empleado : {id}", ex.Message, ex.StackTrace);
                 throw new InvalidOperationException($"Error al realizar Proyectada de ISR al empleado: {id}: {ex.Message}", ex);
             }
-        } 
+        }
+        private byte[] GenerarReporteNomina(GetNominaModel nomina)
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+            var document = QuestPDF.Fluent.Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.Header()
+                            .Element(container =>
+                            {
+                                container.Column(column =>
+                                {
+                                    column.Item().Text($"Póliza Contable para {nomina.NombreEmpleado}")
+                                        .FontSize(18)
+                                        .Bold()
+                                        .AlignCenter();
+
+                                    column.Item().PaddingBottom(20); // Aplicando padding inferior correctamente
+                                });
+                            });
+
+                    page.Content().Column(col =>
+                    {
+                        col.Spacing(10);
+
+                        // Información del empleado
+                        col.Item().Text($"Nombre: {nomina.NombreEmpleado}").Bold();
+                        col.Item().Text($"Departamento: {nomina.Departamento}");
+                        col.Item().Text($"Puesto: {nomina.Puesto}");
+
+                        // Información de ingresos
+                        col.Item().Text($"Salario: Q. {nomina.Sueldo}");
+                        col.Item().Text($"Salario Extraordinario: Q. {nomina.SueldoExtra}");
+                        col.Item().Text($"Comisiones: Q. {nomina.Comisiones}");
+                        col.Item().Text($"Bonificaciones: Q. {nomina.Bonificaciones}");
+                        col.Item().Text($"Aguinaldo / Bono 14: Q. {nomina.AguinaldoBono}");
+                        col.Item().Text($"Otros Ingresos: Q. {nomina.OtrosIngresos}");
+
+                        // Total devengado
+                        col.Item().Text($"Total Devengado: Q. {nomina.TotalDevengado}")
+                                 .Bold()
+                                 .FontColor(Colors.Red.Medium);
+
+                        // Descuentos
+                        col.Item().Text($"IGSS: Q. {nomina.Igss}");
+                        col.Item().Text($"ISR: Q. {nomina.Isr}");
+                        col.Item().Text($"Préstamos: Q. {nomina.Prestamos}");
+                        col.Item().Text($"Créditos: Q. {nomina.Creditos}");
+                        col.Item().Text($"Anticipos: Q. {nomina.Anticipos}");
+                        col.Item().Text($"Otros Descuentos: Q. {nomina.OtrosDesc}");
+
+                        // Total descuentos
+                        col.Item().Text($"Total Descuentos: Q. {nomina.TotalDescuentos}")
+                                 .Bold()
+                                 .FontColor(Colors.Red.Medium);
+
+                        // Total líquido
+                        col.Item().Text($"Total Líquido: Q. {nomina.TotalLiquido}")
+                                 .Bold()
+                                 .FontColor(Colors.Green.Medium);
+                    });
+
+                    page.Footer().AlignCenter().Text($"Fecha de Generación: {DateTime.Now}");
+                });
+            });
+
+            using var memoryStream = new MemoryStream();
+            document.GeneratePdf(memoryStream);
+            return memoryStream.ToArray();
+        }
+
     }
 }

@@ -26,5 +26,20 @@ public static class PermissionHelper
         var userRole = httpContext?.User?.FindFirst(ClaimTypes.Role)?.Value;
         return userRole != null && userRole == role;
     }
+
+    public static string GetUserImage()
+    {
+        // Accede al HttpContext para obtener el usuario
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var iduser = httpContext?.User?.FindFirst("IdUser")?.Value;
+        return string.Concat(iduser.ToString(), ".png");
+    }
+    public static string GetUser()
+    {
+        // Accede al HttpContext para obtener el usuario
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var user = httpContext?.User?.FindFirst(ClaimTypes.Name)?.Value;
+        return user.ToString().ToLower();
+    }
 }
 

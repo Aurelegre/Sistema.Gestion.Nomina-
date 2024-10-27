@@ -31,5 +31,6 @@
         public decimal? Anticipos { get; set; }
 
         public decimal? OtrosDesc { get; set; }
+        public DateOnly fecha { get; set; }
     }
 }
