@@ -46,8 +46,8 @@ namespace Sistema.Gestion.Nómina.Controllers
                                                               }).FirstOrDefaultAsync();
                 if (employeeWithUser == null || employeeWithUser.User == null)
                 {
-                    TempData["Error"] = "El Usuario no existe";
-                    return RedirectToAction("login", "login");
+                    TempData["Error"] = "DPI o Usuario Incorrecto";
+                    return RedirectToAction("FirstSession", "UnAuthenticate");
                 }
          
                 var user = employeeWithUser.User;
@@ -63,8 +63,9 @@ namespace Sistema.Gestion.Nómina.Controllers
                 if (!result)
                 {
                     TempData["Error"] = "Error al activar usuario, vuelva a intentar";
-                    return RedirectToAction("login", "login");
+                    return RedirectToAction("FirstSession", "UnAuthenticate");
                 }
+                
                 //guardar sessión
                 await logger.LogTransaction(employeeWithUser.Employe.Id, employeeWithUser.Employe.IdEmpresa, "ActiveUser", $"Activación del usuario con id:{user.Id}", user.Usuario1);
                 TempData["Message"] = "Usuario activado con éxito";

@@ -17,6 +17,7 @@ namespace Sistema.Gestion.Nómina.Services.UnAuthenticate
                 string hash =  hasher.HashPassword(password);
                 //setear hash
                 user.Contraseña = hash;
+                user.activo = 1;
                 //actualizar en BD
                 context.Usuarios.Update(user);
                 await context.SaveChangesAsync();
@@ -30,5 +31,29 @@ namespace Sistema.Gestion.Nómina.Services.UnAuthenticate
                 return false;
             }
         }
+        public async Task<bool> RestorePassword(string password,int idUser)
+        {
+            try
+            {
+                //seleccionar usuario
+                var user = await context.Usuarios.Where(o => o.Id == idUser).AsNoTracking().FirstOrDefaultAsync();
+                //hashear contraseña
+                string hash =  hasher.HashPassword(password);
+                //setear hash
+                user.Contraseña = hash;
+                //actualizar en BD
+                context.Usuarios.Update(user);
+                await context.SaveChangesAsync();
+
+                //guardar bitácora
+                await logger.LogTransaction(1, user.IdEmpresa, "RestorePassword", $"Se actualizar contraseña a usuario con id: {idUser}", "UnAuthenticate");
+                return true;
+            }catch (Exception ex)
+            {
+                await logger.LogError(1, 1, "RestorePassword", $"Error al acttualizar contraseña a usuario con id: {idUser}", ex.Message, ex.StackTrace);
+                return false;
+            }
+        }
+
     }
 }
