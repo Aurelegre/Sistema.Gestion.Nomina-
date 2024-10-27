@@ -94,7 +94,9 @@ function ConfirmPassword(idform, password, confirmpass,error) {
                 errorDiv.style.display = 'none';
             }, 5000); // Oculta el mensaje después de 5 segundos
             return;
-        }
+    }
+    const form = document.getElementById(idform);
+    form.submit();
 }
 
 function validateAndConfirmEdit(idForm, idModal, idForm2) {
