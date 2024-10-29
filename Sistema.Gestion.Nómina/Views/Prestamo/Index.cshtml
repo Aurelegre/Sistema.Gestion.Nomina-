@@ -12,7 +12,7 @@
 
 <div class="row align-items-center">
     <div class="col-12 col-md-auto">
-        <h1 class="my-3 text-center text-md-start">Prestamos</h1>
+        <h1 class="my-3 text-center text-md-start">Préstamos</h1>
     </div>
 
     <div class="col-12 col-md d-flex justify-content-center justify-content-md-end">
@@ -21,13 +21,13 @@
             @if (PermissionHelper.HasPermission("Prestamos.Ver"))
             {
                 <a type="button" method="get" asp-controller="Prestamo" asp-action="HistoryActive" class="btn btn-secondary mb-2  me-1 me-md-2 ">
-                    Prestamos Activos
+                    Préstamos Activos
                 </a>
             }
             @if (PermissionHelper.HasPermission("Prestamos.Crear"))
             {
                 <button type="button" class="btn btn-primary mb-2" onclick="createPrestamo()">
-                    Registrar Prestamo
+                    Registrar Préstamo
                 </button>
             }
         
@@ -77,6 +77,7 @@
                     <td>Cuotas Pendientes</td>
                     <td>Total Pendiente</td>
                     <td>Fecha Registro</td>
+                    <td>Acciones</td>
                 </tr>
             </thead>
             <tbody>

@@ -200,6 +200,11 @@ namespace Sistema.Gestion.Nómina.Controllers
                         TempData["Error"] = "Máximo número de prestamos activos alcanzado";
                         return RedirectToAction("Index", "Prestamo");
                     }
+                    if (request.Total <=1000)
+                    {
+                        TempData["Error"] = "No se pueden registrar préstamos por menos de Q.1,000.00";
+                        return RedirectToAction("Index", "Prestamo");
+                    }
                     Prestamo prestamo = new Prestamo
                     {
                         IdEmpleado = session.idEmpleado,

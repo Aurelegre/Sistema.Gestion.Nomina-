@@ -151,14 +151,14 @@
                         <div class="accordion" id="accordionExample">
                             <div id="headingThree">
                                 <button class="nav-link text-light accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree" onclick="closeOtherAccordions('collapseThree')">
-                                    <i class="bi bi-bank"></i> Prestamos / Créditos
+                                    <i class="bi bi-bank"></i> Préstamos / Créditos
                                 </button>
                             </div>
                             <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
                                     @if (PermissionHelper.HasPermission("Prestamos.Listar"))
                                     {
-                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="Prestamo" asp-action="Index">Mis Prestamos</a>
+                                        <a class="nav-link text-light ps-3" asp-area="" asp-controller="Prestamo" asp-action="Index">Mis Préstamos</a>
                                     }
                                     @if (PermissionHelper.HasPermission("Creditos.Listar"))
                                     {
