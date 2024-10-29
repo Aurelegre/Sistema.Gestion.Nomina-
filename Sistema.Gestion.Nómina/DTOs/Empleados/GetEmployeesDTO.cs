@@ -8,6 +8,6 @@
         public string Departamento { get; set; }
         public int estado { get; set; } = 1; //traer por defaul activos
         public int page { get; set; } = 1;
-        public int pageSize { get; set; } = 2;
+        public int pageSize { get; set; } = 15;
     }
 }
