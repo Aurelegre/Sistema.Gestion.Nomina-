@@ -197,7 +197,7 @@ namespace Sistema.Gestion.Nómina.Controllers
                     var count = await context.Prestamos.CountAsync(e => e.IdEmpleado == session.idEmpleado && e.IdTipo == 1);
                     if (count == 2)
                     {
-                        TempData["Error"] = "Máximo número de prestamos activos alcanzado";
+                        TempData["Error"] = "Máximo número de préstamos activos alcanzado";
                         return RedirectToAction("Index", "Prestamo");
                     }
                     if (request.Total <=1000)

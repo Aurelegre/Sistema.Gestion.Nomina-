@@ -148,7 +148,6 @@ namespace Sistema.Gestion.Nómina.Controllers
 
                 // Convertir a horas decimales
                 decimal horasDecimales = horas + (minutos / 60.00m);
-
                 Aumento horasExtras = new Aumento
                 {
                     Fecha = DateTime.Now,
